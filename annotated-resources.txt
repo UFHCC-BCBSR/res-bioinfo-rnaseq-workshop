@@ -1,0 +1,56 @@
+RNA-Seq Standards and Analysis Guides
+Bulk RNA-seq Data Standards and Processing Pipeline (ENCODE)
+URL: https://www.encodeproject.org/data-standards/encode4-bulk-rna/
+Annotation: This source details the official ENCODE4 standards for bulk RNA-seq experiments, which require libraries to have an average insert size greater than 200 bases
+. The standardized uniform processing pipeline utilizes STAR for genomic alignment, kallisto for transcript quantification, and RSEM for gene quantification
+. Key quality standards include a requirement for Spearman correlation > 0.9 between isogenic replicates and specific read depth targets depending on the experiment type (e.g., 10 million aligned reads for shRNA knockdown)
+.
+A Beginner's Guide to Analysis of RNA Sequencing Data
+URL: https://pmc.ncbi.nlm.nih.gov/articles/PMC6096346/
+Annotation: This review provides a step-by-step breakdown of a typical RNA-seq analysis for researchers without a programming background
+. It covers experimental design, noise filtering, and identifying differentially expressed genes (DEGs) using a murine lung transplant dataset
+. It highlights how Principal Component Analysis (PCA) and Pearson correlation are used to visualize sample variability and identify potential outliers
+.
+A Survey of Best Practices for RNA-seq Data Analysis
+URL: https://pmc.ncbi.nlm.nih.gov/articles/PMC4728800/
+Annotation: This comprehensive survey outlines the global roadmap for computational RNA-seq analysis, ranging from quality control to functional integration
+. It reviews major tools for alignment (e.g., TopHat, STAR) and quantification (e.g., HTSeq-count, RSEM), while discussing the challenges of de novo transcript reconstruction and isoform-level analysis
+. It also explores advanced technologies like single-cell RNA-seq (scRNA-seq) and long-read sequencing
+.
+Reference-based RNA-Seq Data Analysis (Galaxy Training)
+URL: https://gxy.io/GTN:T00295
+Annotation: This hands-on tutorial demonstrates a full reference-based workflow using a Drosophila dataset to teach transcriptomics
+. It provides practical instructions for quality control with Falco, trimming with Cutadapt, mapping with STAR, and differential expression analysis via DESeq2
+. The tutorial also explains how to perform functional enrichment analysis through Gene Ontology (GO) and KEGG pathways
+.
+[Tutorial] Bulk RNA-seq DE Analysis (Harvard FAS Informatics Group)
+URL: Not explicitly provided in the source text.
+Annotation: This tutorial focuses on the statistical implementation of differential expression testing using the limma package in R
+. It reviews various quantification approaches, such as pseudo-alignment with Salmon or kallisto, and demonstrates how to handle complex 2-factor experimental designs
+. A notable feature of this guide is the use of empirical quality weights to down-weight outlier samples during statistical modeling
+.
+
+--------------------------------------------------------------------------------
+Workflows and Computing Foundations
+rnaseq: Introduction (nf-core)
+URL: https://github.com/nf-core/rnaseq
+Annotation: This source describes a robust, Nextflow-based pipeline for analyzing RNA-seq data from organisms with reference genomes
+. It automates numerous tasks, including merging re-sequenced files, auto-inferring strandedness, and providing various quantification routes like STAR to Salmon or STAR to RSEM
+. It is designed to produce gene expression matrices and comprehensive quality control reports integrated by MultiQC
+.
+The Command-line - Bioinformatics Tutorials
+URL: http://swcarpentry.github.io/shell-novice/
+Annotation: This tutorial introduces Unix as the standard operating system for scientific research and supercomputing
+. It details essential commands for file management (ls, cp, mv, rm), viewing data (less, head, tail), and searching text (grep)
+. It also provides a foundational guide for shell scripting to automate bioinformatics pipelines
+.
+Introduction to RNA-Seq (SIB Swiss Institute of Bioinformatics)
+URL: https://github.com/sib-swiss/RNAseq-introduction-training
+Annotation: This syllabus outlines learning outcomes for an introductory course on RNA-seq
+. It focuses on enabling researchers to design their own experiments and perform downstream command-line analysis, including QC, mapping, and pathway analysis
+.
+From Zero to HiPerGator (UFIT-RC Documentation)
+URL: Not explicitly provided in the source text.
+Annotation: This documentation serves as a guide for researchers using the HiPerGator supercomputer
+. It covers the administrative requirements for account creation, the role of the PI as a sponsor, and the necessity of obtaining resource allocations for storage and computation before submitting research jobs
+.
