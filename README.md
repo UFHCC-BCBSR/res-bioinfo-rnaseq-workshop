@@ -47,6 +47,10 @@ Instructions for navigating the HTML tutorial site will go here.
 
 ---
 
+## Resoures
+
+[Differential expression analysis of bulk RNA-seq data](https://informatics.fas.harvard.edu/resources/tutorials/differential-expression-analysis/)
+
 ## Contact
 
 Questions? Contact the UF Cancer Center Bioinformatics team.
