@@ -1,0 +1,854 @@
+---
+title: "RNA-seq Differential Expression Analysis with limma-voom"
+subtitle: "UF Health Cancer Institute Bioinformatics Workshop - Session 2"
+author: ""
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    code-fold: false
+    code-tools: true
+    code-overflow: wrap
+    embed-resources: true
+    theme: cosmo
+    df-print: paged
+execute:
+  warning: false
+  message: false
+---
+
+# Introduction
+
+In this session, we'll work through a complete differential expression (DE) analysis using RNA-seq data. We'll be using the output from the nf-core/rnaseq pipeline (STAR alignment + RSEM quantification) that was configured in Session 1.
+
+**Learning Objectives:**
+
+- Load and prepare RNA-seq count data from RSEM
+- Perform quality control and exploratory data analysis
+- Understand filtering, normalization, and the limma-voom workflow
+- Conduct differential expression analysis for simple and complex designs
+- Create publication-quality visualizations
+- Interpret and export results
+
+## The Analysis Workflow
+
+```{mermaid}
+%%| fig-width: 8
+flowchart TD
+    A[RSEM Gene Counts] --> B[Create DGEList Object]
+    B --> C[Filter Low Expression]
+    C --> D[TMM Normalization]
+    D --> E[Quality Control & Visualization]
+    E --> F[Design Matrix]
+    F --> G[voom Transformation + Quality Weights]
+    G --> H[Linear Model Fitting]
+    H --> I[Empirical Bayes]
+    I --> J[Extract Results]
+    J --> K[Visualization & Interpretation]
+```
+
+# Setup
+
+## Load Required Libraries
+
+```{r setup}
+# Load required packages
+library(limma)       # Differential expression analysis
+library(edgeR)       # RNA-seq data structures and filtering
+library(tidyverse)   # Data manipulation and visualization
+library(ggrepel)     # Better text labels on plots
+library(pheatmap)    # Heatmaps
+library(RColorBrewer) # Color palettes
+
+# Set a seed for reproducibility
+set.seed(42)
+
+# Create output directory for figures
+if (!dir.exists("figures")) {
+  dir.create("figures")
+}
+```
+
+::: {.callout-tip}
+## Package Installation
+If you haven't installed these packages yet, you can do so with:
+```r
+install.packages(c("tidyverse", "ggrepel", "pheatmap", "RColorBrewer"))
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(c("limma", "edgeR"))
+```
+:::
+
+## Set File Paths
+
+```{r paths}
+# Define paths to your data files
+# These should be outputs from the nf-core/rnaseq pipeline
+counts_file <- "path/to/rsem.merged.gene_counts.tsv"
+sample_info_file <- "path/to/sample_info.tsv"
+
+# For this workshop, we'll use example paths
+# Update these to match your actual file locations
+```
+
+::: {.callout-note}
+## nf-core Output Structure
+The nf-core/rnaseq pipeline with RSEM produces a merged count matrix file typically named:
+`rsem.merged.gene_counts.tsv` in the `star_rsem/` results directory. This file contains raw counts for all samples across all genes.
+:::
+
+# Part 1: Data Loading and Preparation
+
+## Load Gene Count Data
+
+```{r load-counts}
+# Load the RSEM gene counts
+# The nf-core pipeline produces a merged file with:
+# - gene_id: Ensembl gene ID
+# - gene_name: Gene symbol
+# - One column per sample with count data
+
+expression_data <- read.table(counts_file, 
+                              header = TRUE, 
+                              row.names = "gene_name",
+                              check.names = FALSE)
+
+# Remove the gene_id column (we're using gene_name as row names)
+expression_data$gene_id <- NULL
+
+# Quick look at the data
+head(expression_data, n = 3)
+dim(expression_data)
+```
+
+::: {.callout-important}
+## RSEM vs Salmon
+Note that RSEM produces **expected counts** which are suitable for downstream analysis with limma-voom or DESeq2. These are not the same as TPM values - make sure you're using the `.genes.results` counts, not TPM values!
+:::
+
+## Load Sample Metadata
+
+```{r load-metadata}
+# Load sample information
+# This file should contain:
+# - sample: sample names (matching column names in expression_data)
+# - Any experimental factors (treatment, genotype, time, etc.)
+
+sample_info <- read.table(sample_info_file, 
+                          header = TRUE, 
+                          stringsAsFactors = FALSE)
+
+# Display the sample information
+sample_info
+
+# Quick check: do sample names match?
+all(sample_info$sample %in% colnames(expression_data))
+```
+
+::: {.callout-tip}
+## Sample Metadata Best Practices
+Your sample metadata file should include:
+- Clear, consistent sample names matching your count data
+- All experimental factors (treatment, batch, individual, etc.)
+- Any known technical variables (sequencing run, library prep date)
+- Keep a data dictionary explaining what each column means!
+:::
+
+# Part 2: Quality Control and Exploratory Analysis
+
+## Create DGEList Object
+
+The `DGEList` object from edgeR is a convenient container for RNA-seq data that bundles counts, sample information, and gene annotations together.
+
+```{r create-dge}
+# Create DGEList object
+# This combines count data with sample metadata
+DGE <- DGEList(counts = expression_data,
+               samples = sample_info)
+
+# Inspect the object
+DGE
+```
+
+## Filter Lowly Expressed Genes
+
+Not all genes are expressed in your samples. Filtering out genes with very low or zero counts:
+
+- Reduces noise in the analysis
+- Improves statistical power (fewer tests = less multiple testing burden)
+- Speeds up computation
+
+```{r filter-genes}
+# The filterByExpr function determines which genes have 
+# sufficient counts for reliable DE testing
+# It uses the experimental design (group) to determine 
+# the minimum number of samples that should have adequate counts
+
+keep.exprs <- filterByExpr(DGE, group = DGE$samples$group)
+
+# How many genes are we keeping?
+table(keep.exprs)
+
+# Filter the DGEList
+DGE <- DGE[keep.exprs, , keep.lib.sizes = FALSE]
+
+cat("After filtering, we have", nrow(DGE), "genes remaining\n")
+```
+
+::: {.callout-note}
+## Understanding filterByExpr
+`filterByExpr()` uses a sensible heuristic: a gene should be expressed at a minimum level in at least some proportion of samples from the smallest group. By default:
+- Minimum count: 10 reads
+- Minimum proportion: Depends on library sizes and design
+This is more sophisticated than simple count cutoffs!
+:::
+
+## Library Size and Composition
+
+Before normalization, let's check library sizes (total read counts per sample).
+
+```{r library-sizes}
+# Calculate library sizes
+lib_sizes <- DGE$samples$lib.size
+
+# Create a data frame for plotting
+lib_size_df <- data.frame(
+  sample = rownames(DGE$samples),
+  lib_size = lib_sizes,
+  group = DGE$samples$group
+)
+
+# Plot library sizes
+ggplot(lib_size_df, aes(x = sample, y = lib_size / 1e6, fill = group)) +
+  geom_col() +
+  labs(title = "Library Sizes After Filtering",
+       x = "Sample",
+       y = "Library Size (Millions of Reads)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_brewer(palette = "Set2")
+```
+
+::: {.callout-warning}
+## What to Look For
+- **Large differences** (>2-3x) in library sizes might indicate technical issues
+- **Very low libraries** (<5M reads for human/mouse) may have insufficient depth
+- Some variation is normal and will be handled by normalization
+:::
+
+## TMM Normalization
+
+Trimmed Mean of M-values (TMM) normalization accounts for:
+
+1. **Library size differences** - some samples have more total reads
+2. **Composition bias** - a few highly expressed genes can "steal" reads from other genes
+
+```{r normalize}
+# Calculate normalization factors
+DGE <- calcNormFactors(DGE, method = "TMM")
+
+# Check normalization factors
+# Values close to 1 indicate little composition bias
+DGE$samples
+```
+
+::: {.callout-note}
+## TMM Normalization Factors
+- Factors close to 1.0: little correction needed
+- Factors <1: this sample has upward composition bias (effective library is smaller)
+- Factors >1: this sample has downward composition bias (effective library is larger)
+These factors are used internally by limma-voom; you don't manually apply them to counts.
+:::
+
+## Multidimensional Scaling (MDS) Plot
+
+MDS is similar to PCA and shows overall similarity between samples. Samples that are similar should cluster together.
+
+```{r mds-plot, fig.width=8, fig.height=6}
+# Calculate MDS
+mds <- plotMDS(DGE, top = 500, plot = FALSE, gene.selection = "common")
+
+# Create a data frame for ggplot
+mds_df <- data.frame(
+  sample = rownames(DGE$samples),
+  dim1 = mds$x,
+  dim2 = mds$y,
+  group = DGE$samples$group
+)
+
+# Create MDS plot
+ggplot(mds_df, aes(x = dim1, y = dim2, color = group, label = sample)) +
+  geom_point(size = 4, alpha = 0.8) +
+  geom_text_repel(size = 3, max.overlaps = 20) +
+  labs(title = "MDS Plot - Sample Similarity",
+       subtitle = "Based on top 500 most variable genes",
+       x = paste0("Leading logFC dim 1 (", round(mds$var.explained[1] * 100, 1), "%)"),
+       y = paste0("Leading logFC dim 2 (", round(mds$var.explained[2] * 100, 1), "%)")) +
+  theme_minimal() +
+  theme(legend.position = "right") +
+  scale_color_brewer(palette = "Set1")
+
+# Save the plot
+ggsave("figures/mds_plot.png", width = 8, height = 6, dpi = 300)
+```
+
+::: {.callout-important}
+## Interpreting the MDS Plot
+**Good signs:**
+- Samples from the same group cluster together
+- Clear separation between different conditions
+- No obvious outliers
+
+**Red flags:**
+- Outlier samples far from their group
+- No separation between conditions (weak signal)
+- Samples clustering by batch instead of biology
+:::
+
+## Sample Correlation Heatmap
+
+A complementary view showing pairwise sample correlations.
+
+```{r correlation-heatmap, fig.width=8, fig.height=7}
+# Get log-CPM values for visualization
+logcpm <- cpm(DGE, log = TRUE)
+
+# Calculate correlation matrix
+cor_matrix <- cor(logcpm, method = "spearman")
+
+# Create annotation for samples
+annotation_col <- data.frame(
+  Group = DGE$samples$group,
+  row.names = colnames(logcpm)
+)
+
+# Create heatmap
+pheatmap(cor_matrix,
+         annotation_col = annotation_col,
+         annotation_row = annotation_col,
+         main = "Sample Correlation Heatmap",
+         color = colorRampPalette(c("blue", "white", "red"))(100),
+         breaks = seq(0.7, 1, length.out = 101),
+         fontsize = 8,
+         filename = "figures/correlation_heatmap.png",
+         width = 8,
+         height = 7)
+
+# Also display in the document
+pheatmap(cor_matrix,
+         annotation_col = annotation_col,
+         annotation_row = annotation_col,
+         main = "Sample Correlation Heatmap",
+         color = colorRampPalette(c("blue", "white", "red"))(100),
+         breaks = seq(0.7, 1, length.out = 101),
+         fontsize = 8)
+```
+
+::: {.callout-tip}
+## Correlation Expectations
+- **Within-group correlation**: typically 0.95-0.99
+- **Between-group correlation**: depends on how different conditions are (0.85-0.98)
+- **Outliers**: samples with consistently lower correlations (<0.90) to all others
+:::
+
+# Part 3: Differential Expression - Simple Two-Group Design
+
+Let's start with a simple comparison: two conditions, like "treated vs. control" or "mutant vs. wildtype".
+
+## Create Design Matrix
+
+The design matrix tells limma which samples belong to which groups.
+
+```{r design-simple}
+# For this example, assume we have a 'treatment' factor with levels "control" and "treated"
+# Adjust this based on your actual experimental design
+
+# Make sure the factor levels are set correctly
+# The first level will be the reference (denominator in fold-change)
+DGE$samples$treatment <- factor(DGE$samples$treatment, 
+                                levels = c("control", "treated"))
+
+# Create design matrix
+design_simple <- model.matrix(~treatment, data = DGE$samples)
+
+# View the design matrix
+design_simple
+
+# Column names tell us what each coefficient represents
+colnames(design_simple)
+```
+
+::: {.callout-note}
+## Understanding the Design Matrix
+- **Intercept (column 1)**: Average expression in the reference group
+- **treatmenttreated (column 2)**: Difference between treated and control (log2 fold-change)
+
+If a gene has:
+- Positive coefficient: higher expression in treated
+- Negative coefficient: higher expression in control
+:::
+
+## Run limma-voom with Quality Weights
+
+The voom transformation:
+1. Converts counts to log2-CPM
+2. Estimates the mean-variance relationship
+3. Calculates precision weights for each observation
+
+Quality weights down-weight outlier samples.
+
+```{r voom-simple, fig.width=8, fig.height=5}
+# Run voom with quality weights
+# normalize.method = "none" because we already did TMM normalization
+vwts_simple <- voomWithQualityWeights(DGE, 
+                                      design = design_simple,
+                                      normalize.method = "none",
+                                      plot = TRUE)
+```
+
+::: {.callout-note}
+## Interpreting voom Plots
+**Left panel (mean-variance trend):**
+- Shows the relationship between average expression and variability
+- Red curve = the trend being modeled
+- At low expression: high variance (noisy)
+- At high expression: lower variance (reliable)
+
+**Right panel (sample weights):**
+- All samples should have weights close to 1.0
+- Weights <0.5 indicate problematic samples
+- Weights are used to down-weight outliers without excluding them
+:::
+
+## Fit Linear Model
+
+```{r fit-simple}
+# Fit linear model to each gene
+fit_simple <- lmFit(vwts_simple, design_simple)
+
+# Apply empirical Bayes moderation
+# This borrows information across genes to improve variance estimates
+fit_simple <- eBayes(fit_simple, robust = TRUE)
+
+# Quick summary of DE genes at FDR < 0.05
+summary(decideTests(fit_simple, adjust.method = "fdr", p.value = 0.05))
+```
+
+::: {.callout-tip}
+## Understanding decideTests Output
+- **Down**: Genes significantly downregulated in treated vs. control (negative logFC)
+- **NotSig**: Genes not significantly different
+- **Up**: Genes significantly upregulated in treated vs. control (positive logFC)
+:::
+
+## Extract Top Results
+
+```{r top-results}
+# Get the top differentially expressed genes
+# coef = 2 refers to the treatment effect (second column of design matrix)
+top_genes <- topTable(fit_simple, 
+                      coef = 2,
+                      adjust.method = "BH",
+                      number = 20,
+                      sort.by = "P")
+
+# Display top genes
+top_genes
+```
+
+## Volcano Plot
+
+A volcano plot shows log-fold change vs. statistical significance.
+
+```{r volcano-simple, fig.width=8, fig.height=6}
+# Extract all results
+all_results <- topTable(fit_simple, 
+                        coef = 2,
+                        adjust.method = "BH",
+                        number = Inf,
+                        sort.by = "none")
+
+# Add significance categories
+all_results$significant <- case_when(
+  all_results$adj.P.Val < 0.05 & all_results$logFC > 1 ~ "Up",
+  all_results$adj.P.Val < 0.05 & all_results$logFC < -1 ~ "Down",
+  all_results$adj.P.Val < 0.05 ~ "Significant",
+  TRUE ~ "Not Significant"
+)
+
+# Create volcano plot
+ggplot(all_results, aes(x = logFC, y = -log10(P.Value), color = significant)) +
+  geom_point(alpha = 0.5, size = 1) +
+  scale_color_manual(values = c("Up" = "red", 
+                                "Down" = "blue", 
+                                "Significant" = "orange",
+                                "Not Significant" = "grey")) +
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed", alpha = 0.5) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", alpha = 0.5) +
+  labs(title = "Volcano Plot: Treated vs. Control",
+       x = "Log2 Fold Change",
+       y = "-Log10 P-value",
+       color = "Significance") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+ggsave("figures/volcano_plot_simple.png", width = 8, height = 6, dpi = 300)
+```
+
+## MA Plot
+
+An MA plot shows log-fold change vs. average expression.
+
+```{r ma-plot, fig.width=8, fig.height=6}
+# Create MA plot
+ggplot(all_results, aes(x = AveExpr, y = logFC, color = significant)) +
+  geom_point(alpha = 0.5, size = 1) +
+  scale_color_manual(values = c("Up" = "red", 
+                                "Down" = "blue", 
+                                "Significant" = "orange",
+                                "Not Significant" = "grey")) +
+  geom_hline(yintercept = 0, linetype = "solid", alpha = 0.5) +
+  labs(title = "MA Plot: Treated vs. Control",
+       x = "Average Expression (log2-CPM)",
+       y = "Log2 Fold Change",
+       color = "Significance") +
+  theme_minimal()
+
+ggsave("figures/ma_plot_simple.png", width = 8, height = 6, dpi = 300)
+```
+
+# Part 4: Complex Design - Two-Factor Analysis
+
+Now let's extend to a more complex design. Suppose we have two factors:
+- **Treatment**: control vs. treated
+- **Genotype**: wildtype vs. mutant
+
+We want to understand:
+1. Main effect of treatment (across both genotypes)
+2. Main effect of genotype (across both treatments)
+3. Interaction: does the treatment effect depend on genotype?
+
+## Create Two-Factor Design Matrix
+
+```{r design-complex}
+# Define factors with explicit levels
+# Adjust these based on your actual experimental design
+DGE$samples$genotype <- factor(DGE$samples$genotype, 
+                               levels = c("wildtype", "mutant"))
+DGE$samples$treatment <- factor(DGE$samples$treatment, 
+                                levels = c("control", "treated"))
+
+# Create two-factor design matrix
+design_2factor <- model.matrix(~genotype + treatment, data = DGE$samples)
+
+# View the design
+design_2factor
+colnames(design_2factor)
+```
+
+::: {.callout-note}
+## Two-Factor Model Coefficients
+- **Intercept**: Expression in wildtype + control (reference combination)
+- **genotypemutant**: Effect of mutant vs. wildtype (averaged across treatments)
+- **treatmenttreated**: Effect of treated vs. control (averaged across genotypes)
+
+This is an **additive model** - it assumes the treatment effect is the same in both genotypes.
+:::
+
+## Fit Two-Factor Model
+
+```{r voom-2factor, fig.width=8, fig.height=5}
+# Run voom with quality weights for 2-factor design
+vwts_2factor <- voomWithQualityWeights(DGE, 
+                                       design = design_2factor,
+                                       normalize.method = "none",
+                                       plot = TRUE)
+
+# Fit model
+fit_2factor <- lmFit(vwts_2factor, design_2factor)
+fit_2factor <- eBayes(fit_2factor, robust = TRUE)
+
+# Summary
+summary(decideTests(fit_2factor, adjust.method = "fdr", p.value = 0.05))
+```
+
+## Extract Results for Each Coefficient
+
+```{r results-2factor}
+# Treatment effect (main effect)
+treatment_results <- topTable(fit_2factor, 
+                              coef = "treatmenttreated",
+                              adjust.method = "BH",
+                              number = Inf)
+
+cat("Number of genes DE for treatment:", 
+    sum(treatment_results$adj.P.Val < 0.05), "\n")
+
+# Genotype effect (main effect)
+genotype_results <- topTable(fit_2factor, 
+                             coef = "genotypemutant",
+                             adjust.method = "BH",
+                             number = Inf)
+
+cat("Number of genes DE for genotype:", 
+    sum(genotype_results$adj.P.Val < 0.05), "\n")
+```
+
+# Part 5: Advanced - Interaction Model and Contrasts
+
+For more flexibility, we can use an **interaction model** and **contrasts** to test specific hypotheses.
+
+## Create Interaction Design
+
+```{r design-interaction}
+# Create a combined factor for all group combinations
+DGE$samples$group_combined <- factor(
+  paste(DGE$samples$genotype, DGE$samples$treatment, sep = "_"),
+  levels = c("wildtype_control", "wildtype_treated", 
+             "mutant_control", "mutant_treated")
+)
+
+# Create design with no intercept (each group gets its own coefficient)
+design_interaction <- model.matrix(~0 + group_combined, data = DGE$samples)
+
+# Clean up column names
+colnames(design_interaction) <- levels(DGE$samples$group_combined)
+
+design_interaction
+```
+
+## Define Contrasts
+
+Contrasts let us test specific biological questions:
+
+```{r contrasts}
+# Define contrasts of interest
+cont.matrix <- makeContrasts(
+  # Treatment effect in wildtype
+  WT_TrtEffect = wildtype_treated - wildtype_control,
+  
+  # Treatment effect in mutant
+  Mut_TrtEffect = mutant_treated - mutant_control,
+  
+  # Interaction: is treatment effect different between genotypes?
+  Interaction = (mutant_treated - mutant_control) - 
+                (wildtype_treated - wildtype_control),
+  
+  # Genotype effect in control
+  Ctrl_GenoEffect = mutant_control - wildtype_control,
+  
+  # Genotype effect in treated
+  Trt_GenoEffect = mutant_treated - wildtype_treated,
+  
+  levels = design_interaction
+)
+
+cont.matrix
+```
+
+## Fit Contrast Model
+
+```{r fit-contrasts, fig.width=8, fig.height=5}
+# Run voom
+vwts_contrast <- voomWithQualityWeights(DGE, 
+                                        design = design_interaction,
+                                        normalize.method = "none",
+                                        plot = TRUE)
+
+# Fit model
+fit_contrast <- lmFit(vwts_contrast, design_interaction)
+
+# Apply contrasts
+fit_contrast <- contrasts.fit(fit_contrast, cont.matrix)
+
+# Empirical Bayes
+fit_contrast <- eBayes(fit_contrast, robust = TRUE)
+
+# Summary across all contrasts
+summary(decideTests(fit_contrast, adjust.method = "fdr", p.value = 0.05))
+```
+
+## Visualize Contrast Results
+
+```{r venn-diagram, fig.width=7, fig.height=7}
+# Venn diagram showing overlap between contrasts
+contrast_sig <- decideTests(fit_contrast, adjust.method = "fdr", p.value = 0.05)
+
+# Focus on treatment effects in each genotype
+vennDiagram(contrast_sig[, c("WT_TrtEffect", "Mut_TrtEffect")],
+            circle.col = c("blue", "red"),
+            main = "Overlap of Treatment Effects")
+```
+
+## Extract Genes with Specific Patterns
+
+```{r pattern-extraction}
+# Get full results for treatment effects
+wt_trt <- topTable(fit_contrast, coef = "WT_TrtEffect", 
+                   number = Inf, adjust.method = "BH")
+mut_trt <- topTable(fit_contrast, coef = "Mut_TrtEffect", 
+                    number = Inf, adjust.method = "BH")
+interaction <- topTable(fit_contrast, coef = "Interaction", 
+                       number = Inf, adjust.method = "BH")
+
+# Merge results
+all_contrasts <- data.frame(
+  gene = rownames(wt_trt),
+  WT_logFC = wt_trt$logFC,
+  WT_pval = wt_trt$adj.P.Val,
+  Mut_logFC = mut_trt$logFC,
+  Mut_pval = mut_trt$adj.P.Val,
+  Int_pval = interaction$adj.P.Val
+)
+
+# Find genes with treatment effect in BOTH genotypes (no interaction)
+parallel_response <- all_contrasts %>%
+  filter(WT_pval < 0.05 & Mut_pval < 0.05) %>%
+  filter(Int_pval > 0.05) %>%
+  filter(sign(WT_logFC) == sign(Mut_logFC))
+
+cat("Genes with parallel response to treatment:", nrow(parallel_response), "\n")
+head(parallel_response)
+
+# Find genes with treatment effect ONLY in mutant (significant interaction)
+mutant_specific <- all_contrasts %>%
+  filter(Mut_pval < 0.05) %>%
+  filter(WT_pval > 0.05) %>%
+  filter(Int_pval < 0.05)
+
+cat("\nGenes with mutant-specific treatment response:", nrow(mutant_specific), "\n")
+head(mutant_specific)
+```
+
+# Part 6: Visualization and Export
+
+## Heatmap of Top DE Genes
+
+```{r heatmap-top-genes, fig.width=8, fig.height=10}
+# Get top 50 genes from simple treatment comparison
+top50_genes <- rownames(topTable(fit_simple, coef = 2, number = 50))
+
+# Extract log-CPM values for these genes
+top50_logcpm <- cpm(DGE[top50_genes, ], log = TRUE)
+
+# Z-score normalize for better visualization
+top50_scaled <- t(scale(t(top50_logcpm)))
+
+# Create annotation
+annotation_col <- data.frame(
+  Treatment = DGE$samples$treatment,
+  row.names = colnames(top50_logcpm)
+)
+
+# Create heatmap
+pheatmap(top50_scaled,
+         annotation_col = annotation_col,
+         scale = "none",
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         show_rownames = TRUE,
+         show_colnames = TRUE,
+         main = "Top 50 DE Genes (Treatment Effect)",
+         fontsize_row = 6,
+         fontsize_col = 8,
+         color = colorRampPalette(c("blue", "white", "red"))(100))
+
+# Save
+pheatmap(top50_scaled,
+         annotation_col = annotation_col,
+         scale = "none",
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         show_rownames = TRUE,
+         show_colnames = TRUE,
+         main = "Top 50 DE Genes (Treatment Effect)",
+         fontsize_row = 6,
+         fontsize_col = 8,
+         color = colorRampPalette(c("blue", "white", "red"))(100),
+         filename = "figures/heatmap_top50.png",
+         width = 8,
+         height = 10)
+```
+
+## Export Results Tables
+
+```{r export-results}
+# Create output directory
+if (!dir.exists("results")) {
+  dir.create("results")
+}
+
+# Export simple design results
+write.csv(all_results, 
+          file = "results/simple_design_all_genes.csv",
+          row.names = TRUE)
+
+# Export top DE genes
+write.csv(top_genes,
+          file = "results/simple_design_top20.csv",
+          row.names = TRUE)
+
+# Export contrast results
+write.csv(all_contrasts,
+          file = "results/contrast_results_merged.csv",
+          row.names = FALSE)
+
+# Export parallel response genes
+write.csv(parallel_response,
+          file = "results/parallel_response_genes.csv",
+          row.names = FALSE)
+
+cat("Results exported to 'results/' directory\n")
+```
+
+# Summary and Key Takeaways
+
+## What We Covered
+
+1. **Data Loading**: RSEM counts from nf-core pipeline
+2. **Quality Control**: Library sizes, MDS plots, sample correlations
+3. **Filtering & Normalization**: Removing low counts, TMM normalization
+4. **Simple Design**: Two-group comparison with limma-voom
+5. **Complex Design**: Two-factor model with main effects
+6. **Advanced Contrasts**: Interaction model for specific biological questions
+7. **Visualization**: Volcano plots, MA plots, heatmaps
+
+## Key Concepts to Remember
+
+::: {.callout-important}
+## Critical Points
+
+1. **Filter before normalizing** - remove genes with insufficient counts
+2. **TMM normalization** handles library size and composition bias
+3. **voom transformation** converts counts to log-scale with precision weights
+4. **Quality weights** handle outlier samples without removing them
+5. **Design matrix** defines what you're testing
+6. **Contrasts** let you ask specific biological questions
+7. **Multiple testing correction** (FDR/BH) is essential
+8. **LogFC and p-value together** tell the full story (effect size + significance)
+:::
+
+## Next Steps
+
+- **Gene Set Enrichment Analysis**: Are DE genes enriched for specific pathways/functions?
+- **Validation**: qRT-PCR or additional experiments to confirm key findings
+- **Biological Interpretation**: Connect results back to your biological question
+- **Reproducibility**: Document your analysis, save your code, version control!
+
+## Resources
+
+- [limma User's Guide](https://bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf)
+- [edgeR User's Guide](https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf)
+- [RNA-seq analysis in R (Harvard Chan Bioinformatics Core)](https://hbctraining.github.io/DGE_workshop/)
+- UF Research Computing: [https://www.rc.ufl.edu/](https://www.rc.ufl.edu/)
+
+---
+
+## Session Information
+
+```{r sessioninfo}
+sessionInfo()
+```
