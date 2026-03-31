@@ -10,13 +10,12 @@ theme:
 
 nav:
   - Home: index.md
-  - Command Line Basics: 01_command-line-basics/README.md
-  - HiPerGator Basics: 02_hipergator-basics/README.md
+  - Command Line Basics: 01_command-line-basics/command-line-basics.md
+  - HiPerGator Basics: 02_hipergator-basics/hipergator-basics.md
   - Preprocessing:
     - Quantification Review: 03_preprocessing/quantification-review.md
     - nf-core/rnaseq Workflow: 03_preprocessing/nfcore-workflow.md
   - Differential Expression:
     - Overview & Background: 04_differential-expression/overview.md
-    - Workshop Notebook: 04_differential-expression/notebook.md
-  - Pathway Analysis: 05_pathway-analysis/README.md
-  - Visualization: 06_visualization/README.md
+  - Pathway Analysis: 05_pathway-analysis/pathway-analysis.md
+  - Visualization: 06_visualization/visualization.md
