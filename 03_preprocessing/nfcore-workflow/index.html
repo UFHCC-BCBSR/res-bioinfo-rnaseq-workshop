@@ -1,0 +1,866 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../quantification-review/">
+      
+      
+        <link rel="next" href="../../04_differential-expression/overview/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+    
+    
+      
+        <title>nf-core/rnaseq Workflow - UF RNA-seq Workshop</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#quantifying-expression-best-practice-using-the-nf-corernaseq-workflow" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="UF RNA-seq Workshop" class="md-header__button md-logo" aria-label="UF RNA-seq Workshop" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            UF RNA-seq Workshop
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              nf-core/rnaseq Workflow
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="UF RNA-seq Workshop" class="md-nav__button md-logo" aria-label="UF RNA-seq Workshop" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    UF RNA-seq Workshop
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01_command-line-basics/command-line-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Line Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02_hipergator-basics/hipergator-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HiPerGator Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quantification-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quantification Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nf-core/rnaseq Workflow
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nf-core/rnaseq Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#the-nf-core-sample-sheet-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The nf-core Sample Sheet Format
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-gtfgff-genome-annotation-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The gtf/gff Genome Annotation File
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-config-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Config File
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#executing-the-nf-core-rna-seq-workflow" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Executing the nf-core RNA-seq Workflow
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-output" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The Output
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Differential Expression
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Differential Expression
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../04_differential-expression/overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview & Background
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05_pathway-analysis/pathway-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pathway Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06_visualization/visualization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="quantifying-expression-best-practice-using-the-nf-corernaseq-workflow">Quantifying Expression: Best Practice Using the <em>nf-core/rnaseq</em> Workflow</h1>
+<p>In order to obtain a comprehensive set of quality control metrics on our fastq files, while also obtaining gene and isoform-level count matrices, we use nf-core's RNA-seq pipeline. nf-core is a collection of <em>Nextflow</em> workflows for automating analyses of high-dimensional biological data. Nextflow is a workflow language that can be used to chain together multi-step data analysis workflows, which can easily be adapted for running on high performance computing environments such as UF's HiPerGator cluster. We specifically use the "STAR-RSEM" option, which performs spliced alignment to the genome with <em>STAR</em> and expression quantification with <em>RSEM</em>.</p>
+<p>The workflow requires as input a specifically formatted sample sheet, a genome fasta, and either a gtf or a gff annotation file.</p>
+<p>In order to run the workflow you will need:</p>
+<ul>
+<li>A sample sheet in the nf-core format</li>
+<li>A gtf/gff genome annotation file</li>
+<li>A genome fasta file</li>
+<li>A config file with HPC-specific settings</li>
+</ul>
+<h2 id="the-nf-core-sample-sheet-format">The nf-core Sample Sheet Format</h2>
+<p>The sample sheet must be in comma-separated format with specific column headers:</p>
+<pre><code>sample,fastq_1,fastq_2,strandedness
+sample1,fastq/sample1_R1_fastq.gz,fastq/sample1_R2_fastq.gz,auto
+sample2,fastq/sample2_R1_fastq.gz,fastq/sample2_R2_fastq.gz,auto
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><strong>Column</strong></th>
+<th><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>sample</td>
+<td>The sample ID, used as the column header in the count matrix</td>
+</tr>
+<tr>
+<td>fastq_1</td>
+<td>The path to the R1 fastq file for the sample</td>
+</tr>
+<tr>
+<td>fastq_2</td>
+<td>The path to the R2 fastq file for the sample</td>
+</tr>
+<tr>
+<td>strandedness</td>
+<td>The strandedness of the library: "auto", "forward", "reverse", or "unstranded"</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>We do not recommend using single-end data for expression analysis.</strong>
+More robust expression estimates can be obtained with short paired-end reads that are effectively the same cost per base as traditional single-end layouts. See: Freedman et al. 2020, BMC Bioinformatics.</p>
+</blockquote>
+<p>Locations of R1 and R2 can be paths relative to the launch location or absolute paths. Fastq files should be gzipped. If a sample ID occurs in more than one row, the workflow assumes these are separate sequencing runs of the same sample and aggregates counts across rows.</p>
+<p>While strand configuration can be manually specified, we prefer to use the auto-detect function, which will also account for cases where strandedness is unknown, mistakenly specified, or inconsistent.</p>
+<h2 id="the-gtfgff-genome-annotation-file">The gtf/gff Genome Annotation File</h2>
+<p>The nf-core ecosystem was built to work optimally with annotation files from Ensembl, though it will generally work with NCBI annotation files. For both sources, gtf versions are preferred.</p>
+<p>For NCBI annotations, the workflow will occasionally fail because some features lack a value for <em>gene_id</em> in the attributes column of the gtf. A typical error message of this type looks like:</p>
+<pre><code>ERROR: failed to find the gene identifier attribute in the 9th column of the provided GTF file.
+</code></pre>
+<p>We use the additional argument <code>--skip_biotype_qc</code> in our workflow to skip a biotype-based expression QC metric that can cause warnings or failures with NCBI files.</p>
+<h2 id="the-config-file">The Config File</h2>
+<p>A config file specifies the computational resources allocated for workflow jobs. To use HPC resources, specify the executor and partition names at the beginning of the <code>process</code> block. In the case of HiPerGator, on which jobs are scheduled by SLURM:</p>
+<pre><code>process {
+    executor = 'slurm'
+    cpus   = { 1      * task.attempt }
+    memory = { 6.GB   * task.attempt }
+    time   = { 4.h    * task.attempt }
+    queue  = 'hpg-default'
+</code></pre>
+<h2 id="executing-the-nf-core-rna-seq-workflow">Executing the nf-core RNA-seq Workflow</h2>
+<p>We recommend submitting the nextflow pipeline as a SLURM job on a compute node:</p>
+<pre><code class="language-bash">#SBATCH -J nfcorerna
+#SBATCH -N 1
+#SBATCH -c 1
+#SBATCH -t 23:00:00
+#SBATCH -p hpg-default
+#SBATCH --mem=12000
+#SBATCH -e nf-core_star_rsem_%A.err
+#SBATCH -o nf-core_star_rsem_%A.out
+
+module load nextflow
+nextflow run nf-core/rnaseq \
+    --input nfcore_samplesheet.csv \
+    --outdir $(pwd)/star_rsem \
+    --skip_biotype_qc \
+    --gtf genome/mygenome.gtf \
+    --fasta genome/mygenome.fna.gz \
+    --aligner star_rsem \
+    -profile singularity \
+    --save_reference \
+    -c rnaseq_cluster.config
+</code></pre>
+<table>
+<thead>
+<tr>
+<th><strong>Option</strong></th>
+<th><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--input</code></td>
+<td>Path to the sample sheet in nf-core format</td>
+</tr>
+<tr>
+<td><code>--outdir</code></td>
+<td>Path to the output directory</td>
+</tr>
+<tr>
+<td><code>--skip_biotype_qc</code></td>
+<td>Skip biotype-based QC; necessary for NCBI gff/gtf files</td>
+</tr>
+<tr>
+<td><code>--gtf</code></td>
+<td>Path to genome annotation file in gtf format; must be <strong>uncompressed</strong></td>
+</tr>
+<tr>
+<td><code>--fasta</code></td>
+<td>Path to genome fasta file; must be <strong>gzipped</strong></td>
+</tr>
+<tr>
+<td><code>--aligner</code></td>
+<td>Aligner to use; in this case <em>star_rsem</em></td>
+</tr>
+<tr>
+<td><code>-profile</code></td>
+<td>Profile to use; in this case <em>singularity</em></td>
+</tr>
+<tr>
+<td><code>--save_reference</code></td>
+<td>Save reference genome and annotation files to the output directory</td>
+</tr>
+<tr>
+<td><code>-c</code></td>
+<td>Path to the config file with HPC-specific settings</td>
+</tr>
+</tbody>
+</table>
+<p>Key notes:</p>
+<ul>
+<li>Launching nf-core/rnaseq automatically downloads the workflow and installs all dependencies.</li>
+<li>The genome needs to be gzipped.</li>
+<li>The annotation file should be uncompressed. If using a gff file, replace <code>--gtf</code> with <code>--gff</code>.</li>
+</ul>
+<h2 id="the-output">The Output</h2>
+<p>The output of this workflow includes:</p>
+<ul>
+<li>The <em>star_rsem</em> directory, containing:<ul>
+<li>bam files from STAR alignment for each sample</li>
+<li>Gene and transcript count tables in tsv format</li>
+<li><em>rsem.merged.gene_counts.tsv</em> and <em>rsem.merged.transcript_counts.tsv</em>, the estimated raw counts in matrix form</li>
+</ul>
+</li>
+<li>The <em>multiqc/star_rsem</em> directory, containing <em>multiqc_report.html</em>, an html report compiling all sample-level quality metrics.</li>
+</ul>
+<p>We are now ready to perform differential expression analysis in R.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>

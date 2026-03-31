@@ -1,0 +1,896 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="../../03_preprocessing/nfcore-workflow/">
+      
+      
+        <link rel="next" href="../../05_pathway-analysis/pathway-analysis/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+    
+    
+      
+        <title>Overview & Background - UF RNA-seq Workshop</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="blue" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#differential-expression-analysis-overview-background" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="UF RNA-seq Workshop" class="md-header__button md-logo" aria-label="UF RNA-seq Workshop" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            UF RNA-seq Workshop
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Overview & Background
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="UF RNA-seq Workshop" class="md-nav__button md-logo" aria-label="UF RNA-seq Workshop" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    UF RNA-seq Workshop
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01_command-line-basics/command-line-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Line Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02_hipergator-basics/hipergator-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HiPerGator Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03_preprocessing/quantification-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quantification Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03_preprocessing/nfcore-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nf-core/rnaseq Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Differential Expression
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Differential Expression
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview & Background
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview & Background
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-differential-expression-analysis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is Differential Expression Analysis?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#example-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Example Data
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-limma-voom-framework" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The limma-voom Framework
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#design-matrices" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Design Matrices
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#empirical-bayes-moderation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Empirical Bayes Moderation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sample-quality-weights" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Sample Quality Weights
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#multiple-testing-correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multiple Testing Correction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05_pathway-analysis/pathway-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pathway Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06_visualization/visualization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="differential-expression-analysis-overview-background">Differential Expression Analysis: Overview &amp; Background</h1>
+<p>This section provides background on the statistical framework underlying differential expression analysis with <em>limma</em>. If you are already familiar with these concepts, you can skip directly to the <a href="notebook.md">Workshop Notebook</a>.</p>
+<h2 id="what-is-differential-expression-analysis">What is Differential Expression Analysis?</h2>
+<p>Differential expression (DE) analysis is a statistical approach to identifying genes or isoforms that show different levels of expression between a set of conditions or treatments of interest. The null hypothesis being tested is that expression of individual genes does not vary between conditions.</p>
+<h2 id="example-data">Example Data</h2>
+<p>Our sample data comprises 12 paired-end RNA-seq libraries for whole body samples of <em>Drosophila melanogaster</em> from two geographic regions (Panama and Maine), with two temperature treatments ("low" and "high") for each region, featuring three biological replicates for each region × treatment combination. Previously, these data were used to look for parallel gene expression patterns between high and low latitude populations (Zhao et al, 2015, <em>PLoS Genetics</em>).</p>
+<p>For this tutorial we focus on gene-level patterns of differential expression, using the count data in <code>rsem.merged.gene_counts.tsv</code>. The column headers include "gene_id" and "gene_name" for the first two columns, and the sample names for the remaining columns.</p>
+<p>Our example sample sheet is called <code>dme_elev_samples.tsv</code>:</p>
+<table>
+<thead>
+<tr>
+<th><strong>sample</strong></th>
+<th><strong>population</strong></th>
+<th><strong>temp</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SRR1576457</td>
+<td>maine</td>
+<td>low</td>
+</tr>
+<tr>
+<td>SRR1576458</td>
+<td>maine</td>
+<td>low</td>
+</tr>
+<tr>
+<td>SRR1576459</td>
+<td>maine</td>
+<td>low</td>
+</tr>
+<tr>
+<td>SRR1576460</td>
+<td>maine</td>
+<td>high</td>
+</tr>
+<tr>
+<td>SRR1576461</td>
+<td>maine</td>
+<td>high</td>
+</tr>
+<tr>
+<td>SRR1576462</td>
+<td>maine</td>
+<td>high</td>
+</tr>
+<tr>
+<td>SRR1576463</td>
+<td>panama</td>
+<td>low</td>
+</tr>
+<tr>
+<td>SRR1576464</td>
+<td>panama</td>
+<td>low</td>
+</tr>
+<tr>
+<td>SRR1576465</td>
+<td>panama</td>
+<td>low</td>
+</tr>
+<tr>
+<td>SRR1576514</td>
+<td>panama</td>
+<td>high</td>
+</tr>
+<tr>
+<td>SRR1576515</td>
+<td>panama</td>
+<td>high</td>
+</tr>
+<tr>
+<td>SRR1576516</td>
+<td>panama</td>
+<td>high</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-limma-voom-framework">The limma-voom Framework</h2>
+<p>This tutorial performs differential expression analysis with the <code>limma</code> package in R, using the voom transformation. The key steps are:</p>
+<ol>
+<li><strong>Filtering</strong> out lowly expressed genes to reduce noise and improve statistical power</li>
+<li><strong>TMM normalization</strong> to account for library size differences and composition bias</li>
+<li><strong>voom transformation</strong> to convert counts to log-CPM with precision weights</li>
+<li><strong>Linear model fitting</strong> to estimate fold changes and standard errors</li>
+<li><strong>Empirical Bayes moderation</strong> to improve variance estimates by borrowing information across genes</li>
+<li><strong>Multiple testing correction</strong> using the Benjamini-Hochberg FDR procedure</li>
+</ol>
+<h2 id="design-matrices">Design Matrices</h2>
+<p>At the heart of linear modeling are design matrices that specify the experimental factors and their levels. A design matrix encodes which samples belong to which groups, and limma uses it to fit linear models and test hypotheses about the coefficients of those models.</p>
+<p>For a simple one-factor experiment with two temperature treatments, the design matrix looks like this:</p>
+<table>
+<thead>
+<tr>
+<th><strong>row</strong></th>
+<th><strong>(Intercept)</strong></th>
+<th><strong>templow</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>3</td>
+<td>1</td>
+<td>1</td>
+</tr>
+<tr>
+<td>4</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>5</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>6</td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>The intercept estimates baseline expression in the reference condition (high temperature), and the <em>templow</em> coefficient estimates the difference in expression between low and high temperature.</p>
+<h2 id="empirical-bayes-moderation">Empirical Bayes Moderation</h2>
+<p>Given the typically small number of biological replicates in bulk RNA-seq experiments, gene-wise variance estimates will be noisy. <code>eBayes</code> addresses this by "shrinking" gene-wise variances towards the fitted mean-variance curve — genes whose dispersion is further from the fitted line are shrunk more, those closer are shrunk less. This produces more robust tests for differential expression.</p>
+<h2 id="sample-quality-weights">Sample Quality Weights</h2>
+<p>Rather than discarding outlier samples — which is often not feasible with small numbers of replicates — limma can assign empirical quality weights to samples, down-weighting those that exhibit outlier-like behavior. This is done with <code>voomWithQualityWeights</code> and is generally preferred over the standard <code>voom</code> function.</p>
+<h2 id="multiple-testing-correction">Multiple Testing Correction</h2>
+<p>Because we are simultaneously testing thousands of genes, we must correct for multiple testing. We use the Benjamini-Hochberg procedure, which controls the false discovery rate (FDR). A gene is considered differentially expressed if its adjusted p-value (q-value) is below a threshold, typically 0.05.</p>
+<h2 id="further-reading">Further Reading</h2>
+<ul>
+<li><a href="https://bioconductor.org/packages/release/bioc/vignettes/limma/inst/doc/usersguide.pdf">limma User's Guide</a></li>
+<li><a href="https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeRUsersGuide.pdf">edgeR User's Guide</a></li>
+<li>Ritchie et al. 2015, <em>Nucleic Acids Research</em> — the limma paper</li>
+<li>Robinson and Oshlack 2010, <em>Genome Biology</em> — the TMM normalization paper</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
