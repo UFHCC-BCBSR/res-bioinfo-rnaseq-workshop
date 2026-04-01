@@ -1,6 +1,6 @@
 # Differential Expression Analysis: Overview & Background
 
-This section provides background on the statistical framework underlying differential expression analysis with *limma*. If you are already familiar with these concepts, you can skip directly to the [Workshop Notebook](https://github.com/ufhcc-bcbsr/res-bioinfo-rnaseq-workshop/blob/main/materials/04_differential-expression/rnaseq_workshop_session2.qmd).
+This section provides background on the statistical framework underlying differential expression analysis with *limma*. If you are already familiar with these concepts, you can skip directly to the [Workshop Notebook](https://github.com/ufhcc-bcbsr/res-bioinfo-rnaseq-workshop/blob/main/demo-analysis/04_differential-expression/rnaseq_workshop_session2.qmd).
 
 ## What is Differential Expression Analysis?
 
