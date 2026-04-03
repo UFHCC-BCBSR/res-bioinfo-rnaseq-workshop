@@ -71,6 +71,11 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
+        
+        <a href="#hipergator-basics" class="md-skip">
+          Skip to content
+        </a>
+      
     </div>
     <div data-md-component="announce">
       
@@ -261,6 +266,26 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HiPerGator Basics
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
       
       <a href="./" class="md-nav__link md-nav__link--active">
         
@@ -278,6 +303,141 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#logging-in" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging In
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-hipergator-filesystem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The HiPerGator Filesystem
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#open-ondemand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Open OnDemand
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#loading-software-with-modules" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Loading Software with Modules
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#writing-and-submitting-slurm-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Writing and Submitting SLURM Jobs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Writing and Submitting SLURM Jobs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#anatomy-of-a-slurm-script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Anatomy of a SLURM Script
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#submitting-a-job" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Submitting a Job
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#key-slurm-resource-flags" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Key SLURM Resource Flags
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monitoring-jobs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monitoring Jobs
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checking-job-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Checking Job Logs
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -556,9 +716,169 @@
 
 
 
-  <h1>HiPerGator Basics</h1>
+<h1 id="hipergator-basics">HiPerGator Basics</h1>
+<p>HiPerGator is the University of Florida's high-performance computing (HPC) cluster, managed by UF Research Computing. It gives you access to far more computational power than a personal computer, which is essential for steps like running the nf-core/rnaseq pipeline. This section covers everything you need to know to get started on HiPerGator for this workshop.</p>
+<p>For more comprehensive documentation, see the <a href="https://docs.rc.ufl.edu/">UF Research Computing docs</a>.</p>
+<h2 id="logging-in">Logging In</h2>
+<p>You connect to HiPerGator via SSH from your terminal. If you haven't set up your terminal yet, see the <a href="../../01_command-line-basics/command-line-basics/">Command Line Basics</a> section.</p>
+<pre><code>$ ssh username@hpg.rc.ufl.edu
+</code></pre>
+<p>Replace <code>username</code> with your GatorLink username. You will be prompted for your password and then a Duo two-factor authentication push. After authenticating you will land on a <strong>login node</strong>, which looks like this:</p>
+<pre><code>[username@login1 ~]$
+</code></pre>
+<blockquote>
+<p><strong>Important:</strong> Login nodes are shared resources for everyone on the cluster. Do not run computationally intensive work on login nodes — this is against HiPerGator policy and can result in account suspension. All real work should be submitted as SLURM jobs.</p>
+</blockquote>
+<h2 id="the-hipergator-filesystem">The HiPerGator Filesystem</h2>
+<p>HiPerGator has three main storage locations, each with a different purpose:</p>
+<table>
+<thead>
+<tr>
+<th><strong>Location</strong></th>
+<th><strong>Path</strong></th>
+<th><strong>Quota</strong></th>
+<th><strong>Use for</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Home</td>
+<td><code>/home/username</code></td>
+<td>40 GB</td>
+<td>Scripts, configuration files, important small files</td>
+</tr>
+<tr>
+<td>Blue</td>
+<td><code>/blue/group/username</code></td>
+<td>Varies</td>
+<td>All active research work and data</td>
+</tr>
+<tr>
+<td>Orange</td>
+<td><code>/orange/group/username</code></td>
+<td>Varies</td>
+<td>Long-term archival storage</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>Always run your analyses from <code>/blue</code></strong>. It is a high-performance storage system designed to handle the input/output demands of HPC workloads. <code>/home</code> and <code>/orange</code> are not suitable for running analyses.</p>
+</blockquote>
+<p>For this workshop, your working directory will be:</p>
+<pre><code>/blue/[training-group]/username
+</code></pre>
+<p>To navigate there:</p>
+<pre><code>$ cd /blue/[training-group]/username
+</code></pre>
+<p>You can check your storage quotas with:</p>
+<pre><code>$ home_quota
+$ blue_quota
+$ orange_quota
+</code></pre>
+<h2 id="open-ondemand">Open OnDemand</h2>
+<p>Open OnDemand (OOD) is a web interface for HiPerGator available at <a href="https://ood.rc.ufl.edu">https://ood.rc.ufl.edu</a>. It provides:</p>
+<ul>
+<li><strong>Files</strong>: A graphical file browser for navigating, uploading, downloading, and editing files on HiPerGator</li>
+<li><strong>Jobs</strong>: A dashboard for monitoring your running, pending, and recently completed jobs</li>
+<li><strong>Clusters</strong>: A terminal window in your browser if you prefer not to use SSH</li>
+</ul>
+<p>For this workshop, OOD is particularly useful for uploading input files and downloading results to your local computer without needing to use <code>scp</code> on the command line.</p>
+<h2 id="loading-software-with-modules">Loading Software with Modules</h2>
+<p>HiPerGator uses a module system to manage software. Software is not available by default — you need to load it first. To search for available software:</p>
+<pre><code>$ module spider nextflow
+</code></pre>
+<p>To load a module:</p>
+<pre><code>$ module load nextflow
+</code></pre>
+<p>To see what modules you currently have loaded:</p>
+<pre><code>$ module list
+</code></pre>
+<p>To unload a module:</p>
+<pre><code>$ module unload nextflow
+</code></pre>
+<p>Some software requires loading a prerequisite module first. <code>module spider</code> will tell you if this is the case and what to load.</p>
+<h2 id="writing-and-submitting-slurm-jobs">Writing and Submitting SLURM Jobs</h2>
+<p>HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly, you write a job script that specifies the resources you need and the commands to run, and submit it to the scheduler with <code>sbatch</code>.</p>
+<h3 id="anatomy-of-a-slurm-script">Anatomy of a SLURM Script</h3>
+<p>A SLURM script is a bash script with a header of <code>#SBATCH</code> directives that tell the scheduler what resources to allocate:</p>
+<pre><code class="language-bash">#!/bin/bash
+#SBATCH --job-name=my_job           # job name
+#SBATCH --nodes=1                   # number of nodes
+#SBATCH --ntasks=1                  # number of tasks
+#SBATCH --cpus-per-task=4           # number of CPU cores
+#SBATCH --mem=16gb                  # total memory
+#SBATCH --time=4:00:00              # time limit (HH:MM:SS)
+#SBATCH --partition=[partition]     # partition to use
+#SBATCH --account=[training-group]  # group account
+#SBATCH --qos=[training-group]      # quality of service
+#SBATCH --output=%j.out             # standard output log (%j = job ID)
+#SBATCH --error=%j.err              # standard error log
+#SBATCH --mail-type=END,FAIL        # email on job end or failure
+#SBATCH --mail-user=username@ufl.edu
 
+# Load required software
+module load nextflow
 
+# Run your command
+nextflow run my_pipeline.nf
+</code></pre>
+<h3 id="submitting-a-job">Submitting a Job</h3>
+<pre><code>$ sbatch my_job_script.sh
+Submitted batch job 12345678
+</code></pre>
+<p>SLURM will print a job ID when the job is submitted. Keep this — you can use it to track your job.</p>
+<h3 id="key-slurm-resource-flags">Key SLURM Resource Flags</h3>
+<table>
+<thead>
+<tr>
+<th><strong>Flag</strong></th>
+<th><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--cpus-per-task</code></td>
+<td>Number of CPU cores. Only request multiple if your software can use them.</td>
+</tr>
+<tr>
+<td><code>--mem</code></td>
+<td>Total memory, e.g. <code>16gb</code>. If your job exceeds this it will be killed.</td>
+</tr>
+<tr>
+<td><code>--time</code></td>
+<td>Maximum runtime. Job will be cancelled if it exceeds this. Request ~20% more than you expect.</td>
+</tr>
+<tr>
+<td><code>--partition</code></td>
+<td>The queue to submit to. Use <code>[training-partition]</code> for this workshop.</td>
+</tr>
+<tr>
+<td><code>--account</code> and <code>--qos</code></td>
+<td>Must match your group. Use <code>[training-group]</code> for this workshop.</td>
+</tr>
+</tbody>
+</table>
+<h2 id="monitoring-jobs">Monitoring Jobs</h2>
+<p>To check the status of your jobs:</p>
+<pre><code>$ squeue -u username
+</code></pre>
+<p>The <code>ST</code> column shows job state: <code>PD</code> = pending, <code>R</code> = running, <code>CG</code> = completing.</p>
+<p>To see resource usage for your group:</p>
+<pre><code>$ slurmInfo
+</code></pre>
+<p>To cancel a job:</p>
+<pre><code>$ scancel 12345678
+</code></pre>
+<p>To see a summary of recent completed jobs:</p>
+<pre><code>$ sacct
+</code></pre>
+<h2 id="checking-job-logs">Checking Job Logs</h2>
+<p>When you submit a job, SLURM writes output and error messages to log files (named by job ID by default, e.g. <code>12345678.out</code> and <code>12345678.err</code>). These are the first place to look if something goes wrong.</p>
+<pre><code>$ cat 12345678.out          # view full output log
+$ tail -f 12345678.out      # follow the log in real time as the job runs
+$ tail 12345678.err         # check the last few lines of the error log
+</code></pre>
+<p><code>tail -f</code> is particularly useful for monitoring a running job — it will keep printing new lines as they are written to the log file. Press <code>Ctrl+C</code> to stop following.</p>
 
 
 
