@@ -9,10 +9,10 @@
       
       
       
-        <link rel="prev" href="../../01_command-line-basics/command-line-basics/">
+        <link rel="prev" href="../../02_hipergator-basics/hipergator-basics/">
       
       
-        <link rel="next" href="../../05_r-basics/r-basics/">
+        <link rel="next" href="../../06_ai-chatbot/ai-chatbot/">
       
       
         
@@ -23,7 +23,7 @@
     
     
       
-        <title>HiPerGator Basics - UF RNA-seq Workshop</title>
+        <title>R Basics - UF RNA-seq Workshop</title>
       
     
     
@@ -72,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#hipergator-basics" class="md-skip">
+        <a href="#r-basics" class="md-skip">
           Skip to content
         </a>
       
@@ -108,7 +108,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              HiPerGator Basics
+              R Basics
             
           </span>
         </div>
@@ -257,6 +257,33 @@
       
   
   
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02_hipergator-basics/hipergator-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HiPerGator Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
     
   
   
@@ -276,7 +303,7 @@
   <span class="md-ellipsis">
     
   
-    HiPerGator Basics
+    R Basics
   
 
     
@@ -294,7 +321,7 @@
   <span class="md-ellipsis">
     
   
-    HiPerGator Basics
+    R Basics
   
 
     
@@ -320,66 +347,22 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#logging-in" class="md-nav__link">
+  <a href="#running-rstudio-on-hipergator" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Logging In
+        Running RStudio on HiPerGator
       
     </span>
   </a>
   
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-hipergator-filesystem" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The HiPerGator Filesystem
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#open-ondemand" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Open OnDemand
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#loading-software-with-modules" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Loading Software with Modules
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#writing-and-submitting-slurm-jobs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Writing and Submitting SLURM Jobs
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Writing and Submitting SLURM Jobs">
+    <nav class="md-nav" aria-label="Running RStudio on HiPerGator">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#key-slurm-resource-flags" class="md-nav__link">
+  <a href="#starting-an-rstudio-server-session" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Key SLURM Resource Flags
+        Starting an RStudio Server Session
       
     </span>
   </a>
@@ -392,10 +375,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#monitoring-jobs" class="md-nav__link">
+  <a href="#the-rstudio-interface" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Monitoring Jobs
+        The RStudio Interface
       
     </span>
   </a>
@@ -403,10 +386,82 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#checking-job-logs" class="md-nav__link">
+  <a href="#r-basics_1" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Checking Job Logs
+        R Basics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="R Basics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#installing-and-loading-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Installing and Loading Packages
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#r-versions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        R Versions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#objects-and-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objects and Assignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#reading-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reading Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#saving-objects-to-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Saving Objects to Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#getting-help" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Getting Help
       
     </span>
   </a>
@@ -417,33 +472,6 @@
   
 </nav>
       
-    </li>
-  
-
-    
-      
-      
-  
-  
-  
-  
-    <li class="md-nav__item">
-      <a href="../../05_r-basics/r-basics/" class="md-nav__link">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    R Basics
-  
-
-    
-  </span>
-  
-  
-
-      </a>
     </li>
   
 
@@ -750,181 +778,125 @@
 
 
 
-<h1 id="hipergator-basics">HiPerGator Basics</h1>
-<p>HiPerGator is the University of Florida's high-performance computing (HPC) cluster, managed by UF Research Computing. It gives you access to far more computational power than a personal computer, which is essential for steps like running the nf-core/rnaseq pipeline. This section covers everything you need to know to get started on HiPerGator for this workshop.</p>
-<p>For more comprehensive documentation, see the <a href="https://docs.rc.ufl.edu/">UF Research Computing docs</a>.</p>
-<h2 id="logging-in">Logging In</h2>
-<p>You connect to HiPerGator via SSH from your terminal. If you haven't set up your terminal yet, see the <a href="../../01_command-line-basics/command-line-basics/">Command Line Basics</a> section.</p>
-<pre><code>$ ssh username@hpg.rc.ufl.edu
-</code></pre>
-<p>Replace <code>username</code> with your GatorLink username. You will be prompted for your password and then a Duo two-factor authentication push. After authenticating you will land on a <strong>login node</strong>, which looks like this:</p>
-<pre><code>[username@login1 ~]$
-</code></pre>
+<h1 id="r-basics">R Basics</h1>
+<p>R is a programming language designed for statistical computing and data analysis. It is the language we use for differential expression analysis in this workshop. This section covers the essentials you need to get started — if you want to go deeper, we recommend the <a href="https://r4ds.hadley.nz/">R for Data Science</a> book, which is freely available online.</p>
+<h2 id="running-rstudio-on-hipergator">Running RStudio on HiPerGator</h2>
+<p>For this workshop we run RStudio through HiPerGator rather than on your local computer, so that everyone has access to the same software environment and data. We use RStudio Server, which runs on a compute node and is accessed through your web browser.</p>
+<h3 id="starting-an-rstudio-server-session">Starting an RStudio Server Session</h3>
 <blockquote>
-<p><strong>Important:</strong> Login nodes are shared resources for everyone on the cluster. Do not run computationally intensive work on login nodes — this is against HiPerGator policy and can result in account suspension. All real work should be submitted as SLURM jobs.</p>
+<p><strong>Warning:</strong> RStudio Server will change the permissions on your working directory to 777, which makes files visible to other users. Never run it from your <code>/home</code> directory or the top level of your <code>/blue</code> directory. Always run it from a directory well inside your personal storage, e.g. <code>/blue/[training-group]/username/rnaseq-workshop/</code>.</p>
 </blockquote>
-<h2 id="the-hipergator-filesystem">The HiPerGator Filesystem</h2>
-<p>HiPerGator has three main storage locations, each with a different purpose:</p>
-<table>
-<thead>
-<tr>
-<th><strong>Location</strong></th>
-<th><strong>Path</strong></th>
-<th><strong>Quota</strong></th>
-<th><strong>Use for</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Home</td>
-<td><code>/home/username</code></td>
-<td>40 GB</td>
-<td>Scripts, configuration files, important small files</td>
-</tr>
-<tr>
-<td>Blue</td>
-<td><code>/blue/group/username</code></td>
-<td>Varies</td>
-<td>All active research work and data</td>
-</tr>
-<tr>
-<td>Orange</td>
-<td><code>/orange/group/username</code></td>
-<td>Varies</td>
-<td>Long-term archival storage</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>Always run your analyses from <code>/blue</code></strong>. It is a high-performance storage system designed to handle the input/output demands of HPC workloads. <code>/home</code> and <code>/orange</code> are not suitable for running analyses.</p>
-</blockquote>
-<p>For this workshop, your working directory will be:</p>
-<pre><code>/blue/[training-group]/username
-</code></pre>
-<p>To navigate there:</p>
-<pre><code>$ cd /blue/[training-group]/username
-</code></pre>
-<p>You can check your storage quotas with:</p>
-<pre><code>$ home_quota
-$ blue_quota
-$ orange_quota
-</code></pre>
-<h2 id="open-ondemand">Open OnDemand</h2>
-<p>Open OnDemand (OOD) is a web interface for HiPerGator available at <a href="https://ood.rc.ufl.edu">https://ood.rc.ufl.edu</a>. It provides:</p>
-<ul>
-<li><strong>Files</strong>: A graphical file browser for navigating, uploading, downloading, and editing files on HiPerGator</li>
-<li><strong>Jobs</strong>: A dashboard for monitoring your running, pending, and recently completed jobs</li>
-<li><strong>Clusters</strong>: A terminal window in your browser if you prefer not to use SSH</li>
-</ul>
-<p>For this workshop, OOD is particularly useful for uploading input files and downloading results to your local computer without needing to use <code>scp</code> on the command line.</p>
-<h2 id="loading-software-with-modules">Loading Software with Modules</h2>
-<p>HiPerGator uses a module system to manage software. Software is not available by default — you need to load it first. To search for available software:</p>
-<pre><code>$ module spider nextflow
-</code></pre>
-<p>To load a module:</p>
-<pre><code>$ module load nextflow
-</code></pre>
-<p>To see what modules you currently have loaded:</p>
-<pre><code>$ module list
-</code></pre>
-<p>To unload a module:</p>
-<pre><code>$ module unload nextflow
-</code></pre>
-<p>Some software requires loading a prerequisite module first. <code>module spider</code> will tell you if this is the case and what to load.</p>
-<h2 id="writing-and-submitting-slurm-jobs">Writing and Submitting SLURM Jobs</h2>
-<p>HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly on the login node, you write a job script that specifies the resources you need and the commands to run, and submit it to the scheduler with <code>sbatch</code>.</p>
-<p>The key insight is that a SLURM script is just a regular bash script with a block of <code>#SBATCH</code> directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script:</p>
+<p>First, create a job script. Save the following as <code>rserver.sh</code> in your working directory:</p>
 <pre><code class="language-bash">#!/bin/bash
-
-echo &quot;Hello from HiPerGator!&quot;
-echo &quot;My username is: $(whoami)&quot;
-echo &quot;Today's date is: $(date)&quot;
-echo &quot;I am running on node: $(hostname)&quot;
-</code></pre>
-<p>You could run this directly on the login node with <code>bash hello.sh</code>. Now here is the exact same script as an SLURM job:</p>
-<pre><code class="language-bash">#!/bin/bash
-#SBATCH --job-name=hello
+#SBATCH --job-name=rserver
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=1gb
-#SBATCH --time=00:05:00
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=8gb
+#SBATCH --time=48:00:00
+#SBATCH --output=rserver_%j.log
 #SBATCH --partition=[training-partition]
 #SBATCH --account=[training-group]
 #SBATCH --qos=[training-group]
-#SBATCH --output=hello_%j.out
-#SBATCH --error=hello_%j.err
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=username@ufl.edu
 
-echo &quot;Hello from HiPerGator!&quot;
-echo &quot;My username is: $(whoami)&quot;
-echo &quot;Today's date is: $(date)&quot;
-echo &quot;I am running on node: $(hostname)&quot;
+module purge; module load R
+rserver
 </code></pre>
-<p>The only difference is the <code>#SBATCH</code> header. Save this as <code>hello.sh</code> and submit it:</p>
-<pre><code>$ sbatch hello.sh
+<p>Submit the job:</p>
+<pre><code>$ sbatch rserver.sh
 Submitted batch job 12345678
 </code></pre>
-<p>When the job completes, check the output log:</p>
-<pre><code>$ cat hello_12345678.out
-Hello from HiPerGator!
-My username is: username
-Today's date is: Thu Apr  3 10:42:11 EDT 2026
-I am running on node: c0709a-s30
+<p>Once the job starts, check the log file for connection instructions:</p>
+<pre><code>$ cat rserver_12345678.log
+Starting rserver on port 37546 in the /blue/training-group/username/rnaseq-workshop directory.
+Create an SSH tunnel with:
+ssh -N -L 8080:c12345a-s42.ufhpc:37546 username@hpg.rc.ufl.edu
+Then, open in the local browser:
+http://localhost:8080
 </code></pre>
-<h3 id="key-slurm-resource-flags">Key SLURM Resource Flags</h3>
-<table>
-<thead>
-<tr>
-<th><strong>Flag</strong></th>
-<th><strong>Description</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--cpus-per-task</code></td>
-<td>Number of CPU cores. Only request multiple if your software can use them.</td>
-</tr>
-<tr>
-<td><code>--mem</code></td>
-<td>Total memory, e.g. <code>16gb</code>. If your job exceeds this it will be killed.</td>
-</tr>
-<tr>
-<td><code>--time</code></td>
-<td>Maximum runtime. Job will be cancelled if it exceeds this. Request ~20% more than you expect.</td>
-</tr>
-<tr>
-<td><code>--partition</code></td>
-<td>The queue to submit to. Use <code>[training-partition]</code> for this workshop.</td>
-</tr>
-<tr>
-<td><code>--account</code> and <code>--qos</code></td>
-<td>Must match your group. Use <code>[training-group]</code> for this workshop.</td>
-</tr>
-</tbody>
-</table>
-<h2 id="monitoring-jobs">Monitoring Jobs</h2>
-<p>To check the status of your jobs:</p>
-<pre><code>$ squeue -u username
+<p>Open a new terminal on your local computer and run the <code>ssh</code> command from the log file. The terminal will appear to hang — this is normal, leave it running.</p>
+<p>Then open <a href="http://localhost:8080">http://localhost:8080</a> in your browser. You should see the RStudio interface.</p>
+<h2 id="the-rstudio-interface">The RStudio Interface</h2>
+<p>RStudio has four panels:</p>
+<ul>
+<li><strong>Source</strong> (top left): where you write and save R scripts</li>
+<li><strong>Console</strong> (bottom left): where code is executed and output is printed</li>
+<li><strong>Environment</strong> (top right): shows all objects currently loaded in memory</li>
+<li><strong>Files / Plots / Help</strong> (bottom right): file browser, plot viewer, and help documentation</li>
+</ul>
+<p>You can type code directly in the Console to run it immediately, or write it in the Source panel and run it with <code>Ctrl+Enter</code> (one line) or <code>Ctrl+Shift+Enter</code> (entire script).</p>
+<h2 id="r-basics_1">R Basics</h2>
+<h3 id="installing-and-loading-packages">Installing and Loading Packages</h3>
+<p>R packages extend the base language with additional functions. You only need to install a package once, but you need to load it every time you start a new R session:</p>
+<pre><code class="language-r"># Install a package (only do this once)
+install.packages(&quot;tidyverse&quot;)
+
+# Install Bioconductor packages
+if (!require(&quot;BiocManager&quot;, quietly = TRUE))
+    install.packages(&quot;BiocManager&quot;)
+BiocManager::install(&quot;limma&quot;)
+
+# Load a package (do this every session)
+library(tidyverse)
+library(limma)
 </code></pre>
-<p>The <code>ST</code> column shows job state: <code>PD</code> = pending, <code>R</code> = running, <code>CG</code> = completing.</p>
-<p>To see resource usage for your group:</p>
-<pre><code>$ slurmInfo
+<h3 id="r-versions">R Versions</h3>
+<p>Different R versions can have different package compatibility. On HiPerGator you can check your R version with:</p>
+<pre><code class="language-r">R.version
 </code></pre>
-<p>To cancel a job:</p>
-<pre><code>$ scancel 12345678
+<p>For this workshop we use the version loaded by <code>module load R</code>. If you install R on your own computer, we recommend using the same major version to avoid compatibility issues.</p>
+<h3 id="objects-and-assignment">Objects and Assignment</h3>
+<p>In R, you store data in objects using the assignment operator <code>&lt;-</code>:</p>
+<pre><code class="language-r">x &lt;- 42
+name &lt;- &quot;HiPerGator&quot;
+counts &lt;- c(100, 200, 300, 400)
 </code></pre>
-<p>To see a summary of recent completed jobs:</p>
-<pre><code>$ sacct
+<p>You can see all objects in your current session in the Environment panel, or with:</p>
+<pre><code class="language-r">ls()
 </code></pre>
-<h2 id="checking-job-logs">Checking Job Logs</h2>
-<p>When you submit a job, SLURM writes output and error messages to log files (named by job ID by default, e.g. <code>12345678.out</code> and <code>12345678.err</code>). These are the first place to look if something goes wrong.</p>
-<pre><code>$ cat 12345678.out          # view full output log
-$ tail -f 12345678.out      # follow the log in real time as the job runs
-$ tail 12345678.err         # check the last few lines of the error log
+<h3 id="reading-files">Reading Files</h3>
+<p>The most common file types you will encounter in this workshop:</p>
+<pre><code class="language-r"># Tab-separated files (.tsv)
+sample_info &lt;- read.table(&quot;dme_elev_samples.tsv&quot;, header=TRUE, sep=&quot;\t&quot;)
+
+# Comma-separated files (.csv)
+sample_info &lt;- read.csv(&quot;sample_info.csv&quot;, header=TRUE)
+
+# Both of the above can also be read with tidyverse
+library(tidyverse)
+sample_info &lt;- read_tsv(&quot;dme_elev_samples.tsv&quot;)
+sample_info &lt;- read_csv(&quot;sample_info.csv&quot;)
 </code></pre>
-<p><code>tail -f</code> is particularly useful for monitoring a running job — it will keep printing new lines as they are written to the log file. Press <code>Ctrl+C</code> to stop following.</p>
+<p>To quickly check what a file looks like after reading it in:</p>
+<pre><code class="language-r">head(sample_info)       # first 6 rows
+dim(sample_info)        # number of rows and columns
+colnames(sample_info)   # column names
+str(sample_info)        # structure and data types
+</code></pre>
+<h3 id="saving-objects-to-files">Saving Objects to Files</h3>
+<p>To save a data frame or results table to a file:</p>
+<pre><code class="language-r"># Save as tab-separated
+write.table(results, file=&quot;de_results.tsv&quot;, sep=&quot;\t&quot;, row.names=TRUE, quote=FALSE)
+
+# Save as CSV
+write.csv(results, file=&quot;de_results.csv&quot;, row.names=TRUE)
+
+# Save as tidyverse TSV
+write_tsv(results, file=&quot;de_results.tsv&quot;)
+</code></pre>
+<p>To save an R object so you can reload it later without rerunning your analysis:</p>
+<pre><code class="language-r"># Save
+saveRDS(DGE, file=&quot;dge_object.rds&quot;)
+
+# Reload
+DGE &lt;- readRDS(&quot;dge_object.rds&quot;)
+</code></pre>
+<h2 id="getting-help">Getting Help</h2>
+<p>To get help on any function in R:</p>
+<pre><code class="language-r">?read.table
+help(lmFit)
+</code></pre>
+<p>The Help panel in RStudio will display the documentation. You can also search for functions in the Help panel search box.</p>
 
 
 
