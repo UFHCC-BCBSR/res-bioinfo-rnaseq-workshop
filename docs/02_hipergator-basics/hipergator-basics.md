@@ -92,43 +92,59 @@ Some software requires loading a prerequisite module first. `module spider` will
 
 ## Writing and Submitting SLURM Jobs
 
-HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly, you write a job script that specifies the resources you need and the commands to run, and submit it to the scheduler with `sbatch`.
+HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly on the login node, you write a job script that specifies the resources you need and the commands to run, and submit it to the scheduler with `sbatch`.
 
-### Anatomy of a SLURM Script
-
-A SLURM script is a bash script with a header of `#SBATCH` directives that tell the scheduler what resources to allocate:
+The key insight is that a SLURM script is just a regular bash script with a block of `#SBATCH` directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script:
 
 ```bash
 #!/bin/bash
-#SBATCH --job-name=my_job           # job name
-#SBATCH --nodes=1                   # number of nodes
-#SBATCH --ntasks=1                  # number of tasks
-#SBATCH --cpus-per-task=4           # number of CPU cores
-#SBATCH --mem=16gb                  # total memory
-#SBATCH --time=4:00:00              # time limit (HH:MM:SS)
-#SBATCH --partition=[partition]     # partition to use
-#SBATCH --account=[training-group]  # group account
-#SBATCH --qos=[training-group]      # quality of service
-#SBATCH --output=%j.out             # standard output log (%j = job ID)
-#SBATCH --error=%j.err              # standard error log
-#SBATCH --mail-type=END,FAIL        # email on job end or failure
+
+echo "Hello from HiPerGator!"
+echo "My username is: $(whoami)"
+echo "Today's date is: $(date)"
+echo "I am running on node: $(hostname)"
+```
+
+You could run this directly on the login node with `bash hello.sh`. Now here is the exact same script as an SLURM job:
+
+```bash
+#!/bin/bash
+#SBATCH --job-name=hello
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=1gb
+#SBATCH --time=00:05:00
+#SBATCH --partition=[training-partition]
+#SBATCH --account=[training-group]
+#SBATCH --qos=[training-group]
+#SBATCH --output=hello_%j.out
+#SBATCH --error=hello_%j.err
+#SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=username@ufl.edu
 
-# Load required software
-module load nextflow
-
-# Run your command
-nextflow run my_pipeline.nf
+echo "Hello from HiPerGator!"
+echo "My username is: $(whoami)"
+echo "Today's date is: $(date)"
+echo "I am running on node: $(hostname)"
 ```
 
-### Submitting a Job
+The only difference is the `#SBATCH` header. Save this as `hello.sh` and submit it:
 
 ```
-$ sbatch my_job_script.sh
+$ sbatch hello.sh
 Submitted batch job 12345678
 ```
 
-SLURM will print a job ID when the job is submitted. Keep this — you can use it to track your job.
+When the job completes, check the output log:
+
+```
+$ cat hello_12345678.out
+Hello from HiPerGator!
+My username is: username
+Today's date is: Thu Apr  3 10:42:11 EDT 2026
+I am running on node: c0709a-s30
+```
 
 ### Key SLURM Resource Flags
 
