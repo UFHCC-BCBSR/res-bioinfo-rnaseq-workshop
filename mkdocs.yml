@@ -19,6 +19,5 @@ nav:
     - nf-core/rnaseq Workflow: 03_preprocessing/nfcore-workflow.md
   - Differential Expression:
     - Overview & Background: 04_differential-expression/overview.md
-    - Pathway Analysis: 04_differential-expression/pathway-analysis.md
     - Visualization: 04_differential-expression/visualization.md
-
+    - Pathway Analysis: 04_differential-expression/pathway-analysis.md
