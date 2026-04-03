@@ -1,12 +1,23 @@
-site_name: UF RNA-seq Workshop
+site_name: Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis
+site_description: UF Health Cancer Institute Biostatistics and Computational Biology Shared Resource
 docs_dir: docs
 theme:
   name: material
+  logo: assets/logo.png
+  favicon: assets/logo.png
   palette:
-    primary: blue
+    primary: black
   features:
     - navigation.sections
     - toc.integrate
+  font:
+    text: Roboto
+
+extra_css:
+  - assets/css/custom.css
+
+extra:
+  generator: false
 
 nav:
   - Home: index.md
