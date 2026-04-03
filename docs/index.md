@@ -1,5 +1,6 @@
-# UF Health Cancer Institute Bioistatistcs and Computational Biology Bioinformatics Unit
-# Bulk RNA-seq Workshop
+<p style="font-size: 0.9em; color: grey;">UF Health Cancer Institute Biostatistics and Computational Biology Shared Resource</p>
+
+# Bioinformatics Workshop: Basics of Bulk RNA-Seq Analysis
 
 **Audience:** Trainees, staff, and faculty in the UF Health Cancer Institute community with a beginner to intermiedate experience with bioinformatics analysis.
 
