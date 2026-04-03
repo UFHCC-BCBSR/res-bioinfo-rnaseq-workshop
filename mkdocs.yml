@@ -12,10 +12,13 @@ nav:
   - Home: index.md
   - Command Line Basics: 01_command-line-basics/command-line-basics.md
   - HiPerGator Basics: 02_hipergator-basics/hipergator-basics.md
+  - R Basics: 05_r-basics/r-basics.md
+  - AI Chatbot Tips: 06_ai-chatbot/ai-chatbot.md
   - Preprocessing:
     - Quantification Review: 03_preprocessing/quantification-review.md
     - nf-core/rnaseq Workflow: 03_preprocessing/nfcore-workflow.md
   - Differential Expression:
     - Overview & Background: 04_differential-expression/overview.md
-  - Pathway Analysis: 05_pathway-analysis/pathway-analysis.md
-  - Visualization: 06_visualization/visualization.md
+    - Pathway Analysis: 04_differential-expression/pathway-analysis.md
+    - Visualization: 04_differential-expression/visualization.md
+
