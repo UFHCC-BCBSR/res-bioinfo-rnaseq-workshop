@@ -9,8 +9,10 @@
       
       
       
-        <link rel="prev" href="../pathway-analysis/">
+        <link rel="prev" href="../overview/">
       
+      
+        <link rel="next" href="../pathway-analysis/">
       
       
         
@@ -68,6 +70,11 @@
     <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
+      
+        
+        <a href="#visualization" class="md-skip">
+          Skip to content
+        </a>
       
     </div>
     <div data-md-component="announce">
@@ -528,6 +535,186 @@
                 
   
   
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#required-packages" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Required Packages
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#volcano-plot" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Volcano Plot
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#heatmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Heatmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#boxplots-for-individual-genes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Boxplots for Individual Genes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#results-tables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Results Tables
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Results Tables">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#viewing-results-in-rstudio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Viewing Results in RStudio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#exporting-results-to-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Exporting Results to File
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filtering-and-summarizing-results" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtering and Summarizing Results
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#further-reading" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Further Reading
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
   
   
     <li class="md-nav__item">
@@ -547,42 +734,6 @@
   
 
       </a>
-    </li>
-  
-
-              
-            
-              
-                
-  
-  
-    
-  
-  
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
-        
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Visualization
-  
-
-    
-  </span>
-  
-  
-
-      </a>
-      
     </li>
   
 
@@ -612,9 +763,158 @@
 
 
 
-  <h1>Visualization</h1>
+<h1 id="visualization">Visualization</h1>
+<p>This page covers the most common visualizations used to explore and present RNA-seq differential expression results. For the full worked analysis using our demo dataset, see the workshop notebook in <code>demo-analysis/rnaseq_workshop_session2.qmd</code>.</p>
+<h2 id="required-packages">Required Packages</h2>
+<pre><code class="language-r">library(tidyverse)
+library(ggplot2)
+library(ggrepel)
+library(pheatmap)
+library(RColorBrewer)
+</code></pre>
+<h2 id="volcano-plot">Volcano Plot</h2>
+<p>A volcano plot shows log fold change on the x-axis and statistical significance (-log10 adjusted p-value) on the y-axis, allowing you to quickly identify genes that are both statistically significant and biologically meaningful in terms of effect size.</p>
+<pre><code class="language-r"># Starting from your full results table (all genes, output of topTable)
+# Add a significance category column
+all_genes$significance &lt;- case_when(
+    all_genes$adj.P.Val &lt; 0.05 &amp; all_genes$logFC &gt; 1  ~ &quot;Up&quot;,
+    all_genes$adj.P.Val &lt; 0.05 &amp; all_genes$logFC &lt; -1 ~ &quot;Down&quot;,
+    all_genes$adj.P.Val &lt; 0.05                         ~ &quot;Significant&quot;,
+    TRUE                                                ~ &quot;Not Significant&quot;
+)
 
+# Add gene names for labeling top genes
+all_genes$gene &lt;- rownames(all_genes)
 
+# Plot
+volcano_plot &lt;- ggplot(all_genes, aes(x=logFC, y=-log10(adj.P.Val), color=significance)) +
+    geom_point(alpha=0.5, size=1) +
+    scale_color_manual(values=c(&quot;Up&quot;=&quot;red&quot;,
+                                &quot;Down&quot;=&quot;blue&quot;,
+                                &quot;Significant&quot;=&quot;orange&quot;,
+                                &quot;Not Significant&quot;=&quot;grey&quot;)) +
+    geom_vline(xintercept=c(-1, 1), linetype=&quot;dashed&quot;, alpha=0.5) +
+    geom_hline(yintercept=-log10(0.05), linetype=&quot;dashed&quot;, alpha=0.5) +
+    geom_text_repel(data=subset(all_genes, adj.P.Val &lt; 0.001 &amp; abs(logFC) &gt; 2),
+                    aes(label=gene), size=3, max.overlaps=20) +
+    labs(title=&quot;Volcano Plot&quot;,
+         x=&quot;Log2 Fold Change&quot;,
+         y=&quot;-Log10 Adjusted P-value&quot;,
+         color=&quot;Significance&quot;) +
+    theme_minimal()
+
+print(volcano_plot)
+ggsave(&quot;figures/volcano_plot.png&quot;, width=8, height=6, dpi=300)
+</code></pre>
+<p><img alt="Volcano plot showing log2 fold change vs -log10 adjusted p-value. Red points are significantly upregulated genes (logFC &gt; 1, FDR &lt; 0.05), blue points are significantly downregulated (logFC &lt; -1, FDR &lt; 0.05), and grey points are not significant. Top genes are labeled." src="../assets/volcano_plot.png" /></p>
+<h2 id="heatmap">Heatmap</h2>
+<p>A heatmap shows expression levels across all samples for a set of genes of interest, typically the top differentially expressed genes. It is useful for visualizing patterns of co-expression and confirming that samples cluster as expected.</p>
+<pre><code class="language-r"># Get top 50 DE genes by adjusted p-value
+top50_genes &lt;- rownames(topTable(fit, coef=&quot;temperaturelow&quot;,
+                                  adjust=&quot;BH&quot;, number=50, sort.by=&quot;P&quot;))
+
+# Extract log-CPM values for these genes
+logcpm &lt;- cpm(DGE, log=TRUE)
+top50_logcpm &lt;- logcpm[top50_genes,]
+
+# Z-score normalize rows for better visualization
+top50_scaled &lt;- t(scale(t(top50_logcpm)))
+
+# Create sample annotation
+annotation_col &lt;- data.frame(
+    Temperature = sample_info$temp,
+    Population = sample_info$population,
+    row.names = sample_info$sample
+)
+
+# Plot
+pheatmap(top50_scaled,
+         annotation_col = annotation_col,
+         scale = &quot;none&quot;,
+         cluster_rows = TRUE,
+         cluster_cols = TRUE,
+         show_rownames = TRUE,
+         show_colnames = TRUE,
+         main = &quot;Top 50 DE Genes&quot;,
+         fontsize_row = 6,
+         fontsize_col = 8,
+         color = colorRampPalette(c(&quot;blue&quot;, &quot;white&quot;, &quot;red&quot;))(100),
+         filename = &quot;figures/heatmap_top50.png&quot;,
+         width = 8,
+         height = 10)
+</code></pre>
+<p><img alt="Heatmap of the top 50 differentially expressed genes. Rows are genes, columns are samples. Color represents z-scored log-CPM expression. Samples are annotated by temperature treatment and population." src="../assets/heatmap_top50.png" /></p>
+<h2 id="boxplots-for-individual-genes">Boxplots for Individual Genes</h2>
+<p>After identifying genes of interest from your DE results, it is often useful to plot the expression of individual genes across samples to visualize the effect size and within-group variability.</p>
+<pre><code class="language-r"># Extract log-CPM for a gene of interest
+gene_of_interest &lt;- &quot;your_gene_name&quot;
+
+gene_expr &lt;- data.frame(
+    expression = as.numeric(logcpm[gene_of_interest,]),
+    temperature = sample_info$temp,
+    population = sample_info$population,
+    sample = sample_info$sample
+)
+
+# Boxplot colored by temperature, faceted by population
+boxplot &lt;- ggplot(gene_expr, aes(x=temperature, y=expression, fill=temperature)) +
+    geom_boxplot(outlier.shape=NA) +
+    geom_jitter(width=0.1, size=2, alpha=0.7) +
+    facet_wrap(~population) +
+    scale_fill_manual(values=c(&quot;high&quot;=&quot;tomato&quot;, &quot;low&quot;=&quot;steelblue&quot;)) +
+    labs(title=paste(&quot;Expression of&quot;, gene_of_interest),
+         x=&quot;Temperature&quot;,
+         y=&quot;Log2 CPM&quot;,
+         fill=&quot;Temperature&quot;) +
+    theme_minimal() +
+    theme(legend.position=&quot;none&quot;)
+
+print(boxplot)
+ggsave(paste0(&quot;figures/boxplot_&quot;, gene_of_interest, &quot;.png&quot;), width=6, height=5, dpi=300)
+</code></pre>
+<p><img alt="Boxplot showing expression of a gene of interest across temperature treatments, split by population. Points show individual samples." src="../assets/boxplot_example.png" /></p>
+<h2 id="results-tables">Results Tables</h2>
+<h3 id="viewing-results-in-rstudio">Viewing Results in RStudio</h3>
+<p>The <code>topTable</code> function returns a data frame that can be viewed interactively in RStudio:</p>
+<pre><code class="language-r"># View top 20 DE genes sorted by p-value
+top20 &lt;- topTable(fit, coef=&quot;temperaturelow&quot;,
+                  adjust=&quot;BH&quot;, number=20, sort.by=&quot;P&quot;)
+View(top20)
+</code></pre>
+<h3 id="exporting-results-to-file">Exporting Results to File</h3>
+<pre><code class="language-r"># Create output directory
+if (!dir.exists(&quot;results&quot;)) dir.create(&quot;results&quot;)
+
+# Export all genes
+all_genes &lt;- topTable(fit, coef=&quot;temperaturelow&quot;,
+                      adjust=&quot;BH&quot;, number=Inf, sort.by=&quot;P&quot;)
+write.csv(all_genes, file=&quot;results/de_results_all_genes.csv&quot;, row.names=TRUE)
+
+# Export only significant genes
+sig_genes &lt;- all_genes[all_genes$adj.P.Val &lt; 0.05,]
+write.csv(sig_genes, file=&quot;results/de_results_significant.csv&quot;, row.names=TRUE)
+</code></pre>
+<h3 id="filtering-and-summarizing-results">Filtering and Summarizing Results</h3>
+<pre><code class="language-r"># How many genes are significant at FDR &lt; 0.05?
+sum(all_genes$adj.P.Val &lt; 0.05)
+
+# How many are up vs down regulated?
+table(all_genes$adj.P.Val &lt; 0.05, all_genes$logFC &gt; 0)
+
+# Filter to genes with large effect size and high significance
+strong_de &lt;- all_genes %&gt;%
+    filter(adj.P.Val &lt; 0.05) %&gt;%
+    filter(abs(logFC) &gt; 2) %&gt;%
+    arrange(adj.P.Val)
+
+head(strong_de)
+</code></pre>
+<h2 id="further-reading">Further Reading</h2>
+<ul>
+<li><a href="https://ggplot2.tidyverse.org/">ggplot2 documentation</a></li>
+<li><a href="https://cran.r-project.org/web/packages/pheatmap/pheatmap.pdf">pheatmap documentation</a></li>
+<li><a href="https://ggrepel.slowkow.com/">ggrepel documentation</a></li>
+</ul>
 
 
 
