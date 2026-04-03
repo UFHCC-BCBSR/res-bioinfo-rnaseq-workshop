@@ -1,8 +1,8 @@
 # UF Health Cancer Institute Bioinformatics — Bulk RNA-seq Workshop
 
-**Audience:** Beginner to Intermediate  
-**Hosted by:** UF Health Cancer Institute Bioinformatics  
-**Status:** 🚧 Under Construction
+**Audience:** Trainees, staff, and faculty in the UF Health Cancer Institute community with a beginner to intermiedate experience with bioinformatics analysis.
+**Hosted by:** [UF Health Cancer Institute Biostatistics and Computational Biology Bioinformatics Unit](https://cancer.ufl.edu/research/shared-resources/biostatistics-computational-biology-shared-resource/bioinformatics-unit/)  
+**Status:** 🚧 Under Construction Until April 9th, 2026
 
 ---
 
@@ -32,7 +32,7 @@ This workshop guides participants through a complete bulk RNA-seq analysis workf
 The only software you need to install before the workshop is a terminal application:
 
 - **Mac:** Terminal is built in — no installation needed
-- **Windows:** Install [Git Bash](https://gitforwindows.org/)
+- **Windows:** Install a Linux-style terminal like [Git Bash](https://gitforwindows.org/) or [MobaXterm](https://mobaxterm.mobatek.net/download.html)
 
 HiPerGator accounts will be set up for all participants in advance — you do not need to do anything. Details will be sent by email before the workshop.
 
@@ -46,10 +46,11 @@ A curated, annotated list of references and tools used throughout this workshop 
 
 ## How to Use This Workshop
 
-Each module page provides conceptual background, code snippets, and links to further reading. The hands-on analysis is done through an interactive R notebook which will be made available on HiPerGator before the workshop. We recommend reading through each module page before the workshop session and referring back to it during the hands-on portion.
+Each module page provides conceptual background, code snippets, and links to further reading. The hands-on analysis is done through prepared files and an interactive R notebook which will be made available on Github during the workshop. We recommend reading through each module page before the workshop session and referring back to it during the hands-on portion.
 
 ---
 
 ## Contact
 
-Questions? Contact the UF Health Cancer Institute Bioinformatics team.
+Questions? Contact the [UF Health Cancer Institute Bioinformatics team](mailto:UFHCC-BCB-SR@ufl.edu).
+
