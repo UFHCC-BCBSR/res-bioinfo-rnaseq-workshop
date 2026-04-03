@@ -376,28 +376,6 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
-  <a href="#anatomy-of-a-slurm-script" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Anatomy of a SLURM Script
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#submitting-a-job" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Submitting a Job
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
   <a href="#key-slurm-resource-flags" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -798,35 +776,47 @@ $ orange_quota
 </code></pre>
 <p>Some software requires loading a prerequisite module first. <code>module spider</code> will tell you if this is the case and what to load.</p>
 <h2 id="writing-and-submitting-slurm-jobs">Writing and Submitting SLURM Jobs</h2>
-<p>HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly, you write a job script that specifies the resources you need and the commands to run, and submit it to the scheduler with <code>sbatch</code>.</p>
-<h3 id="anatomy-of-a-slurm-script">Anatomy of a SLURM Script</h3>
-<p>A SLURM script is a bash script with a header of <code>#SBATCH</code> directives that tell the scheduler what resources to allocate:</p>
+<p>HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly on the login node, you write a job script that specifies the resources you need and the commands to run, and submit it to the scheduler with <code>sbatch</code>.</p>
+<p>The key insight is that a SLURM script is just a regular bash script with a block of <code>#SBATCH</code> directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script:</p>
 <pre><code class="language-bash">#!/bin/bash
-#SBATCH --job-name=my_job           # job name
-#SBATCH --nodes=1                   # number of nodes
-#SBATCH --ntasks=1                  # number of tasks
-#SBATCH --cpus-per-task=4           # number of CPU cores
-#SBATCH --mem=16gb                  # total memory
-#SBATCH --time=4:00:00              # time limit (HH:MM:SS)
-#SBATCH --partition=[partition]     # partition to use
-#SBATCH --account=[training-group]  # group account
-#SBATCH --qos=[training-group]      # quality of service
-#SBATCH --output=%j.out             # standard output log (%j = job ID)
-#SBATCH --error=%j.err              # standard error log
-#SBATCH --mail-type=END,FAIL        # email on job end or failure
+
+echo &quot;Hello from HiPerGator!&quot;
+echo &quot;My username is: $(whoami)&quot;
+echo &quot;Today's date is: $(date)&quot;
+echo &quot;I am running on node: $(hostname)&quot;
+</code></pre>
+<p>You could run this directly on the login node with <code>bash hello.sh</code>. Now here is the exact same script as an SLURM job:</p>
+<pre><code class="language-bash">#!/bin/bash
+#SBATCH --job-name=hello
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
+#SBATCH --mem=1gb
+#SBATCH --time=00:05:00
+#SBATCH --partition=[training-partition]
+#SBATCH --account=[training-group]
+#SBATCH --qos=[training-group]
+#SBATCH --output=hello_%j.out
+#SBATCH --error=hello_%j.err
+#SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=username@ufl.edu
 
-# Load required software
-module load nextflow
-
-# Run your command
-nextflow run my_pipeline.nf
+echo &quot;Hello from HiPerGator!&quot;
+echo &quot;My username is: $(whoami)&quot;
+echo &quot;Today's date is: $(date)&quot;
+echo &quot;I am running on node: $(hostname)&quot;
 </code></pre>
-<h3 id="submitting-a-job">Submitting a Job</h3>
-<pre><code>$ sbatch my_job_script.sh
+<p>The only difference is the <code>#SBATCH</code> header. Save this as <code>hello.sh</code> and submit it:</p>
+<pre><code>$ sbatch hello.sh
 Submitted batch job 12345678
 </code></pre>
-<p>SLURM will print a job ID when the job is submitted. Keep this — you can use it to track your job.</p>
+<p>When the job completes, check the output log:</p>
+<pre><code>$ cat hello_12345678.out
+Hello from HiPerGator!
+My username is: username
+Today's date is: Thu Apr  3 10:42:11 EDT 2026
+I am running on node: c0709a-s30
+</code></pre>
 <h3 id="key-slurm-resource-flags">Key SLURM Resource Flags</h3>
 <table>
 <thead>
