@@ -1,4 +1,4 @@
-# UF Cancer Institute Bioinformatics — Bulk RNA-seq Workshop
+# UF Health Cancer Institute Bioinformatics — Bulk RNA-seq Workshop
 
 **Audience:** Beginner to Intermediate  
 **Hosted by:** UF Health Cancer Institute Bioinformatics  
@@ -8,9 +8,7 @@
 
 ## Overview
 
-This workshop guides participants through a complete bulk RNA-seq analysis workflow,
-from raw sequencing reads to biological interpretation. Each module is self-contained
-and builds on the previous one.
+This workshop guides participants through a complete bulk RNA-seq analysis workflow, from raw sequencing reads to biological interpretation. We use a *Drosophila melanogaster* temperature treatment dataset as a worked example throughout, but the methods apply to any bulk RNA-seq experiment.
 
 ---
 
@@ -18,34 +16,40 @@ and builds on the previous one.
 
 | # | Module | Description |
 |---|--------|-------------|
-| 1 | [Command Line Basics](01_command-line-basics/command-line-basics.md) | Navigating the shell, essential commands for bioinformatics |
-| 2 | [HiPerGator Basics](02_hipergator-basics/hipergator-basics.md) | Accounts, storage, SLURM job submission |
-| 3 | [Preprocessing](03_preprocessing/quantification-review.md) | QC, trimming, alignment, and quantification with nf-core/rnaseq |
-| 4 | [Differential Expression](04_differential-expression/overview.md) | Statistical testing with limma/voom in R |
-| 5 | [Pathway Analysis](05_pathway-analysis/pathway-analysis.md) | GO and KEGG enrichment analysis |
-| 6 | [Visualization](06_visualization/visualization.md) | Volcano plots, heatmaps, PCA, and more |
+| 1 | [Command Line Basics](01_command-line-basics/command-line-basics.md) | Navigating the terminal, essential commands for bioinformatics |
+| 2 | [HiPerGator Basics](02_hipergator-basics/hipergator-basics.md) | Logging in, storage, loading software, and submitting SLURM jobs |
+| 3 | [R Basics](05_r-basics/r-basics.md) | RStudio on HiPerGator, reading and writing files, installing packages |
+| 4 | [AI Chatbot Tips](06_ai-chatbot/ai-chatbot.md) | How to use AI tools effectively and responsibly for bioinformatics |
+| 5 | [Preprocessing](03_preprocessing/quantification-review.md) | Expression quantification concepts and the nf-core/rnaseq workflow |
+| 6 | [Differential Expression](04_differential-expression/overview.md) | Statistical testing with limma-voom in R |
+| 7 | [Visualization](04_differential-expression/visualization.md) | Volcano plots, heatmaps, and gene expression plots |
+| 8 | [Pathway Analysis](04_differential-expression/pathway-analysis.md) | GO and KEGG enrichment analysis with clusterProfiler |
 
 ---
 
 ## Prerequisites
 
-Details on software, accounts, and data access needed before the workshop are listed here.
+The only software you need to install before the workshop is a terminal application:
+
+- **Mac:** Terminal is built in — no installation needed
+- **Windows:** Install [Git Bash](https://gitforwindows.org/)
+
+HiPerGator accounts will be set up for all participants in advance — you do not need to do anything. Details will be sent by email before the workshop.
 
 ---
 
 ## Key Resources
 
-A curated, annotated list of references and tools used throughout this workshop
-can be found in [annotated-resources.txt](annotated-resources.txt).
+A curated, annotated list of references and tools used throughout this workshop can be found in [annotated-resources.txt](annotated-resources.txt).
 
 ---
 
 ## How to Use This Workshop
 
-Instructions for navigating the HTML tutorial site will go here.
+Each module page provides conceptual background, code snippets, and links to further reading. The hands-on analysis is done through an interactive R notebook which will be made available on HiPerGator before the workshop. We recommend reading through each module page before the workshop session and referring back to it during the hands-on portion.
 
 ---
 
 ## Contact
 
-Questions? Contact the UF Cancer Institute Bioinformatics team.
+Questions? Contact the UF Health Cancer Institute Bioinformatics team.
