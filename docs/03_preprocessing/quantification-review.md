@@ -1,5 +1,7 @@
 # Quantifying Expression: A Brief Review
 
+**Attribution:** Portions of this page are inspired by the [Harvard FAS Informatics RNA-seq tutorial](https://informatics.fas.harvard.edu/resources/tutorials/differential-expression-analysis/) by Adam Freedman c. 2023-2025
+
 In order to obtain counts of RNA abundance from fastq files, one must employ statistical methods that account for two levels of uncertainty. The first is identifying the most likely transcript of origin of each RNA-seq read. The second is the conversion of read assignments to a count matrix, and doing so in a way that models the uncertainty inherent in many read assignments.
 
 While some reads may uniquely map to a transcript from a gene without alternative splicing, in many cases shared genomic segments among alternatively spliced transcripts within a gene will make it challenging (and in some cases impossible) to definitively identify the true transcript of origin. Early bioinformatics approaches to RNA-seq quantification simply discarded reads of uncertain origin, leading to substantial loss of information that undoubtedly undermined the robustness of expression estimates, and effectively precluded investigations of expression variation among alternatively spliced transcripts. Fortunately, there are now two common approaches for handling read assignment uncertainty.
