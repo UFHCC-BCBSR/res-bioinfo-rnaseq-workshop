@@ -8,7 +8,7 @@
 
 ## Overview
 
-This workshop guides participants through a complete bulk RNA-seq analysis workflow, from raw sequencing reads to biological interpretation. We use a *Drosophila melanogaster* temperature treatment dataset as a worked example throughout, but the methods apply to any bulk RNA-seq experiment.
+This workshop guides participants through a complete bulk RNA-seq analysis workflow, from raw sequencing reads to biological interpretation. As a worked example we use a published mouse melanoma dataset examining the transcriptional effects of PRMT7 knockdown in B16.F10 cells, with and without IFN-γ treatment. The methods covered apply to any bulk RNA-seq experiment regardless of organism or experimental design.
 
 ---
 
