@@ -10,6 +10,7 @@
 # ==============================================================================
 
 library(tidyverse)
+library(here)
 
 # Optional: For converting Ensembl IDs to gene symbols
 # Install with: BiocManager::install("org.Hs.eg.db")  # Human
@@ -21,9 +22,27 @@ library(tidyverse)
 # ==============================================================================
 
 # Set paths - MODIFY THESE FOR YOUR DATA
-nfcore_results_dir <- "/blue/cancercenter-dept/TRAINING/test_data_GEO_workshop/OUTPUT"
-output_dir <- "./workshop_data"
-sample_metadata_file <- "/blue/cancercenter-dept/jobrant/sample_metadata.csv"  # If you have one
+# INPUT: nf-core results directory (EXTERNAL - absolute path required)
+# This is the shared workshop data location on HiPerGator
+# ATTENDEES: Update this to the path provided by instructors
+nfcore_results_dir <- "/blue/cancercenter-dept/TRAINING/nfcore_output"  # ← UPDATE THIS PATH
+
+# OUTPUT: Your cloned workshop repo (using here() for portability)
+# This will automatically put processed data in YOUR repo's data/ directory
+output_dir <- here("data")
+
+# The metadata file should contain your experimental design (treatment groups, etc.)
+# If you don't have this yet, leave as-is and a template will be created
+sample_metadata_file <- here("data", "sample_metadata.tsv")
+
+# Show configuration for verification
+cat("===========================================\n")
+cat("Data Preparation Configuration\n")
+cat("===========================================\n")
+cat("Reading nf-core output from:", nfcore_results_dir, "\n")
+cat("Writing processed data to:", output_dir, "\n")
+cat("Project root (from here()):", here(), "\n")
+cat("===========================================\n\n")
 
 # Create output directory if it doesn't exist
 if (!dir.exists(output_dir)) {
