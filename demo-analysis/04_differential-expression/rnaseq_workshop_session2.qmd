@@ -1,7 +1,7 @@
 ---
 title: "RNA-seq Differential Expression Analysis with limma-voom"
 subtitle: "UF Health Cancer Institute Bioinformatics Workshop - Session 2"
-author: ""
+author: "UFHCI BCB-SR Bioinformatics Unit"
 date: today
 format:
   html:
