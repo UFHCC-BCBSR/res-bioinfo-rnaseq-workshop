@@ -24,19 +24,21 @@ This document explains the workshop setup, how `here()` works with a cloned repo
 ## What You'll Create (Your Working Space)
 
 ```
-/blue/group/YOUR_USERNAME/
-└── rnaseq_workshop/          # You create this and clone repo here
-    ├── .git/                 # Created by git clone (here() detects this!)
-    ├── data/                 # Processed data will be saved here
-    │   ├── rsem.merged.gene_counts.tsv  (created by prep script)
-    │   ├── sample_info.tsv              (created by prep script)
-    │   └── gene_annotation.tsv          (created by prep script)
-    ├── scripts/              # From cloned repo
-    │   └── prepare_nfcore_data.R
-    ├── analysis/             # From cloned repo
-    │   └── rnaseq_workshop_session2.qmd
-    ├── results/              # Created automatically during analysis
-    └── figures/              # Created automatically during analysis
+/blue/bioinf_workshop/$USER/
+└── rnaseq_workshop/
+    ├── .git/
+    ├── .gitignore
+    ├── mkdocs.yml
+    ├── README.md
+    ├── docs/
+    ├── logs/                       
+    └── demo-analysis/
+        ├── data/
+        │   ├── metadata/
+        │   └── raw/
+        └── scripts/
+            ├── 01_prepare_nfcore_data.R
+            └── 02_differential_expression_analysis.qmd
 ```
 
 ## Shared Workshop Data (Read-Only)
