@@ -235,21 +235,15 @@ Since you cloned the workshop repo, the `.git` folder serves as the marker.
 
 # Running the Analysis
 
-## Option 1: In RStudio
+## Differential Expression Analysis
 
-1. Open `rnaseq_workshop.Rproj` (if you created one)
-2. Open `analysis/rnaseq_workshop_session2.qmd`
-3. Click "Render" button or press `Ctrl+Shift+K`
+With RStudio Server already open, navigate to and open:
 
-## Option 2: Command Line
+`demo-analysis/scripts/02_differential_expression_analysis.qmd`
 
-```bash
-cd /path/to/rnaseq_workshop
-
-# Render the Quarto document
-module load quarto
-quarto render analysis/rnaseq_workshop_session2.qmd
-```
+Run through the analysis chunk by chunk using the green play button or
+`Ctrl+Enter`. This notebook will walk you through the full differential
+expression analysis using limma-voom.
 
 # Troubleshooting
 
