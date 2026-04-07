@@ -60,9 +60,9 @@ The `here` package will automatically detect your **cloned repository** as the p
 
 **When you run code from RStudio:**
 
-- `here()` returns: `/blue/group/YOUR_USERNAME/rnaseq_workshop/`
-- `here("data", "counts.tsv")` → `/blue/group/YOUR_USERNAME/rnaseq_workshop/data/counts.tsv`
-- `here("results", "output.csv")` → `/blue/group/YOUR_USERNAME/rnaseq_workshop/results/output.csv`
+- `here()` returns: `/blue/bioinf_workshop/$USER/rnaseq_workshop/`
+- `here("data", "counts.tsv")` → `/blue/bioinf_workshop/$USER/rnaseq_workshop/data/counts.tsv`
+- `here("results", "output.csv")` → `/blue/bioinf_workshop/$USER/rnaseq_workshop/results/output.csv`
 
 This works **the same for everyone**, regardless of their username or exact path!
 
