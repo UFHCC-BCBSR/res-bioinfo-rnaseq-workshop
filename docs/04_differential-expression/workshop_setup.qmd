@@ -99,19 +99,61 @@ The data preparation script will:
 - Write processed files to YOUR repo's `data/` directory
 
 ```bash
-# Still in /blue/bioinf_workshop/$USER/rnaseq_workshop/
 
-# Open RStudio Server and navigate to this directory
-# OR run from command line:
-module load R
-Rscript scripts/prepare_nfcore_data.R
+cat > rstudio.sbatch << 'EOF'
+#!/bin/bash
+#SBATCH --job-name=rserver
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=28gb
+#SBATCH --time=12:00:00
+#SBATCH --output=logs/rserver_%j.log
+#SBATCH --error=logs/rserver_%j.error
+#SBATCH --account=bioinf_workshop
+#SBATCH --qos=bioinf_workshop
+module purge; module load R/4.5
+rserver
+EOF
+
+sbatch rstudio.sbatch
 ```
 
-This will create:
+Check that the job is running:
 
-- `data/rsem.merged.gene_counts.tsv`
-- `data/sample_info.tsv`
-- `data/gene_annotation.tsv`
+```bash
+ml bcbsr_tools
+sjobs
+```
+
+Once running, check the log for your SSH tunnel command (replace `<JOBID>` with your actual job ID):
+
+```bash
+cat logs/rserver_<JOBID>.log
+```
+
+You will see output like:
+
+```
+Starting rserver on port 45261 in the /blue/bioinf_workshop/username/rnaseq_workshop directory.
+Create an SSH tunnel with:
+ssh -N -L 8080:c0710a-s29.ufhpc:45261 username@hpg.rc.ufl.edu
+Then, open in the local browser:
+http://localhost:8080
+```
+
+Run the SSH tunnel command on your **local machine**, then open `http://localhost:8080` in your browser.
+
+Once in RStudio, open and run `demo-analysis/scripts/01_prepare_nfcore_data.R`.
+
+This will create the following files in `demo-analysis/output/`:
+
+- `rsem.merged.gene_counts.tsv`
+- `sample_info.tsv`
+- `gene_annotation.tsv`
+- `data_summary.txt`
+- `library_sizes.png`
+- `README.txt`
 
 ## Start RStudio Server
 
