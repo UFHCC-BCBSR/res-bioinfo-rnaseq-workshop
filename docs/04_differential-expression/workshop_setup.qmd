@@ -65,8 +65,8 @@ The `here` package will automatically detect your **cloned repository** as the p
 **When you run code from RStudio:**
 
 - `here()` returns: `/blue/bioinf_workshop/$USER/rnaseq_workshop/`
-- `here("data", "counts.tsv")` → `/blue/bioinf_workshop/$USER/rnaseq_workshop/data/counts.tsv`
-- `here("results", "output.csv")` → `/blue/bioinf_workshop/$USER/rnaseq_workshop/results/output.csv`
+- `here("demo-analysis", "output", "counts.tsv")` → `/blue/bioinf_workshop/$USER/rnaseq_workshop/data/counts.tsv`
+- `here("demo-analysis", "output", "results", "output.csv")` → `/blue/bioinf_workshop/$USER/rnaseq_workshop/results/output.csv`
 
 This works **the same for everyone**, regardless of their username or exact path!
 
@@ -210,7 +210,7 @@ nfcore_results_dir <- "/blue/bioinf_workshop/share/nfcore_rnaseq_output/"
 # Everything else uses here() relative to your cloned repo
 counts <- read.table(here("data", "rsem.merged.gene_counts.tsv"))
 ggsave(here("figures", "plot.png"))
-write.csv(results, here("results", "output.csv"))
+write.csv(results, here("demo-analysis", "output", "results", "output.csv"))
 ```
 
 ## How `here()` Works
@@ -225,7 +225,7 @@ counts <- read.table("/blue/alice/rnaseq_workshop/data/counts.tsv")
 
 **Use this** (works for everyone):
 ```r
-counts <- read.table(here("data", "counts.tsv"))
+counts <- read.table(here("demo-analysis", "output", "counts.tsv"))
 ```
 :::
 
