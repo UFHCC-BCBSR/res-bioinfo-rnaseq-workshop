@@ -356,24 +356,24 @@ Here are common patterns you'll see throughout the workshop:
 #| eval: false
 
 # Load data
-counts <- read.table(here("data", "rsem.merged.gene_counts.tsv"))
-metadata <- read.table(here("data", "sample_info.tsv"))
+counts <- read.table(here("demo-analysis", "output", "rsem.merged.gene_counts.tsv"))
+metadata <- read.table(here("demo-analysis", "output", "sample_info.tsv"))
 
 # Save plots
-ggsave(here("figures", "volcano_plot.png"), width = 8, height = 6)
-ggsave(here("figures", "heatmap.png"), width = 10, height = 8)
+ggsave(here("demo-analysis", "output", "figures", "volcano_plot.png"), width = 8, height = 6)
+ggsave(here("demo-analysis", "output", "figures", "heatmap.png"), width = 10, height = 8)
 
 # Save results
-write.csv(results, here("results", "de_genes.csv"), row.names = TRUE)
-write.csv(top_genes, here("results", "top_50_genes.csv"))
+write.csv(results, here("demo-analysis", "output", "results", "de_genes.csv"), row.names = TRUE)
+write.csv(top_genes, here("demo-analysis", "output", "results", "top_50_genes.csv"))
 
 # Check if directory exists
-if (!dir.exists(here("results"))) {
-  dir.create(here("results"), recursive = TRUE)
+if (!dir.exists(here("demo-analysis", "output", "results"))) {
+  dir.create(here("demo-analysis", "output", "results"), recursive = TRUE)
 }
 
-# List files in a directory
-list.files(here("data"))
+# List files in output directory
+list.files(here("demo-analysis", "output"))
 ```
 
 The pattern is always: `here("folder", "subfolder", "filename")`
