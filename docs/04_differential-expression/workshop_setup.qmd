@@ -285,8 +285,8 @@ library(here)
 cat("Project root:", here(), "\n")
 
 # Check if data files exist
-file.exists(here("data", "rsem.merged.gene_counts.tsv"))
-file.exists(here("data", "sample_info.tsv"))
+file.exists(here("demo-analysis", "output", "rsem.merged.gene_counts.tsv"))
+file.exists(here("demo-analysis", "output", "sample_info.tsv"))
 
 # If FALSE, you may need to run the data prep script first
 ```
