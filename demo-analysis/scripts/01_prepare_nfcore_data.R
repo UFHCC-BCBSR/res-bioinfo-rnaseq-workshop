@@ -25,11 +25,11 @@ library(here)
 # INPUT: nf-core results directory (EXTERNAL - absolute path required)
 # This is the shared workshop data location on HiPerGator
 # ATTENDEES: Update this to the path provided by instructors
-nfcore_results_dir <- "/blue/cancercenter-dept/TRAINING/test_data_GEO_workshop/OUTPUT/"  # ← UPDATE THIS PATH
+nfcore_results_dir <- "/blue/bioinf_workshop/share/nfcore_rnaseq_output/"  # ← UPDATE THIS PATH
 
 # OUTPUT: Your cloned workshop repo (using here() for portability)
 # This will automatically put processed data in YOUR repo's data/ directory
-output_dir <- here("data")
+output_dir <- here("demo-analysis", "output")
 
 # The metadata file should contain your experimental design (treatment groups, etc.)
 # If you don't have this yet, leave as-is and a template will be created

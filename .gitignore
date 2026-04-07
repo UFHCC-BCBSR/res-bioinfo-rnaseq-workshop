@@ -2,6 +2,7 @@
 site/
 /data/
 !demo-analysis/data/
+demo-analysis/output/
 figures/
 results/
 .here
