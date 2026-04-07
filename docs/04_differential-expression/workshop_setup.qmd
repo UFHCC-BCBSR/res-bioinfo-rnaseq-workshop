@@ -196,7 +196,7 @@ This workshop uses two different path strategies:
 #| eval: false
 # The nf-core output is OUTSIDE your repo
 # The prep script uses an absolute path to read it
-nfcore_results_dir <- "/blue/cancercenter-dept/TRAINING/nfcore_output"
+nfcore_results_dir <- "/blue/bioinf_workshop/share/nfcore_rnaseq_output/"
 ```
 
 **2. Repo-Relative Paths (Using `here()`):**
@@ -296,7 +296,7 @@ Make sure the path in `scripts/prepare_nfcore_data.R` matches the actual locatio
 ```{r}
 #| eval: false
 # Check this line in the script:
-nfcore_results_dir <- "/blue/cancercenter-dept/TRAINING/nfcore_output"
+nfcore_results_dir <- "/blue/bioinf_workshop/share/nfcore_rnaseq_output/"
 
 # Ask instructors for the correct path if different
 ```
