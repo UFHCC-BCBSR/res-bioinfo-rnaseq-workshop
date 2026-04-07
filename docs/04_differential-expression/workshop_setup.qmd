@@ -159,10 +159,8 @@ This will create the following files in `demo-analysis/output/`:
 
 ## Start RStudio Server
 
-```bash
-# Launch RStudio Server session
-# Make sure you start it FROM your rnaseq_workshop directory
-```
+You should already have RStudio Server running from the previous step. If your
+session has expired, refer back to **Section 4.2** to relaunch it.
 
 In RStudio:
 
