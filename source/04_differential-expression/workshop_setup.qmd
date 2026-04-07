@@ -13,6 +13,8 @@ format:
     embed-resources: true
     theme: cosmo
     number-sections: true
+execute:
+  enabled: false
 ---
 
 # Overview
