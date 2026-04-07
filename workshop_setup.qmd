@@ -1,0 +1,329 @@
+---
+title: "Workshop Setup Guide"
+subtitle: "RNA-seq Bioinformatics Workshop - File Structure and Configuration"
+author: "UF Health Cancer Center Bioinformatics"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    code-copy: true
+    code-overflow: wrap
+    embed-resources: true
+    theme: cosmo
+    number-sections: true
+---
+
+# Overview
+
+This document explains the workshop setup, how `here()` works with a cloned repository, and where your data files will live.
+
+# Workshop File Layout
+
+## What You'll Create (Your Working Space)
+
+```
+/blue/group/YOUR_USERNAME/
+└── rnaseq_workshop/          # You create this and clone repo here
+    ├── .git/                 # Created by git clone (here() detects this!)
+    ├── data/                 # Processed data will be saved here
+    │   ├── rsem.merged.gene_counts.tsv  (created by prep script)
+    │   ├── sample_info.tsv              (created by prep script)
+    │   └── gene_annotation.tsv          (created by prep script)
+    ├── scripts/              # From cloned repo
+    │   └── prepare_nfcore_data.R
+    ├── analysis/             # From cloned repo
+    │   └── rnaseq_workshop_session2.qmd
+    ├── results/              # Created automatically during analysis
+    └── figures/              # Created automatically during analysis
+```
+
+## Shared Workshop Data (Read-Only)
+
+```
+/blue/cancercenter-dept/TRAINING/
+└── nfcore_output/            # Shared nf-core pipeline results
+    └── star_rsem/
+        └── rsem.merged.gene_counts.tsv  (and other pipeline outputs)
+```
+
+# How `here()` Works in This Setup
+
+::: {.callout-note}
+## The `here` Package
+
+The `here` package will automatically detect your **cloned repository** as the project root because it contains a `.git` folder.
+:::
+
+**When you run code from RStudio:**
+
+- `here()` returns: `/blue/group/YOUR_USERNAME/rnaseq_workshop/`
+- `here("data", "counts.tsv")` → `/blue/group/YOUR_USERNAME/rnaseq_workshop/data/counts.tsv`
+- `here("results", "output.csv")` → `/blue/group/YOUR_USERNAME/rnaseq_workshop/results/output.csv`
+
+This works **the same for everyone**, regardless of their username or exact path!
+
+# Setup Instructions
+
+## Create Your Working Directory and Clone the Repo
+
+On HiPerGator:
+
+```bash
+# Navigate to your group's blue storage
+cd /blue/YOUR_GROUP/YOUR_USERNAME/
+
+# Clone the workshop repository
+git clone https://github.com/UFHCC/res-bioinfo-rnaseq-workshop.git rnaseq_workshop
+
+# Navigate into the cloned repo
+cd rnaseq_workshop
+
+# Verify the structure
+ls -la
+# You should see: .git/, data/, scripts/, analysis/, etc.
+```
+
+::: {.callout-important}
+## The `.git/` Folder is Key!
+
+The `.git/` folder (created by `git clone`) is what makes `here()` work! Don't delete it.
+:::
+
+## Prepare the Data (Run Once)
+
+The data preparation script will:
+
+- Read from the shared nf-core output directory (external, read-only)
+- Write processed files to YOUR repo's `data/` directory
+
+```bash
+# Still in /blue/YOUR_GROUP/YOUR_USERNAME/rnaseq_workshop/
+
+# Open RStudio Server and navigate to this directory
+# OR run from command line:
+module load R
+Rscript scripts/prepare_nfcore_data.R
+```
+
+This will create:
+
+- `data/rsem.merged.gene_counts.tsv`
+- `data/sample_info.tsv`
+- `data/gene_annotation.tsv`
+
+## Start RStudio Server
+
+```bash
+# Launch RStudio Server session
+# Make sure you start it FROM your rnaseq_workshop directory
+```
+
+In RStudio:
+
+1. File → Open Project
+2. Select `rnaseq_workshop` (if not auto-detected)
+3. Check that `here()` is working:
+
+```{r}
+#| eval: false
+library(here)
+here()  # Should show: /blue/YOUR_GROUP/YOUR_USERNAME/rnaseq_workshop
+```
+
+# Using the `here` Package
+
+All workshop materials use the `here` package for file paths within the repository. This ensures:
+
+- **Portability**: Works on any computer/HPC system
+- **Reproducibility**: Same code works for everyone
+- **No hardcoded paths**: No need to change file paths in the code
+
+## Two Types of Paths in This Workshop
+
+::: {.callout-tip}
+## Understanding the Two-Path System
+
+This workshop uses two different path strategies:
+:::
+
+**1. External Input (Absolute Path):**
+
+```{r}
+#| eval: false
+# The nf-core output is OUTSIDE your repo
+# The prep script uses an absolute path to read it
+nfcore_results_dir <- "/blue/cancercenter-dept/TRAINING/nfcore_output"
+```
+
+**2. Repo-Relative Paths (Using `here()`):**
+
+```{r}
+#| eval: false
+# Everything else uses here() relative to your cloned repo
+counts <- read.table(here("data", "rsem.merged.gene_counts.tsv"))
+ggsave(here("figures", "plot.png"))
+write.csv(results, here("results", "output.csv"))
+```
+
+## How `here()` Works
+
+::: {.callout-note}
+## Before and After
+
+**Instead of this** (breaks when you move files or share with others):
+```r
+counts <- read.table("/blue/alice/rnaseq_workshop/data/counts.tsv")
+```
+
+**Use this** (works for everyone):
+```r
+counts <- read.table(here("data", "counts.tsv"))
+```
+:::
+
+The `here()` function automatically finds your project root by looking for:
+
+1. `.git` folder ← **Your cloned repo has this!**
+2. `.Rproj` file (optional)
+3. `.here` file (optional)
+
+Since you cloned the workshop repo, the `.git` folder serves as the marker.
+
+# Running the Analysis
+
+## Option 1: In RStudio
+
+1. Open `rnaseq_workshop.Rproj` (if you created one)
+2. Open `analysis/rnaseq_workshop_session2.qmd`
+3. Click "Render" button or press `Ctrl+Shift+K`
+
+## Option 2: Command Line
+
+```bash
+cd /path/to/rnaseq_workshop
+
+# Render the Quarto document
+module load quarto
+quarto render analysis/rnaseq_workshop_session2.qmd
+```
+
+# Troubleshooting
+
+## `here()` is pointing to the wrong directory
+
+Check what `here()` returns:
+
+```{r}
+#| eval: false
+library(here)
+here()
+```
+
+**Should return:** `/blue/YOUR_GROUP/YOUR_USERNAME/rnaseq_workshop`
+
+::: {.callout-warning}
+## If it returns something else:
+
+- Make sure you're working inside the cloned repo directory
+- Check that the `.git` folder exists: `list.files(all.files = TRUE)`
+- Make sure you **started R/RStudio from inside the workshop repo**, not from a parent directory
+- Try restarting R/RStudio
+:::
+
+## "Cannot find file" errors
+
+```{r}
+#| eval: false
+# Debug: check where here() thinks you are
+library(here)
+cat("Project root:", here(), "\n")
+
+# Check if data files exist
+file.exists(here("data", "rsem.merged.gene_counts.tsv"))
+file.exists(here("data", "sample_info.tsv"))
+
+# If FALSE, you may need to run the data prep script first
+```
+
+## Data prep script can't find nf-core output
+
+Make sure the path in `scripts/prepare_nfcore_data.R` matches the actual location:
+
+```{r}
+#| eval: false
+# Check this line in the script:
+nfcore_results_dir <- "/blue/cancercenter-dept/TRAINING/nfcore_output"
+
+# Ask instructors for the correct path if different
+```
+
+## Package not installed
+
+```{r}
+#| eval: false
+# Install here if needed
+install.packages("here")
+
+# Or all workshop packages at once
+install.packages(c("tidyverse", "ggrepel", "pheatmap", "RColorBrewer", "here"))
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(c("limma", "edgeR"))
+```
+
+# Output Files
+
+After running the analysis, you'll find:
+
+- **figures/**: PNG files of all plots
+- **results/**: CSV files with DE results
+- **analysis/*.html**: Rendered HTML report
+
+::: {.callout-tip}
+## Portability
+
+All paths are relative, so you can:
+
+- Move the entire `rnaseq_workshop` folder anywhere
+- Share it with collaborators
+- Run it on different computers
+- Everything will still work!
+:::
+
+# Questions?
+
+Contact: [Your Email]
+
+---
+
+# Appendix: Common `here()` Examples
+
+Here are common patterns you'll see throughout the workshop:
+
+```{r}
+#| eval: false
+
+# Load data
+counts <- read.table(here("data", "rsem.merged.gene_counts.tsv"))
+metadata <- read.table(here("data", "sample_info.tsv"))
+
+# Save plots
+ggsave(here("figures", "volcano_plot.png"), width = 8, height = 6)
+ggsave(here("figures", "heatmap.png"), width = 10, height = 8)
+
+# Save results
+write.csv(results, here("results", "de_genes.csv"), row.names = TRUE)
+write.csv(top_genes, here("results", "top_50_genes.csv"))
+
+# Check if directory exists
+if (!dir.exists(here("results"))) {
+  dir.create(here("results"), recursive = TRUE)
+}
+
+# List files in a directory
+list.files(here("data"))
+```
+
+The pattern is always: `here("folder", "subfolder", "filename")`
