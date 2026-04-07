@@ -317,11 +317,19 @@ BiocManager::install(c("limma", "edgeR"))
 
 # Output Files
 
+After running the data preparation script, you'll find in `demo-analysis/output/`:
+
+- `rsem.merged.gene_counts.tsv`
+- `sample_info.tsv`
+- `gene_annotation.tsv`
+- `data_summary.txt`
+- `library_sizes.png`
+- `README.txt`
+
 After running the analysis, you'll find:
 
-- **figures/**: PNG files of all plots
-- **results/**: CSV files with DE results
-- **analysis/*.html**: Rendered HTML report
+- `demo-analysis/output/figures/`: PNG files of all plots
+- `demo-analysis/output/results/`: CSV files with DE results
 
 ::: {.callout-tip}
 ## Portability
