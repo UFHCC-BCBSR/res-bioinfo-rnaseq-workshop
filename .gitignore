@@ -1,6 +1,7 @@
 *bash
 site/
-data/
+/data/
+!demo-analysis/data/
 figures/
 results/
 .here
