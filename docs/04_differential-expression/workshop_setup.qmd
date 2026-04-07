@@ -82,7 +82,7 @@ cd rnaseq_workshop
 
 # Verify the structure
 ls -la
-# You should see: .git/, data/, scripts/, analysis/, etc.
+# You should see: .git, demo-analysis/, docs/, .gitignore, mkdocs.yml, README.md
 ```
 
 ::: {.callout-important}
