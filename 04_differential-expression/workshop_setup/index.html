@@ -1,0 +1,1042 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="UF Health Cancer Institute Biostatistics and Computational Biology Shared Resource">
+      
+      
+        <meta name="author" content="['UF Health Cancer Center Bioinformatics']">
+      
+      
+      
+        <link rel="prev" href="../pathway-analysis/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/logo.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+    
+    
+      
+        <title>Workshop Setup Guide - Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#overview" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis" class="md-header__button md-logo" aria-label="Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Workshop Setup Guide
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--integrated" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis" class="md-nav__button md-logo" aria-label="Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis
+  </label>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../01_command-line-basics/command-line-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command Line Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../02_hipergator-basics/hipergator-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HiPerGator Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../05_r-basics/r-basics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    R Basics
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../06_ai-chatbot/ai-chatbot/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    AI Chatbot Tips
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03_preprocessing/quantification-review/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quantification Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../03_preprocessing/nfcore-workflow/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nf-core/rnaseq Workflow
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Differential Expression
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Differential Expression
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview & Background
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../visualization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Visualization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pathway-analysis/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pathway Analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demo Analysis Setup
+  
+
+    
+      <br>
+      <small>RNA-seq Bioinformatics Workshop - File Structure and Configuration</small>
+    
+  </span>
+  
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="overview">Overview</h1>
+<p>This document explains the workshop setup, how <code>here()</code> works with a
+cloned repository, and where your data files will live.</p>
+<h1 id="workshop-file-layout">Workshop File Layout</h1>
+<h2 id="what-youll-create-your-working-space">What You'll Create (Your Working Space)</h2>
+<pre><code>/blue/bioinf_workshop/$USER/
+└── rnaseq_workshop/
+    ├── .git/
+    ├── .gitignore
+    ├── mkdocs.yml
+    ├── README.md
+    ├── docs/
+    ├── logs/                       
+    └── demo-analysis/
+        ├── data/
+        │   ├── metadata/
+        │   └── raw/
+        └── scripts/
+            ├── 01_prepare_nfcore_data.R
+            └── 02_differential_expression_analysis.qmd
+</code></pre>
+<h2 id="shared-workshop-data-read-only">Shared Workshop Data (Read-Only)</h2>
+<pre><code>/blue/bioinf_workshop/share/nfcore_rnaseq_output/
+├── fastqc/
+├── fq_lint/
+├── genome/
+├── multiqc/
+├── pipeline_info/
+├── star_rsem/
+└── trimgalore/
+</code></pre>
+<h1 id="how-here-works-in-this-setup">How <code>here()</code> Works in This Setup</h1>
+<div>
+
+> **The `here` Package**
+>
+> The `here` package will automatically detect your **cloned
+> repository** as the project root because it contains a `.git` folder.
+
+</div>
+
+<p><strong>When you run code from RStudio:</strong></p>
+<ul>
+<li><code>here()</code> returns: <code>/blue/bioinf_workshop/$USER/rnaseq_workshop/</code></li>
+<li><code>here("demo-analysis", "output", "counts.tsv")</code> →
+    <code>/blue/bioinf_workshop/$USER/rnaseq_workshop/data/counts.tsv</code></li>
+<li><code>here("demo-analysis", "output", "results", "output.csv")</code> →
+    <code>/blue/bioinf_workshop/$USER/rnaseq_workshop/results/output.csv</code></li>
+</ul>
+<p>This works <strong>the same for everyone</strong>, regardless of their username or
+exact path!</p>
+<h1 id="setup-instructions">Setup Instructions</h1>
+<h2 id="create-your-working-directory-and-clone-the-repo">Create Your Working Directory and Clone the Repo</h2>
+<p>On HiPerGator:</p>
+<pre><code class="language-bash"># Navigate to your group's blue storage
+cd /blue/bioinf_workshop/$USER/
+
+# Clone the workshop repository
+git clone https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop.git rnaseq_workshop
+
+# Navigate into the cloned repo
+cd rnaseq_workshop
+
+# Verify the structure
+ls -la
+# You should see: .git, demo-analysis/, docs/, .gitignore, mkdocs.yml, README.md
+</code></pre>
+<div>
+
+> **The `.git/` Folder is Key!**
+>
+> The `.git/` folder (created by `git clone`) is what makes `here()`
+> work! Don't delete it.
+
+</div>
+
+<h2 id="prepare-the-data-run-once">Prepare the Data (Run Once)</h2>
+<p>The data preparation script will:</p>
+<ul>
+<li>Read from the shared nf-core output directory (external, read-only)</li>
+<li>Write processed files to YOUR repo's <code>demo-analysis/output/</code>
+    directory</li>
+</ul>
+<pre><code class="language-bash">
+cat &gt; rstudio.sbatch &lt;&lt; 'EOF'
+#!/bin/bash
+#SBATCH --job-name=rserver
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=28gb
+#SBATCH --time=12:00:00
+#SBATCH --output=logs/rserver_%j.log
+#SBATCH --error=logs/rserver_%j.error
+#SBATCH --account=bioinf_workshop
+#SBATCH --qos=bioinf_workshop
+module purge; module load R/4.5
+rserver
+EOF
+
+sbatch rstudio.sbatch
+</code></pre>
+<p>Check that the job is running:</p>
+<pre><code class="language-bash">ml bcbsr_tools
+sjobs
+</code></pre>
+<p>Once running, check the log for your SSH tunnel command (replace
+<code>&lt;JOBID&gt;</code> with your actual job ID):</p>
+<pre><code class="language-bash">cat logs/rserver_&lt;JOBID&gt;.log
+</code></pre>
+<p>You will see output like:</p>
+<pre><code>Starting rserver on port 45261 in the /blue/bioinf_workshop/username/rnaseq_workshop directory.
+Create an SSH tunnel with:
+ssh -N -L 8080:c0710a-s29.ufhpc:45261 username@hpg.rc.ufl.edu
+Then, open in the local browser:
+http://localhost:8080
+</code></pre>
+<p>Run the SSH tunnel command on your <strong>local machine</strong>, then open
+<code>http://localhost:8080</code> in your browser.</p>
+<p>Once in RStudio, open and run
+<code>demo-analysis/scripts/01_prepare_nfcore_data.R</code>.</p>
+<p>This will create the following files in <code>demo-analysis/output/</code>:</p>
+<ul>
+<li><code>rsem.merged.gene_counts.tsv</code></li>
+<li><code>sample_info.tsv</code></li>
+<li><code>gene_annotation.tsv</code></li>
+<li><code>data_summary.txt</code></li>
+<li><code>library_sizes.png</code></li>
+<li><code>README.txt</code></li>
+</ul>
+<h2 id="start-rstudio-server">Start RStudio Server</h2>
+<p>You should already have RStudio Server running from the previous step.
+If your session has expired, refer back to <strong>Section 4.2</strong> to relaunch
+it.</p>
+<p>In RStudio:</p>
+<ol>
+<li>File → Open Project</li>
+<li>Select <code>rnaseq_workshop</code> (if not auto-detected)</li>
+<li>Check that <code>here()</code> is working:</li>
+</ol>
+<p>::: cell</p>
+<pre class="cell-code"><code class="language-r">library(here)
+here()  # Should show: /blue/bioinf_workshop/$USER/rnaseq_workshop
+</code></pre>
+<p>:::</p>
+<h1 id="using-the-here-package">Using the <code>here</code> Package</h1>
+<p>All workshop materials use the <code>here</code> package for file paths within the
+repository. This ensures:</p>
+<ul>
+<li><strong>Portability</strong>: Works on any computer/HPC system</li>
+<li><strong>Reproducibility</strong>: Same code works for everyone</li>
+<li><strong>No hardcoded paths</strong>: No need to change file paths in the code</li>
+</ul>
+<h2 id="two-types-of-paths-in-this-workshop">Two Types of Paths in This Workshop</h2>
+<div>
+
+> **Understanding the Two-Path System**
+>
+> This workshop uses two different path strategies:
+
+</div>
+
+<p><strong>1. External Input (Absolute Path):</strong></p>
+<p>::: cell</p>
+<pre class="cell-code"><code class="language-r"># The nf-core output is OUTSIDE your repo
+# The prep script uses an absolute path to read it
+nfcore_results_dir &lt;- &quot;/blue/bioinf_workshop/share/nfcore_rnaseq_output/&quot;
+</code></pre>
+<p>:::</p>
+<p><strong>2. Repo-Relative Paths (Using <code>here()</code>):</strong></p>
+<p>::: cell</p>
+<pre class="cell-code"><code class="language-r"># Everything else uses here() relative to your cloned repo
+counts &lt;- read.table(here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;rsem.merged.gene_counts.tsv&quot;))
+ggsave(here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;figures&quot;, &quot;plot.png&quot;))
+write.csv(results, here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;results&quot;, &quot;output.csv&quot;))
+</code></pre>
+<p>:::</p>
+<h2 id="how-here-works">How <code>here()</code> Works</h2>
+<div>
+
+> **Before and After**
+>
+> **Instead of this** (breaks when you move files or share with others):
+>
+> ``` r
+> counts <- read.table("/blue/alice/rnaseq_workshop/data/counts.tsv")
+> ```
+>
+> **Use this** (works for everyone):
+>
+> ``` r
+> counts <- read.table(here("demo-analysis", "output", "counts.tsv"))
+> ```
+
+</div>
+
+<p>The <code>here()</code> function automatically finds your project root by looking
+for:</p>
+<ol>
+<li><code>.git</code> folder ← <strong>Your cloned repo has this!</strong></li>
+<li><code>.Rproj</code> file (optional)</li>
+<li><code>.here</code> file (optional)</li>
+</ol>
+<p>Since you cloned the workshop repo, the <code>.git</code> folder serves as the
+marker.</p>
+<h1 id="running-the-analysis">Running the Analysis</h1>
+<h2 id="differential-expression-analysis">Differential Expression Analysis</h2>
+<p>With RStudio Server already open, navigate to and open:</p>
+<p><code>demo-analysis/scripts/02_differential_expression_analysis.qmd</code></p>
+<p>Run through the analysis chunk by chunk using the green play button or
+<code>Ctrl+Enter</code>. This notebook will walk you through the full differential
+expression analysis using limma-voom.</p>
+<h1 id="troubleshooting">Troubleshooting</h1>
+<h2 id="here-is-pointing-to-the-wrong-directory"><code>here()</code> is pointing to the wrong directory</h2>
+<p>Check what <code>here()</code> returns:</p>
+<p>::: cell</p>
+<pre class="cell-code"><code class="language-r">library(here)
+here()
+</code></pre>
+<p>:::</p>
+<p><strong>Should return:</strong> <code>/blue/bioinf_workshop/$USER/rnaseq_workshop</code></p>
+<div>
+
+> **If it returns something else:**
+>
+> -   Make sure you're working inside the cloned repo directory
+> -   Check that the `.git` folder exists:
+>     `list.files(all.files = TRUE)`
+> -   Make sure you **started R/RStudio from inside the workshop repo**,
+>     not from a parent directory
+> -   Try restarting R/RStudio
+
+</div>
+
+<h2 id="cannot-find-file-errors">"Cannot find file" errors</h2>
+<p>::: cell</p>
+<pre class="cell-code"><code class="language-r"># Debug: check where here() thinks you are
+library(here)
+cat(&quot;Project root:&quot;, here(), &quot;\n&quot;)
+
+# Check if data files exist
+file.exists(here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;rsem.merged.gene_counts.tsv&quot;))
+file.exists(here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;sample_info.tsv&quot;))
+
+# If FALSE, you may need to run the data prep script first
+</code></pre>
+<p>:::</p>
+<h2 id="data-prep-script-cant-find-nf-core-output">Data prep script can't find nf-core output</h2>
+<p>Make sure the path in <code>scripts/prepare_nfcore_data.R</code> matches the actual
+location:</p>
+<p>::: cell</p>
+<pre class="cell-code"><code class="language-r"># Check this line in the script:
+nfcore_results_dir &lt;- &quot;/blue/bioinf_workshop/share/nfcore_rnaseq_output/&quot;
+
+# Ask instructors for the correct path if different
+</code></pre>
+<p>:::</p>
+<h2 id="package-not-installed">Package not installed</h2>
+<p>::: cell</p>
+<pre class="cell-code"><code class="language-r"># Install here if needed
+install.packages(&quot;here&quot;)
+
+# Or all workshop packages at once
+install.packages(c(&quot;tidyverse&quot;, &quot;ggrepel&quot;, &quot;pheatmap&quot;, &quot;RColorBrewer&quot;, &quot;here&quot;))
+if (!require(&quot;BiocManager&quot;, quietly = TRUE))
+    install.packages(&quot;BiocManager&quot;)
+BiocManager::install(c(&quot;limma&quot;, &quot;edgeR&quot;))
+</code></pre>
+<p>:::</p>
+<h1 id="output-files">Output Files</h1>
+<p>After running the data preparation script, you'll find in
+<code>demo-analysis/output/</code>:</p>
+<ul>
+<li><code>rsem.merged.gene_counts.tsv</code></li>
+<li><code>sample_info.tsv</code></li>
+<li><code>gene_annotation.tsv</code></li>
+<li><code>data_summary.txt</code></li>
+<li><code>library_sizes.png</code></li>
+<li><code>README.txt</code></li>
+</ul>
+<p>After running the analysis, you'll find:</p>
+<ul>
+<li><code>demo-analysis/output/figures/</code>: PNG files of all plots</li>
+<li><code>demo-analysis/output/results/</code>: CSV files with DE results</li>
+</ul>
+<div>
+
+> **Portability**
+>
+> All paths are relative, so you can:
+>
+> -   Move the entire `rnaseq_workshop` folder anywhere
+> -   Share it with collaborators
+> -   Run it on different computers
+> -   Everything will still work!
+
+</div>
+
+<h1 id="questions">Questions?</h1>
+<p>Contact: [Your Email]</p>
+<hr />
+<h1 id="appendix-common-here-examples">Appendix: Common <code>here()</code> Examples</h1>
+<p>Here are common patterns you'll see throughout the workshop:</p>
+<p>::: cell</p>
+<pre class="cell-code"><code class="language-r"># Load data
+counts &lt;- read.table(here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;rsem.merged.gene_counts.tsv&quot;))
+metadata &lt;- read.table(here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;sample_info.tsv&quot;))
+
+# Save plots
+ggsave(here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;figures&quot;, &quot;volcano_plot.png&quot;), width = 8, height = 6)
+ggsave(here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;figures&quot;, &quot;heatmap.png&quot;), width = 10, height = 8)
+
+# Save results
+write.csv(results, here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;results&quot;, &quot;de_genes.csv&quot;), row.names = TRUE)
+write.csv(top_genes, here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;results&quot;, &quot;top_50_genes.csv&quot;))
+
+# Check if directory exists
+if (!dir.exists(here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;results&quot;))) {
+  dir.create(here(&quot;demo-analysis&quot;, &quot;output&quot;, &quot;results&quot;), recursive = TRUE)
+}
+
+# List files in output directory
+list.files(here(&quot;demo-analysis&quot;, &quot;output&quot;))
+</code></pre>
+<p>:::</p>
+<p>The pattern is always: <code>here("folder", "subfolder", "filename")</code></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      © 2026 UF Health Cancer Institute Biostatistics and Computational Biology Shared Resource | Portions of this content are inspired by <a href="https://informatics.fas.harvard.edu">Harvard FAS Informatics</a>
+
+    </div>
+  
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+  </body>
+</html>
