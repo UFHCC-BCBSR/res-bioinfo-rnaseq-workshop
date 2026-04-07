@@ -75,7 +75,7 @@ On HiPerGator:
 cd /blue/bioinf_workshop/$USER/
 
 # Clone the workshop repository
-git clone https://github.com/UFHCC/res-bioinfo-rnaseq-workshop.git rnaseq_workshop
+git clone https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop.git rnaseq_workshop
 
 # Navigate into the cloned repo
 cd rnaseq_workshop
