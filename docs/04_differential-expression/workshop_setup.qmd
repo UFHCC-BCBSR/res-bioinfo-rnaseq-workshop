@@ -208,8 +208,8 @@ nfcore_results_dir <- "/blue/bioinf_workshop/share/nfcore_rnaseq_output/"
 ```{r}
 #| eval: false
 # Everything else uses here() relative to your cloned repo
-counts <- read.table(here("data", "rsem.merged.gene_counts.tsv"))
-ggsave(here("figures", "plot.png"))
+counts <- read.table(here("demo-analysis", "output", "rsem.merged.gene_counts.tsv"))
+ggsave(here("demo-analysis", "output", "figures", "plot.png"))
 write.csv(results, here("demo-analysis", "output", "results", "output.csv"))
 ```
 
