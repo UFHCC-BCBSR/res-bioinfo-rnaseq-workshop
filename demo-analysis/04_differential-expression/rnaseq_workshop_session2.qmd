@@ -61,14 +61,26 @@ library(tidyverse)   # Data manipulation and visualization
 library(ggrepel)     # Better text labels on plots
 library(pheatmap)    # Heatmaps
 library(RColorBrewer) # Color palettes
+library(here)
 
 # Set a seed for reproducibility
 set.seed(42)
 
-# Create output directory for figures
-if (!dir.exists("figures")) {
-  dir.create("figures")
-}
+# Define directory structure using here() for portability
+# here() finds the project root automatically
+data_dir <- here("data")
+results_dir <- here("results")
+figures_dir <- here("figures")
+
+# Create output directories if they don't exist
+dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
+
+# Display the project root for verification
+cat("Project root:", here(), "\n")
+cat("Data directory:", data_dir, "\n")
+cat("Results directory:", results_dir, "\n")
+cat("Figures directory:", figures_dir, "\n")
 ```
 
 ::: {.callout-tip}
@@ -87,11 +99,22 @@ BiocManager::install(c("limma", "edgeR"))
 ```{r paths}
 # Define paths to your data files
 # These should be outputs from the nf-core/rnaseq pipeline
-counts_file <- "path/to/rsem.merged.gene_counts.tsv"
-sample_info_file <- "path/to/sample_info.tsv"
+counts_file <- here("data", "rsem.merged.gene_counts.tsv")
+sample_info_file <- here("docs", "04_differential-expression", "sample_metadata.csv")
 
-# For this workshop, we'll use example paths
-# Update these to match your actual file locations
+# Verify files exist
+if (!file.exists(counts_file)) {
+  stop("Count file not found: ", counts_file, "\n",
+       "Please ensure your data is in the 'data/' directory")
+}
+
+if (!file.exists(sample_info_file)) {
+  stop("Sample info file not found: ", sample_info_file, "\n",
+       "Please ensure your metadata is in the 'data/' directory")
+}
+
+cat("✓ Count file found:", counts_file, "\n")
+cat("✓ Sample info found:", sample_info_file, "\n")
 ```
 
 ::: {.callout-note}
@@ -113,11 +136,8 @@ The nf-core/rnaseq pipeline with RSEM produces a merged count matrix file typica
 
 expression_data <- read.table(counts_file, 
                               header = TRUE, 
-                              row.names = "gene_name",
+                              row.names = 1,
                               check.names = FALSE)
-
-# Remove the gene_id column (we're using gene_name as row names)
-expression_data$gene_id <- NULL
 
 # Quick look at the data
 head(expression_data, n = 3)
@@ -137,7 +157,7 @@ Note that RSEM produces **expected counts** which are suitable for downstream an
 # - sample: sample names (matching column names in expression_data)
 # - Any experimental factors (treatment, genotype, time, etc.)
 
-sample_info <- read.table(sample_info_file, 
+sample_info <- read.csv(sample_info_file, 
                           header = TRUE, 
                           stringsAsFactors = FALSE)
 
@@ -169,6 +189,8 @@ The `DGEList` object from edgeR is a convenient container for RNA-seq data that 
 DGE <- DGEList(counts = expression_data,
                samples = sample_info)
 
+# Explicitly add group column to DGE
+DGE$samples$group <- factor(DGE$samples$genotype, levels = c("PRMT7 WT", "PRMT7 KD"))
 # Inspect the object
 DGE
 ```
@@ -275,12 +297,14 @@ mds <- plotMDS(DGE, top = 500, plot = FALSE, gene.selection = "common")
 mds_df <- data.frame(
   sample = rownames(DGE$samples),
   dim1 = mds$x,
-  dim2 = mds$y,
-  group = DGE$samples$group
+  dim2 = mds$y, 
+  genotype = DGE$samples$genotype, 
+  treatment = DGE$samples$treatment, 
+  Run = DGE$samples$Run
 )
 
 # Create MDS plot
-ggplot(mds_df, aes(x = dim1, y = dim2, color = group, label = sample)) +
+ggplot(mds_df, aes(x = dim1, y = dim2, color = genotype, label = Run)) +
   geom_point(size = 4, alpha = 0.8) +
   geom_text_repel(size = 3, max.overlaps = 20) +
   labs(title = "MDS Plot - Sample Similarity",
@@ -321,7 +345,7 @@ cor_matrix <- cor(logcpm, method = "spearman")
 
 # Create annotation for samples
 annotation_col <- data.frame(
-  Group = DGE$samples$group,
+  Genotype = DGE$samples$genotype,
   row.names = colnames(logcpm)
 )
 
@@ -363,16 +387,16 @@ Let's start with a simple comparison: two conditions, like "treated vs. control"
 The design matrix tells limma which samples belong to which groups.
 
 ```{r design-simple}
-# For this example, assume we have a 'treatment' factor with levels "control" and "treated"
-# Adjust this based on your actual experimental design
+# For our PRMT7 knockdown experiment, we're comparing KD to WT
+# The first level (PRMT7 WT) will be the reference
 
 # Make sure the factor levels are set correctly
 # The first level will be the reference (denominator in fold-change)
-DGE$samples$treatment <- factor(DGE$samples$treatment, 
-                                levels = c("control", "treated"))
+DGE$samples$genotype <- factor(DGE$samples$genotype, 
+                                levels = c("PRMT7 WT", "PRMT7 KD"))
 
 # Create design matrix
-design_simple <- model.matrix(~treatment, data = DGE$samples)
+design_simple <- model.matrix(~genotype, data = DGE$samples)
 
 # View the design matrix
 design_simple
@@ -383,12 +407,12 @@ colnames(design_simple)
 
 ::: {.callout-note}
 ## Understanding the Design Matrix
-- **Intercept (column 1)**: Average expression in the reference group
-- **treatmenttreated (column 2)**: Difference between treated and control (log2 fold-change)
+- **Intercept (column 1)**: Average expression in the reference group (PRMT7 WT)
+- **genotypePRMT7 KD (column 2)**: Difference between KD and WT (log2 fold-change)
 
 If a gene has:
-- Positive coefficient: higher expression in treated
-- Negative coefficient: higher expression in control
+- Positive coefficient: higher expression in KD
+- Negative coefficient: higher expression in WT (lower in KD)
 :::
 
 ## Run limma-voom with Quality Weights
@@ -398,36 +422,40 @@ The voom transformation:
 2. Estimates the mean-variance relationship
 3. Calculates precision weights for each observation
 
-Quality weights down-weight outlier samples.
+
 
 ```{r voom-simple, fig.width=8, fig.height=5}
 # Run voom with quality weights
 # normalize.method = "none" because we already did TMM normalization
-vwts_simple <- voomWithQualityWeights(DGE, 
-                                      design = design_simple,
-                                      normalize.method = "none",
-                                      plot = TRUE)
+v_simple <- voom(DGE, 
+                 design = design_simple,
+                 normalize.method = "none",
+                 plot = TRUE)
 ```
 
 ::: {.callout-note}
-## Interpreting voom Plots
-**Left panel (mean-variance trend):**
-- Shows the relationship between average expression and variability
-- Red curve = the trend being modeled
-- At low expression: high variance (noisy)
-- At high expression: lower variance (reliable)
+## Interpreting the voom Plot
 
-**Right panel (sample weights):**
-- All samples should have weights close to 1.0
-- Weights <0.5 indicate problematic samples
-- Weights are used to down-weight outliers without excluding them
+The plot shows the relationship between average expression and variability:
+
+- **Red curve**: The mean-variance trend being modeled
+- **Low expression** (left side): High variance (noisy measurements)
+- **High expression** (right side): Lower, more stable variance
+
+voom uses this relationship to calculate precision weights for each gene, giving more weight to reliably measured genes in the statistical analysis.
+:::
+
+::: {.callout-tip}
+## voom vs. voomWithQualityWeights
+
+We're using basic `voom()` which handles gene-level variance. If you have concerns about outlier samples or variable sample quality, you can use `voomWithQualityWeights()` instead, which also calculates sample-level weights to down-weight problematic samples.
 :::
 
 ## Fit Linear Model
 
 ```{r fit-simple}
 # Fit linear model to each gene
-fit_simple <- lmFit(vwts_simple, design_simple)
+fit_simple <- lmFit(v_simple, design_simple)
 
 # Apply empirical Bayes moderation
 # This borrows information across genes to improve variance estimates
@@ -439,9 +467,9 @@ summary(decideTests(fit_simple, adjust.method = "fdr", p.value = 0.05))
 
 ::: {.callout-tip}
 ## Understanding decideTests Output
-- **Down**: Genes significantly downregulated in treated vs. control (negative logFC)
-- **NotSig**: Genes not significantly different
-- **Up**: Genes significantly upregulated in treated vs. control (positive logFC)
+- **Down**: Genes significantly downregulated in KD vs. WT (negative logFC = lower in KD)
+- **NotSig**: Genes not significantly different between genotypes
+- **Up**: Genes significantly upregulated in KD vs. WT (positive logFC = higher in KD)
 :::
 
 ## Extract Top Results
@@ -488,14 +516,14 @@ ggplot(all_results, aes(x = logFC, y = -log10(P.Value), color = significant)) +
                                 "Not Significant" = "grey")) +
   geom_vline(xintercept = c(-1, 1), linetype = "dashed", alpha = 0.5) +
   geom_hline(yintercept = -log10(0.05), linetype = "dashed", alpha = 0.5) +
-  labs(title = "Volcano Plot: Treated vs. Control",
+  labs(title = "Volcano Plot: PRMT7 KD vs WT",
        x = "Log2 Fold Change",
        y = "-Log10 P-value",
        color = "Significance") +
   theme_minimal() +
   theme(legend.position = "right")
 
-ggsave("figures/volcano_plot_simple.png", width = 8, height = 6, dpi = 300)
+ggsave(here("figures", "volcano_plot_simple.png"), width = 8, height = 6, dpi = 300)
 ```
 
 ## MA Plot
@@ -511,217 +539,980 @@ ggplot(all_results, aes(x = AveExpr, y = logFC, color = significant)) +
                                 "Significant" = "orange",
                                 "Not Significant" = "grey")) +
   geom_hline(yintercept = 0, linetype = "solid", alpha = 0.5) +
-  labs(title = "MA Plot: Treated vs. Control",
+  labs(title = "MA Plot: PRMT7 KD vs WT",
        x = "Average Expression (log2-CPM)",
        y = "Log2 Fold Change",
        color = "Significance") +
   theme_minimal()
 
-ggsave("figures/ma_plot_simple.png", width = 8, height = 6, dpi = 300)
+ggsave(here("figures", "ma_plot_simple.png"), width = 8, height = 6, dpi = 300)
 ```
 
-# Part 4: Complex Design - Two-Factor Analysis
+# Part 3B: Alternative Approach - edgeR Exact Test
 
-Now let's extend to a more complex design. Suppose we have two factors:
-- **Treatment**: control vs. treated
-- **Genotype**: wildtype vs. mutant
+::: {.callout-note}
+## Why Use edgeR Instead of limma-voom?
 
-We want to understand:
-1. Main effect of treatment (across both genotypes)
-2. Main effect of genotype (across both treatments)
-3. Interaction: does the treatment effect depend on genotype?
+While limma-voom is powerful and flexible, the classic **edgeR exact test** is:
 
-## Create Two-Factor Design Matrix
+- Often used by public databases like GREIN for processing GEO datasets
+- Based on the negative binomial distribution (doesn't transform counts)
+- Simpler for two-group comparisons
+- Can give slightly different results due to different statistical frameworks
 
-```{r design-complex}
-# Define factors with explicit levels
-# Adjust these based on your actual experimental design
-DGE$samples$genotype <- factor(DGE$samples$genotype, 
-                               levels = c("wildtype", "mutant"))
-DGE$samples$treatment <- factor(DGE$samples$treatment, 
-                                levels = c("control", "treated"))
+Let's run the same analysis using edgeR's approach to compare results and understand how to reproduce GREIN-style analyses.
+:::
 
-# Create two-factor design matrix
-design_2factor <- model.matrix(~genotype + treatment, data = DGE$samples)
+## Understanding GREIN's Filtering Approach
 
-# View the design
-design_2factor
-colnames(design_2factor)
+Public databases like GREIN use specific filtering criteria that aren't always fully documented. Through careful comparison, we determined their actual approach:
+```{r grein-filtering}
+DGE <- DGEList(counts = expression_data,
+               samples = sample_info)
+
+# Explicitly add group column to DGE
+DGE$samples$group <- factor(DGE$samples$genotype, levels = c("PRMT7 WT", "PRMT7 KD"))
+
+# GREIN's actual filtering (despite documentation saying "CPM > 0")
+# They use: count >= 4 in at least min_group_size samples
+
+# Calculate minimum group size
+min_group_size <- min(table(sample_info$genotype))
+cat("Minimum group size:", min_group_size, "\n")
+
+# Apply GREIN-style filtering
+keep_grein <- rowSums(DGE$counts >= 4) >= min_group_size
+DGE_grein <- DGE[keep_grein, , keep.lib.sizes = FALSE]
+
+cat("Genes before filtering:", nrow(DGE), "\n")
+cat("Genes after GREIN-style filtering:", nrow(DGE_grein), "\n")
+cat("(GREIN reports ~15,871 genes for comparison)\n")
+```
+
+::: {.callout-warning}
+## Reproducibility Lesson #1
+
+GREIN's documentation states "CPM > 0" but their actual implementation appears to use **count >= 4**. This is a common problem in bioinformatics:
+
+- Methods descriptions are often incomplete
+- Default parameters change between software versions
+- Post-hoc filters may not be documented
+
+**Always document your exact thresholds and test reproducibility!**
+:::
+
+## TMM Normalization
+```{r grein-normalize}
+# Apply TMM normalization (same as before)
+DGE_grein <- calcNormFactors(DGE_grein, method = "TMM")
+
+# Check normalization factors
+summary(DGE_grein$samples$norm.factors)
+```
+
+## Estimate Dispersion
+
+edgeR models count variability using dispersion parameters. We need to estimate:
+
+1. **Common dispersion**: Overall variability across all genes
+2. **Trended dispersion**: How dispersion changes with expression level  
+3. **Tagwise dispersion**: Gene-specific dispersion estimates
+```{r edger-dispersion, fig.width=8, fig.height=6}
+# Estimate dispersions
+DGE_grein <- estimateDisp(DGE_grein, design = design_simple)
+
+# Plot the dispersion estimates
+plotBCV(DGE_grein)
 ```
 
 ::: {.callout-note}
-## Two-Factor Model Coefficients
-- **Intercept**: Expression in wildtype + control (reference combination)
-- **genotypemutant**: Effect of mutant vs. wildtype (averaged across treatments)
-- **treatmenttreated**: Effect of treated vs. control (averaged across genotypes)
+## Understanding the BCV Plot
 
-This is an **additive model** - it assumes the treatment effect is the same in both genotypes.
+**BCV** = Biological Coefficient of Variation = sqrt(dispersion)
+
+- **Black dots**: Gene-specific dispersion estimates
+- **Blue line**: Common dispersion (average across all genes)
+- **Red curve**: Trended dispersion (how dispersion changes with expression)
+
+Typical BCV values:
+- **Well-controlled experiments**: 0.1-0.2 (10-20%)
+- **Biological replicates**: 0.4-0.5 (40-50%)
+
+Higher BCV = more biological variability between replicates
+:::
+
+## Perform Exact Test
+
+The exact test compares two groups using the negative binomial distribution.
+```{r edger-exact-test}
+# Perform exact test for KD vs WT
+# This compares the second group (KD) to the first group (WT)
+et_grein <- exactTest(DGE_grein, pair = c("PRMT7 WT", "PRMT7 KD"))
+
+# Get summary of DE genes at FDR < 0.05
+summary(decideTests(et_grein, adjust.method = "BH", p.value = 0.05))
+
+# Extract top genes
+topTags(et_grein, n = 10)
+```
+
+## The Hidden Filter: Average Expression
+
+Here's where it gets interesting. GREIN applies an **additional, undocumented filter**:
+```{r grein-hidden-filter}
+# Get all results with FDR values
+all_edger_results <- topTags(et_grein, n = Inf)$table
+
+# Count DE genes with just FDR < 0.05
+cat("DE genes with FDR < 0.05:", sum(all_edger_results$FDR < 0.05), "\n")
+
+# GREIN's actual criteria: FDR < 0.05 AND logCPM > 1
+grein_de_genes <- all_edger_results[all_edger_results$FDR < 0.05 & 
+                                    all_edger_results$logCPM > 1, ]
+
+cat("DE genes with FDR < 0.05 AND logCPM > 1:", nrow(grein_de_genes), "\n")
+cat("(GREIN reports 8,803 for this comparison)\n")
+
+# This removes lowly expressed genes that are statistically significant
+# but may be noisy or unreliable
+```
+
+::: {.callout-warning}
+## Reproducibility Lesson #2
+
+GREIN applies a **logCPM > 1 filter** to their DE gene counts that is **never mentioned** in their methods documentation. This removes ~1,700 lowly expressed genes from the reported DE list.
+
+**Without this information, you cannot reproduce their exact results.**
+
+This is why sharing actual code (not just prose descriptions) is critical!
+:::
+
+## Extract and Annotate Results
+```{r edger-results}
+# Use the GREIN-matched filtering for final results
+edger_results <- grein_de_genes
+
+# Add significance categories
+edger_results$significant <- case_when(
+  edger_results$logFC > 1 ~ "Up (>2-fold)",
+  edger_results$logFC < -1 ~ "Down (>2-fold)",
+  edger_results$logFC > 0 ~ "Up",
+  edger_results$logFC < 0 ~ "Down"
+)
+
+# Summary statistics
+cat("\n=== GREIN-Matched Results ===\n")
+cat("Total DE genes (FDR < 0.05, logCPM > 1):", nrow(edger_results), "\n")
+cat("Upregulated in KD:", sum(edger_results$logFC > 0), "\n")
+cat("Downregulated in KD:", sum(edger_results$logFC < 0), "\n")
+cat("Strong up (>2-fold):", sum(edger_results$logFC > 1), "\n")
+cat("Strong down (>2-fold):", sum(edger_results$logFC < -1), "\n")
+
+# Show top genes
+head(edger_results[order(edger_results$FDR), ], 20)
+```
+
+## Visualize edgeR Results
+
+### Volcano Plot
+```{r edger-volcano, fig.width=8, fig.height=6}
+ggplot(edger_results, aes(x = logFC, y = -log10(PValue), color = significant)) +
+  geom_point(alpha = 0.6, size = 1.5) +
+  scale_color_manual(values = c("Up (>2-fold)" = "darkred",
+                                "Down (>2-fold)" = "darkblue",
+                                "Up" = "red", 
+                                "Down" = "blue")) +
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed", alpha = 0.5) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", alpha = 0.5) +
+  labs(title = "Volcano Plot: KD vs WT (edgeR, GREIN-matched)",
+       subtitle = paste0("FDR < 0.05 & logCPM > 1 (n = ", nrow(edger_results), " genes)"),
+       x = "Log2 Fold Change",
+       y = "-Log10 P-value",
+       color = "Classification") +
+  theme_minimal() +
+  theme(legend.position = "right")
+
+ggsave(here("figures", "volcano_plot_edger_grein.png"), width = 8, height = 6, dpi = 300)
+```
+
+### MA Plot
+```{r edger-ma, fig.width=8, fig.height=6}
+ggplot(edger_results, aes(x = logCPM, y = logFC, color = significant)) +
+  geom_point(alpha = 0.6, size = 1.5) +
+  scale_color_manual(values = c("Up (>2-fold)" = "darkred",
+                                "Down (>2-fold)" = "darkblue",
+                                "Up" = "red", 
+                                "Down" = "blue")) +
+  geom_hline(yintercept = 0, linetype = "solid", alpha = 0.5) +
+  geom_hline(yintercept = c(-1, 1), linetype = "dashed", alpha = 0.3) +
+  labs(title = "MA Plot: KD vs WT (edgeR, GREIN-matched)",
+       subtitle = paste0("FDR < 0.05 & logCPM > 1 (n = ", nrow(edger_results), " genes)"),
+       x = "Average Expression (log2-CPM)",
+       y = "Log2 Fold Change",
+       color = "Classification") +
+  theme_minimal()
+
+ggsave(here("figures", "ma_plot_edger_grein.png"), width = 8, height = 6, dpi = 300)
+```
+
+## Compare edgeR vs limma-voom Results
+```{r compare-methods}
+# Get limma-voom results (from earlier analysis)
+limma_results <- all_results  # From the limma-voom section
+
+# For fair comparison, apply same filters to limma
+limma_matched <- limma_results[limma_results$adj.P.Val < 0.05 & 
+                               limma_results$AveExpr > 1, ]
+
+# Create comparison data frame
+comparison <- data.frame(
+  gene = rownames(edger_results),
+  edgeR_logFC = edger_results$logFC,
+  edgeR_FDR = edger_results$FDR,
+  limma_logFC = limma_results[rownames(edger_results), "logFC"],
+  limma_FDR = limma_results[rownames(edger_results), "adj.P.Val"]
+)
+
+# Compare fold changes
+cat("Correlation of logFC between methods:", 
+    round(cor(comparison$edgeR_logFC, comparison$limma_logFC, use = "complete.obs"), 3), 
+    "\n")
+
+# Plot fold change comparison
+ggplot(comparison, aes(x = limma_logFC, y = edgeR_logFC)) +
+  geom_point(alpha = 0.3, size = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Fold Change Comparison: edgeR vs limma-voom",
+       subtitle = "High correlation indicates robust findings",
+       x = "limma-voom log2FC",
+       y = "edgeR log2FC") +
+  theme_minimal()
+
+# Compare significance calls
+cat("\n=== Method Comparison (with matched filters) ===\n")
+cat("edgeR DE genes:", nrow(edger_results), "\n")
+cat("limma-voom DE genes (FDR < 0.05, AveExpr > 1):", nrow(limma_matched), "\n")
+
+# Gene overlap
+edger_genes <- rownames(edger_results)
+limma_genes <- rownames(limma_matched)
+
+cat("\nOverlap:\n")
+cat("  Both methods:", length(intersect(edger_genes, limma_genes)), "\n")
+cat("  edgeR only:", length(setdiff(edger_genes, limma_genes)), "\n")
+cat("  limma-voom only:", length(setdiff(limma_genes, edger_genes)), "\n")
+
+# Calculate agreement percentage
+overlap <- length(intersect(edger_genes, limma_genes))
+total_unique <- length(union(edger_genes, limma_genes))
+cat("  Agreement:", round(100 * overlap / total_unique, 1), "%\n")
+```
+
+::: {.callout-important}
+## Which Method Should You Use?
+
+**Use edgeR exact test when:**
+- Simple two-group comparison
+- Want to match published GREIN/GEO analyses
+- Prefer count-based methods (no transformation)
+
+**Use limma-voom when:**
+- Complex designs (multiple factors, interactions, time series)
+- Need flexibility with contrast matrices
+- Sample quality varies (use voomWithQualityWeights)
+- Want to leverage limma's mature ecosystem
+
+**Both methods typically agree >95%** on which genes are DE for simple comparisons, which increases confidence in the findings!
+:::
+
+## Export edgeR Results
+```{r export-edger}
+# Prepare final results table with gene names
+edger_export <- edger_results
+edger_export$gene <- rownames(edger_export)
+
+# Reorder columns for clarity
+edger_export <- edger_export[, c("gene", "logFC", "logCPM", "PValue", "FDR", "significant")]
+
+# Save results
+write.csv(edger_export, 
+          here("results", "edger_grein_matched_results.csv"),
+          row.names = FALSE)
+
+cat("edgeR results exported to:", here("results", "edger_grein_matched_results.csv"), "\n")
+```
+
+## Document Your Analysis (Reproducibility Best Practice!)
+
+::: {.callout-tip}
+## Make Your Analysis Reproducible
+
+Always save your session information so others (including future you!) can reproduce your exact analysis:
+```{r session-info}
+# Save session info
+writeLines(capture.output(sessionInfo()), 
+           here("results", "sessionInfo_edger.txt"))
+
+# Display key information
+cat("R version:", R.version.string, "\n")
+cat("edgeR version:", as.character(packageVersion("edgeR")), "\n")
+cat("limma version:", as.character(packageVersion("limma")), "\n")
+cat("Date:", Sys.Date(), "\n")
+```
+
+**What to document:**
+- Exact software versions (R, edgeR, limma, etc.)
+- All filtering thresholds (count >= 4, logCPM > 1, FDR < 0.05)
+- Any post-hoc filters applied
+- Random seeds if applicable
+- Date of analysis
+:::
+
+---
+
+## Key Takeaways
+
+1. **edgeR and limma-voom give very similar results** for simple two-group comparisons (~95%+ agreement)
+
+2. **Small differences exist** due to different statistical frameworks:
+   - edgeR: Negative binomial model on counts
+   - limma-voom: Linear model on log-transformed counts with precision weights
+
+3. **Reproducibility requires complete documentation**:
+   - GREIN's stated methods: "CPM > 0, FDR < 0.05"
+   - GREIN's actual implementation: "count >= 4, FDR < 0.05, logCPM > 1"
+   - Without testing, you wouldn't know this!
+
+4. **Always share your actual code**, not just prose descriptions
+
+5. **Use sessionInfo()** to document software versions
+
+
+# Part 4: Complex Design - Two-Factor Analysis
+
+::: {.callout-note}
+## Switching Datasets to Teach Complex Designs
+
+Our PRMT7 knockdown experiment has only **one factor** (genotype: WT vs KD). To demonstrate **two-factor designs** and **contrast matrices**, we'll switch to a published dataset that has a proper 2×2 factorial design.
+
+**Dataset**: Drosophila melanogaster temperature adaptation study (Zhao et al. 2015, *PLoS Genetics*)
+
+**Design:**
+- **Population**: Maine (high latitude) vs Panama (low latitude)
+- **Temperature**: Low vs High
+- **Structure**: 2 populations × 2 temperatures × 3 replicates = 12 samples
+
+This demonstrates how limma-voom handles complex experimental designs where you have multiple factors and want to test:
+1. Main effects (population, temperature)
+2. Interactions (does temperature response differ by population?)
+3. Specific contrasts (temperature effect within each population)
+
+These skills apply to ANY multi-factor experiment: genotype × treatment, tissue × disease, time × condition, etc.
+:::
+
+## Load Harvard Drosophila Data
+
+```{r load-drosophila}
+# Load the count matrix
+drosophila_counts <- read.table(here("demo-analysis", "data", "two-factor-design", "salmon.merged.gene_counts.tsv"),
+                                header = TRUE,
+                                row.names = "gene_name")
+
+# Remove the gene_id column (we're using gene names as row names)
+drosophila_counts$gene_id <- NULL
+
+# Load sample metadata
+drosophila_info <- read.table(here("demo-analysis", "data", "two-factor-design", "dme_elev_samples.tsv"),
+                              header = TRUE,
+                              stringsAsFactors = FALSE)
+
+# Create a combined factor for filtering
+drosophila_info$pop_temp <- paste(drosophila_info$population, 
+                                   drosophila_info$temp, 
+                                   sep = "_")
+
+# Display the experimental design
+cat("Experimental Design:\n")
+table(drosophila_info$population, drosophila_info$temp)
+
+# Show sample info
+drosophila_info
+```
+
+::: {.callout-note}
+## About This Dataset
+
+- **Species**: *Drosophila melanogaster* (fruit fly)
+- **Question**: Do flies from different latitudes respond differently to temperature stress?
+- **Samples**: Whole-body RNA-seq from adults
+- **Design**: Perfectly balanced 2×2 factorial
+
+This is a classic example of testing for **parallel vs. divergent** responses across populations.
+:::
+
+## Create DGE Object and Filter
+
+```{r drosophila-dge}
+# Create DGEList object
+DGE_dros <- DGEList(counts = drosophila_counts,
+                    samples = drosophila_info)
+
+# Add group information
+DGE_dros$samples$group <- factor(drosophila_info$pop_temp)
+
+# Filter lowly expressed genes
+keep_dros <- filterByExpr(DGE_dros, group = DGE_dros$samples$group)
+DGE_dros <- DGE_dros[keep_dros, , keep.lib.sizes = FALSE]
+
+cat("Genes after filtering:", nrow(DGE_dros), "\n")
+
+# TMM normalization
+DGE_dros <- calcNormFactors(DGE_dros, method = "TMM")
+```
+
+## Quick QC - MDS Plot
+
+```{r drosophila-mds, fig.width=8, fig.height=6}
+# MDS plot to check sample clustering
+mds_dros <- plotMDS(DGE_dros, top = 500, plot = FALSE, gene.selection = "common")
+
+mds_dros_df <- data.frame(
+  sample = rownames(DGE_dros$samples),
+  dim1 = mds_dros$x,
+  dim2 = mds_dros$y,
+  population = DGE_dros$samples$population,
+  temperature = DGE_dros$samples$temp
+)
+
+ggplot(mds_dros_df, aes(x = dim1, y = dim2, 
+                         color = population, 
+                         shape = temperature)) +
+  geom_point(size = 4) +
+  geom_text_repel(aes(label = sample), size = 3) +
+  labs(title = "MDS Plot: Drosophila Temperature Experiment",
+       x = paste0("Leading logFC dim 1 (", round(mds_dros$var.explained[1]*100, 1), "%)"),
+       y = paste0("Leading logFC dim 2 (", round(mds_dros$var.explained[2]*100, 1), "%)"),
+       color = "Population",
+       shape = "Temperature") +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1")
+```
+
+::: {.callout-tip}
+## What to Look For in MDS
+
+- **Population separation**: Do Maine and Panama samples cluster apart?
+- **Temperature effects**: Do low/high temperature samples separate?
+- **Interaction**: Does the temperature separation differ between populations?
+
+Good separation suggests strong biological effects that will be detected in DE analysis.
+:::
+
+## Create Two-Factor Design Matrix
+
+```{r design-2factor-dros}
+# Define factors with explicit levels
+# First level becomes the reference (intercept)
+DGE_dros$samples$population <- factor(DGE_dros$samples$population, 
+                                      levels = c("maine", "panama"))
+DGE_dros$samples$temp <- factor(DGE_dros$samples$temp, 
+                                levels = c("high", "low"))
+
+# Create additive two-factor design matrix
+design_2factor_dros <- model.matrix(~population + temp, data = DGE_dros$samples)
+
+# View the design
+design_2factor_dros
+colnames(design_2factor_dros)
+```
+
+::: {.callout-note}
+## Understanding the Two-Factor Model Coefficients
+
+This is an **additive model**: `~population + temp`
+
+The coefficients represent:
+- **(Intercept)**: Expression in Maine + High temperature (both reference levels)
+- **populationpanama**: Effect of Panama vs. Maine (averaged across temperatures)
+- **templow**: Effect of Low vs. High temperature (averaged across populations)
+
+**Assumptions of the additive model:**
+- Temperature effect is the same magnitude in both populations
+- Population effect is the same magnitude in both temperatures
+- No interaction between factors
+
+If this assumption is violated (temperature effect differs by population), you'll need an interaction model (Part 5).
 :::
 
 ## Fit Two-Factor Model
 
-```{r voom-2factor, fig.width=8, fig.height=5}
-# Run voom with quality weights for 2-factor design
-vwts_2factor <- voomWithQualityWeights(DGE, 
-                                       design = design_2factor,
-                                       normalize.method = "none",
-                                       plot = TRUE)
+```{r voom-2factor-dros, fig.width=8, fig.height=5}
+# Run voom with quality weights
+vwts_2factor_dros <- voomWithQualityWeights(DGE_dros, 
+                                            design = design_2factor_dros,
+                                            normalize.method = "none",
+                                            plot = TRUE)
 
-# Fit model
-fit_2factor <- lmFit(vwts_2factor, design_2factor)
-fit_2factor <- eBayes(fit_2factor, robust = TRUE)
+# Fit linear model
+fit_2factor_dros <- lmFit(vwts_2factor_dros, design_2factor_dros)
+fit_2factor_dros <- eBayes(fit_2factor_dros, robust = TRUE)
 
-# Summary
-summary(decideTests(fit_2factor, adjust.method = "fdr", p.value = 0.05))
+# Get summary
+summary(decideTests(fit_2factor_dros, adjust.method = "fdr", p.value = 0.05))
 ```
+
+::: {.callout-tip}
+## Interpreting Sample Quality Weights
+
+The voomWithQualityWeights plot shows two panels:
+
+**Top panel (voom)**: Mean-variance relationship (same as before)
+
+**Bottom panel (sample weights)**: Weights assigned to each sample
+- Weights near 1.0: Good quality samples
+- Weights < 0.5: Potentially problematic samples
+- Weights > 1.5: Exceptionally good samples
+
+Outlier samples are automatically down-weighted in the analysis.
+:::
 
 ## Extract Results for Each Coefficient
 
-```{r results-2factor}
-# Treatment effect (main effect)
-treatment_results <- topTable(fit_2factor, 
-                              coef = "treatmenttreated",
+```{r results-2factor-dros}
+# Temperature effect (main effect across both populations)
+temp_results_dros <- topTable(fit_2factor_dros, 
+                              coef = "templow",
                               adjust.method = "BH",
                               number = Inf)
 
-cat("Number of genes DE for treatment:", 
-    sum(treatment_results$adj.P.Val < 0.05), "\n")
+cat("\n=== Temperature Main Effect ===\n")
+cat("Genes DE for temperature (FDR < 0.05):", 
+    sum(temp_results_dros$adj.P.Val < 0.05), "\n")
+cat("Top 10 temperature-responsive genes:\n")
+print(head(temp_results_dros, 10))
 
-# Genotype effect (main effect)
-genotype_results <- topTable(fit_2factor, 
-                             coef = "genotypemutant",
+# Population effect (main effect across both temperatures)
+pop_results_dros <- topTable(fit_2factor_dros, 
+                             coef = "populationpanama",
                              adjust.method = "BH",
                              number = Inf)
 
-cat("Number of genes DE for genotype:", 
-    sum(genotype_results$adj.P.Val < 0.05), "\n")
+cat("\n=== Population Main Effect ===\n")
+cat("Genes DE for population (FDR < 0.05):", 
+    sum(pop_results_dros$adj.P.Val < 0.05), "\n")
+cat("Top 10 population-divergent genes:\n")
+print(head(pop_results_dros, 10))
 ```
+
+::: {.callout-note}
+## Interpreting logFC in Two-Factor Models
+
+**templow coefficient:**
+- Positive logFC: Higher expression in low temperature (averaged across populations)
+- Negative logFC: Higher expression in high temperature (averaged across populations)
+
+**populationpanama coefficient:**
+- Positive logFC: Higher expression in Panama (averaged across temperatures)
+- Negative logFC: Higher expression in Maine (averaged across temperatures)
+
+These are **main effects** - they average over the other factor.
+:::
+
+## Visualize Temperature Effect
+
+```{r volcano-2factor-temp, fig.width=8, fig.height=6}
+# Add significance categories
+temp_results_dros$significant <- case_when(
+  temp_results_dros$adj.P.Val < 0.05 & temp_results_dros$logFC > 1 ~ "Up in Low",
+  temp_results_dros$adj.P.Val < 0.05 & temp_results_dros$logFC < -1 ~ "Up in High",
+  temp_results_dros$adj.P.Val < 0.05 ~ "Significant",
+  TRUE ~ "Not Significant"
+)
+
+# Volcano plot
+ggplot(temp_results_dros, aes(x = logFC, y = -log10(P.Value), color = significant)) +
+  geom_point(alpha = 0.5, size = 1) +
+  scale_color_manual(values = c("Up in Low" = "blue", 
+                                "Up in High" = "red", 
+                                "Significant" = "orange",
+                                "Not Significant" = "grey")) +
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed", alpha = 0.5) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", alpha = 0.5) +
+  labs(title = "Temperature Effect (Main Effect Across Populations)",
+       subtitle = "Low vs High Temperature",
+       x = "Log2 Fold Change (Low vs High)",
+       y = "-Log10 P-value",
+       color = "Category") +
+  theme_minimal()
+
+ggsave(here("figures", "volcano_drosophila_temperature.png"), 
+       width = 8, height = 6, dpi = 300)
+```
+
+::: {.callout-warning}
+## Limitation of Main Effects
+
+The additive model assumes the temperature effect is **the same** in both Maine and Panama populations. But what if:
+
+- Maine flies have a strong cold-adaptation response
+- Panama flies (tropical) have a different response pattern
+- The temperature effect differs by population?
+
+This is an **interaction**, which requires a different model (see Part 5).
+:::
+
+---
 
 # Part 5: Advanced - Interaction Model and Contrasts
 
-For more flexibility, we can use an **interaction model** and **contrasts** to test specific hypotheses.
+The additive model in Part 4 assumes temperature effects are the same in both populations. But biological reality is often more nuanced - adaptive responses might differ between populations. 
+
+**Interaction models** let us test whether the effect of one factor (temperature) depends on another factor (population).
 
 ## Create Interaction Design
 
-```{r design-interaction}
+Instead of separate coefficients for each factor, we'll create a **group-means parameterization** where each combination of factors gets its own coefficient.
+
+```{r design-interaction-dros}
 # Create a combined factor for all group combinations
-DGE$samples$group_combined <- factor(
-  paste(DGE$samples$genotype, DGE$samples$treatment, sep = "_"),
-  levels = c("wildtype_control", "wildtype_treated", 
-             "mutant_control", "mutant_treated")
+DGE_dros$samples$group_combined <- factor(
+  paste(DGE_dros$samples$population, DGE_dros$samples$temp, sep = "_"),
+  levels = c("maine_high", "maine_low", "panama_high", "panama_low")
 )
 
 # Create design with no intercept (each group gets its own coefficient)
-design_interaction <- model.matrix(~0 + group_combined, data = DGE$samples)
+design_interaction_dros <- model.matrix(~0 + group_combined, 
+                                        data = DGE_dros$samples)
 
 # Clean up column names
-colnames(design_interaction) <- levels(DGE$samples$group_combined)
+colnames(design_interaction_dros) <- levels(DGE_dros$samples$group_combined)
 
-design_interaction
+design_interaction_dros
 ```
 
-## Define Contrasts
+::: {.callout-note}
+## Group-Means Parameterization
 
-Contrasts let us test specific biological questions:
+Using `~0 + group_combined` creates a coefficient for each group:
 
-```{r contrasts}
+- **maine_high**: Mean expression in Maine at high temperature
+- **maine_low**: Mean expression in Maine at low temperature  
+- **panama_high**: Mean expression in Panama at high temperature
+- **panama_low**: Mean expression in Panama at low temperature
+
+**Advantage**: We can define any contrast we want between these groups!
+:::
+
+## Define Contrast Matrix
+
+Contrasts let us test specific biological questions by comparing group means:
+
+```{r contrasts-dros}
 # Define contrasts of interest
-cont.matrix <- makeContrasts(
-  # Treatment effect in wildtype
-  WT_TrtEffect = wildtype_treated - wildtype_control,
+cont_matrix_dros <- makeContrasts(
+  # Temperature effect in Maine
+  Maine_TempEffect = maine_low - maine_high,
   
-  # Treatment effect in mutant
-  Mut_TrtEffect = mutant_treated - mutant_control,
+  # Temperature effect in Panama
+  Panama_TempEffect = panama_low - panama_high,
   
-  # Interaction: is treatment effect different between genotypes?
-  Interaction = (mutant_treated - mutant_control) - 
-                (wildtype_treated - wildtype_control),
+  # Population effect at high temperature
+  Pop_at_High = panama_high - maine_high,
   
-  # Genotype effect in control
-  Ctrl_GenoEffect = mutant_control - wildtype_control,
+  # Population effect at low temperature
+  Pop_at_Low = panama_low - maine_low,
   
-  # Genotype effect in treated
-  Trt_GenoEffect = mutant_treated - wildtype_treated,
+  # INTERACTION: Does temperature effect differ by population?
+  # This compares (maine_low - maine_high) vs (panama_low - panama_high)
+  Interaction = (maine_low - maine_high) - (panama_low - panama_high),
   
-  levels = design_interaction
+  levels = design_interaction_dros
 )
 
-cont.matrix
+cont_matrix_dros
 ```
 
-## Fit Contrast Model
+::: {.callout-important}
+## Understanding Contrasts
 
-```{r fit-contrasts, fig.width=8, fig.height=5}
-# Run voom
-vwts_contrast <- voomWithQualityWeights(DGE, 
-                                        design = design_interaction,
-                                        normalize.method = "none",
-                                        plot = TRUE)
+Each contrast is a linear combination of group means:
 
-# Fit model
-fit_contrast <- lmFit(vwts_contrast, design_interaction)
+**Maine_TempEffect**: `maine_low - maine_high`
+- Tests temperature response specifically in Maine population
+- Positive logFC = genes upregulated at low temperature in Maine
+
+**Panama_TempEffect**: `panama_low - panama_high`
+- Tests temperature response specifically in Panama population  
+- Positive logFC = genes upregulated at low temperature in Panama
+
+**Interaction**: `(maine_low - maine_high) - (panama_low - panama_high)`
+- Tests whether temperature effect differs between populations
+- Significant genes show **divergent** temperature responses
+- Positive logFC = stronger low-temp response in Maine than Panama
+- Negative logFC = stronger low-temp response in Panama than Maine
+
+**Non-significant interaction** = parallel responses (same temperature effect in both populations)
+:::
+
+## Fit Model with Contrasts
+
+```{r fit-contrasts-dros, fig.width=8, fig.height=5}
+# Run voom with interaction design
+vwts_interaction_dros <- voomWithQualityWeights(DGE_dros, 
+                                                design = design_interaction_dros,
+                                                normalize.method = "none",
+                                                plot = TRUE)
+
+# Fit linear model
+fit_interaction_dros <- lmFit(vwts_interaction_dros, design_interaction_dros)
 
 # Apply contrasts
-fit_contrast <- contrasts.fit(fit_contrast, cont.matrix)
+fit_contrasts_dros <- contrasts.fit(fit_interaction_dros, cont_matrix_dros)
 
 # Empirical Bayes
-fit_contrast <- eBayes(fit_contrast, robust = TRUE)
+fit_contrasts_dros <- eBayes(fit_contrasts_dros, robust = TRUE)
 
-# Summary across all contrasts
-summary(decideTests(fit_contrast, adjust.method = "fdr", p.value = 0.05))
+# Summary of all contrasts
+contrast_summary <- decideTests(fit_contrasts_dros, 
+                                adjust.method = "fdr", 
+                                p.value = 0.05)
+
+summary(contrast_summary)
 ```
 
-## Visualize Contrast Results
+## Visualize Contrast Overlap with Venn Diagram
 
-```{r venn-diagram, fig.width=7, fig.height=7}
-# Venn diagram showing overlap between contrasts
-contrast_sig <- decideTests(fit_contrast, adjust.method = "fdr", p.value = 0.05)
-
-# Focus on treatment effects in each genotype
-vennDiagram(contrast_sig[, c("WT_TrtEffect", "Mut_TrtEffect")],
-            circle.col = c("blue", "red"),
-            main = "Overlap of Treatment Effects")
+```{r venn-contrasts, fig.width=8, fig.height=6}
+# Venn diagram showing overlap of significant genes
+vennDiagram(contrast_summary[, c("Maine_TempEffect", 
+                                  "Panama_TempEffect", 
+                                  "Interaction")],
+            circle.col = c("blue", "red", "green"),
+            main = "Overlap of DE Genes Across Contrasts")
 ```
 
-## Extract Genes with Specific Patterns
+::: {.callout-tip}
+## Interpreting the Venn Diagram
 
-```{r pattern-extraction}
-# Get full results for treatment effects
-wt_trt <- topTable(fit_contrast, coef = "WT_TrtEffect", 
-                   number = Inf, adjust.method = "BH")
-mut_trt <- topTable(fit_contrast, coef = "Mut_TrtEffect", 
-                    number = Inf, adjust.method = "BH")
-interaction <- topTable(fit_contrast, coef = "Interaction", 
-                       number = Inf, adjust.method = "BH")
+- **Overlap between Maine_TempEffect & Panama_TempEffect**: Genes showing parallel temperature response
+- **Interaction only**: Genes with divergent responses
+- **Maine_TempEffect only**: Genes responding to temperature in Maine but not Panama
+- **Panama_TempEffect only**: Genes responding to temperature in Panama but not Maine
 
-# Merge results
-all_contrasts <- data.frame(
-  gene = rownames(wt_trt),
-  WT_logFC = wt_trt$logFC,
-  WT_pval = wt_trt$adj.P.Val,
-  Mut_logFC = mut_trt$logFC,
-  Mut_pval = mut_trt$adj.P.Val,
-  Int_pval = interaction$adj.P.Val
+This visualization helps identify convergent vs. divergent adaptation patterns!
+:::
+
+## Extract Results for Each Contrast
+
+```{r extract-contrasts}
+# Temperature effect in Maine
+maine_temp <- topTable(fit_contrasts_dros, 
+                       coef = "Maine_TempEffect",
+                       adjust.method = "BH",
+                       number = Inf,
+                       sort.by = "P")
+
+# Temperature effect in Panama  
+panama_temp <- topTable(fit_contrasts_dros, 
+                        coef = "Panama_TempEffect",
+                        adjust.method = "BH",
+                        number = Inf,
+                        sort.by = "P")
+
+# Interaction
+interaction <- topTable(fit_contrasts_dros, 
+                        coef = "Interaction",
+                        adjust.method = "BH",
+                        number = Inf,
+                        sort.by = "P")
+
+# Summary
+cat("\n=== Contrast Results (FDR < 0.05) ===\n")
+cat("Maine temperature effect:", sum(maine_temp$adj.P.Val < 0.05), "genes\n")
+cat("Panama temperature effect:", sum(panama_temp$adj.P.Val < 0.05), "genes\n")
+cat("Interaction (divergent responses):", sum(interaction$adj.P.Val < 0.05), "genes\n")
+
+# Show top genes for each
+cat("\n=== Top 10 Maine Temperature-Responsive Genes ===\n")
+print(head(maine_temp, 10))
+
+cat("\n=== Top 10 Panama Temperature-Responsive Genes ===\n")
+print(head(panama_temp, 10))
+
+cat("\n=== Top 10 Genes with Divergent Responses (Interaction) ===\n")
+print(head(interaction, 10))
+```
+
+## Create Merged Results Table
+
+For complex questions, merge results from multiple contrasts:
+
+```{r merge-contrasts}
+# Create a unified results table with all contrasts
+# Start with gene names
+all_genes <- rownames(maine_temp)
+
+# Initialize results data frame
+contrast_results <- data.frame(
+  gene = all_genes,
+  
+  # Maine temperature effect
+  Maine_logFC = maine_temp[all_genes, "logFC"],
+  Maine_FDR = maine_temp[all_genes, "adj.P.Val"],
+  
+  # Panama temperature effect
+  Panama_logFC = panama_temp[all_genes, "logFC"],
+  Panama_FDR = panama_temp[all_genes, "adj.P.Val"],
+  
+  # Interaction
+  Interaction_logFC = interaction[all_genes, "logFC"],
+  Interaction_FDR = interaction[all_genes, "adj.P.Val"]
 )
 
-# Find genes with treatment effect in BOTH genotypes (no interaction)
-parallel_response <- all_contrasts %>%
-  filter(WT_pval < 0.05 & Mut_pval < 0.05) %>%
-  filter(Int_pval > 0.05) %>%
-  filter(sign(WT_logFC) == sign(Mut_logFC))
+# Calculate agreement
+contrast_results <- contrast_results %>%
+  mutate(
+    Maine_sig = Maine_FDR < 0.05,
+    Panama_sig = Panama_FDR < 0.05,
+    Interaction_sig = Interaction_FDR < 0.05,
+    
+    # Classify response patterns
+    pattern = case_when(
+      # Parallel responses (both sig, no interaction)
+      Maine_sig & Panama_sig & !Interaction_sig & 
+        sign(Maine_logFC) == sign(Panama_logFC) ~ "Parallel",
+      
+      # Divergent responses (significant interaction)
+      Interaction_sig ~ "Divergent",
+      
+      # Maine-specific
+      Maine_sig & !Panama_sig ~ "Maine-specific",
+      
+      # Panama-specific
+      Panama_sig & !Maine_sig ~ "Panama-specific",
+      
+      # Not significant
+      TRUE ~ "Not significant"
+    )
+  )
 
-cat("Genes with parallel response to treatment:", nrow(parallel_response), "\n")
-head(parallel_response)
+# Summary of patterns
+cat("\n=== Response Pattern Classification ===\n")
+table(contrast_results$pattern)
 
-# Find genes with treatment effect ONLY in mutant (significant interaction)
-mutant_specific <- all_contrasts %>%
-  filter(Mut_pval < 0.05) %>%
-  filter(WT_pval > 0.05) %>%
-  filter(Int_pval < 0.05)
+# Show examples of each pattern
+cat("\n=== Example Parallel Response Genes ===\n")
+parallel_genes <- contrast_results %>% 
+  filter(pattern == "Parallel") %>%
+  arrange(Maine_FDR) %>%
+  head(5)
+print(parallel_genes)
 
-cat("\nGenes with mutant-specific treatment response:", nrow(mutant_specific), "\n")
-head(mutant_specific)
+cat("\n=== Example Divergent Response Genes ===\n")
+divergent_genes <- contrast_results %>% 
+  filter(pattern == "Divergent") %>%
+  arrange(Interaction_FDR) %>%
+  head(5)
+print(divergent_genes)
 ```
+
+::: {.callout-note}
+## Biological Interpretation
+
+**Parallel responses**: Genes showing conserved temperature adaptation
+- Same direction and magnitude in both populations
+- Likely core thermal stress responses
+
+**Divergent responses**: Genes showing population-specific adaptation
+- Different response patterns between Maine and Panama
+- Evidence of evolutionary divergence in temperature response
+
+**Population-specific**: Genes responding in one population only
+- May reflect local adaptation
+- Could be due to power (smaller effect in other population)
+
+This framework applies to any 2-factor experiment asking: "Do these groups respond the same way to treatment?"
+:::
+
+## Visualize Divergent Genes
+
+```{r heatmap-divergent, fig.width=10, fig.height=8}
+# Get the top 50 most divergent genes
+top_divergent <- divergent_genes %>% 
+  head(50) %>% 
+  pull(gene)
+
+# Extract normalized expression for these genes
+divergent_expr <- vwts_interaction_dros$E[top_divergent, ]
+
+# Create annotation for columns
+col_annotation <- data.frame(
+  Population = DGE_dros$samples$population,
+  Temperature = DGE_dros$samples$temp,
+  row.names = colnames(divergent_expr)
+)
+
+# Create heatmap
+pheatmap(divergent_expr,
+         scale = "row",
+         annotation_col = col_annotation,
+         cluster_cols = FALSE,  # Keep samples in order
+         show_rownames = TRUE,
+         show_colnames = TRUE,
+         main = "Top 50 Genes with Divergent Temperature Responses",
+         color = colorRampPalette(c("blue", "white", "red"))(100),
+         fontsize_row = 6)
+```
+
+
+---
+
+## Key Takeaways from Complex Designs
+
+::: {.callout-important}
+## When to Use Each Approach
+
+**Additive Model** (`~factor1 + factor2`):
+- ✓ Tests main effects
+- ✓ Simpler, more power if no interaction
+- ✗ Assumes effects are independent
+- **Use when**: You expect similar responses across groups
+
+**Interaction Model** (`~0 + group_combined` + contrasts):
+- ✓ Tests specific hypotheses with contrasts
+- ✓ Detects divergent responses
+- ✓ Maximum flexibility
+- ✗ More complex to interpret
+- **Use when**: You expect group-specific responses
+
+**General Principle**: Start with additive model, check for interaction, then use contrasts if needed.
+:::
+
+::: {.callout-tip}
+## Applying to Your Own Data
+
+The contrast approach works for ANY factorial design:
+
+- **Genotype × Treatment**: Does treatment work differently in mutant vs. wildtype?
+- **Tissue × Disease**: Are disease genes different between tissues?
+- **Time × Condition**: Do treated and control diverge over time?
+- **Cell Type × Stimulus**: Cell-type-specific responses?
+
+The workflow is always:
+1. Create group-means design (`~0 + group`)
+2. Define contrasts for your questions
+3. Test and visualize
+
+This is one of limma-voom's greatest strengths!
+:::
+
+---
+
+## Return to Your PRMT7 Data
+
+Now that you've seen complex designs in action, return to your PRMT7 analysis for final visualization and export (Part 6). The skills you learned here - thinking about contrasts, interactions, and response patterns - will help you design better experiments in the future!
+
+
 
 # Part 6: Visualization and Export
 
@@ -775,33 +1566,49 @@ pheatmap(top50_scaled,
 
 ## Export Results Tables
 
-```{r export-results}
-# Create output directory
-if (!dir.exists("results")) {
-  dir.create("results")
-}
-
-# Export simple design results
-write.csv(all_results, 
-          file = "results/simple_design_all_genes.csv",
-          row.names = TRUE)
-
-# Export top DE genes
-write.csv(top_genes,
-          file = "results/simple_design_top20.csv",
-          row.names = TRUE)
-
-# Export contrast results
-write.csv(all_contrasts,
-          file = "results/contrast_results_merged.csv",
+```{r export-contrasts}
+# Save the merged contrast results
+write.csv(contrast_results, 
+          here("results", "drosophila_contrast_results.csv"),
           row.names = FALSE)
 
-# Export parallel response genes
-write.csv(parallel_response,
-          file = "results/parallel_response_genes.csv",
+# Save individual contrast tables
+write.csv(maine_temp, 
+          here("results", "drosophila_maine_temperature.csv"),
+          row.names = TRUE)
+
+write.csv(panama_temp, 
+          here("results", "drosophila_panama_temperature.csv"),
+          row.names = TRUE)
+
+write.csv(interaction, 
+          here("results", "drosophila_interaction.csv"),
+          row.names = TRUE)
+
+# Optional: Export just the parallel response genes
+parallel_response <- contrast_results %>% 
+  filter(pattern == "Parallel")
+
+write.csv(parallel_response, 
+          here("results", "drosophila_parallel_response_genes.csv"),
           row.names = FALSE)
 
-cat("Results exported to 'results/' directory\n")
+# Optional: Export just the divergent response genes
+divergent_response <- contrast_results %>% 
+  filter(pattern == "Divergent")
+
+write.csv(divergent_response, 
+          here("results", "drosophila_divergent_response_genes.csv"),
+          row.names = FALSE)
+
+cat("All contrast results exported!\n")
+cat("Files created:\n")
+cat("  - drosophila_contrast_results.csv (all genes with pattern classification)\n")
+cat("  - drosophila_maine_temperature.csv (Maine temperature effect)\n")
+cat("  - drosophila_panama_temperature.csv (Panama temperature effect)\n")
+cat("  - drosophila_interaction.csv (interaction term)\n")
+cat("  - drosophila_parallel_response_genes.csv (parallel patterns only)\n")
+cat("  - drosophila_divergent_response_genes.csv (divergent patterns only)\n")
 ```
 
 # Summary and Key Takeaways
