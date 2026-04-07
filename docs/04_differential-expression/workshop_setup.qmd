@@ -102,7 +102,7 @@ The `.git/` folder (created by `git clone`) is what makes `here()` work! Don't d
 The data preparation script will:
 
 - Read from the shared nf-core output directory (external, read-only)
-- Write processed files to YOUR repo's `data/` directory
+- Write processed files to YOUR repo's `demo-analysis/output/` directory
 
 ```bash
 
