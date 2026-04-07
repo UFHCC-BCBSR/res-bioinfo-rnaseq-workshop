@@ -44,10 +44,14 @@ This document explains the workshop setup, how `here()` works with a cloned repo
 ## Shared Workshop Data (Read-Only)
 
 ```
-/blue/cancercenter-dept/TRAINING/
-└── nfcore_output/            # Shared nf-core pipeline results
-    └── star_rsem/
-        └── rsem.merged.gene_counts.tsv  (and other pipeline outputs)
+/blue/bioinf_workshop/share/nfcore_rnaseq_output/
+├── fastqc/
+├── fq_lint/
+├── genome/
+├── multiqc/
+├── pipeline_info/
+├── star_rsem/
+└── trimgalore/
 ```
 
 # How `here()` Works in This Setup
