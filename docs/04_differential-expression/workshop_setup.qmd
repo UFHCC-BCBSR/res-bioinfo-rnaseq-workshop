@@ -72,7 +72,7 @@ On HiPerGator:
 
 ```bash
 # Navigate to your group's blue storage
-cd /blue/YOUR_GROUP/YOUR_USERNAME/
+cd /blue/bioinf_workshop/$USER/
 
 # Clone the workshop repository
 git clone https://github.com/UFHCC/res-bioinfo-rnaseq-workshop.git rnaseq_workshop
@@ -99,7 +99,7 @@ The data preparation script will:
 - Write processed files to YOUR repo's `data/` directory
 
 ```bash
-# Still in /blue/YOUR_GROUP/YOUR_USERNAME/rnaseq_workshop/
+# Still in /blue/bioinf_workshop/$USER/rnaseq_workshop/
 
 # Open RStudio Server and navigate to this directory
 # OR run from command line:
@@ -129,7 +129,7 @@ In RStudio:
 ```{r}
 #| eval: false
 library(here)
-here()  # Should show: /blue/YOUR_GROUP/YOUR_USERNAME/rnaseq_workshop
+here()  # Should show: /blue/bioinf_workshop/$USER/rnaseq_workshop
 ```
 
 # Using the `here` Package
@@ -221,7 +221,7 @@ library(here)
 here()
 ```
 
-**Should return:** `/blue/YOUR_GROUP/YOUR_USERNAME/rnaseq_workshop`
+**Should return:** `/blue/bioinf_workshop/$USER/rnaseq_workshop`
 
 ::: {.callout-warning}
 ## If it returns something else:
