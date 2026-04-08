@@ -11,6 +11,10 @@
       
       
       
+        <link rel="prev" href="../quality_control/">
+      
+      
+        <link rel="next" href="../../04_differential-expression/overview/">
       
       
         
@@ -21,7 +25,7 @@
     
     
       
-        <title>Quantifying Gene Expression: From Reads to Count Matrices - Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis</title>
+        <title>Quantification Review - Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis</title>
       
     
     
@@ -107,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Quantifying Gene Expression: From Reads to Count Matrices
+              Quantification Review
             
           </span>
         </div>
@@ -451,6 +455,449 @@
       
   
   
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Preprocessing
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Preprocessing
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nexflow_nfcore/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Nextflow and nf-core
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../nf-core_rnaseq/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    nf-core/rnaseq
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../quality_control/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    MultiQC Report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quantification Review
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quantification Review
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-expression-quantification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is Expression Quantification?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#level-1-the-problem-of-read-assignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 1: The Problem of Read Assignment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Level 1: The Problem of Read Assignment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#uniquely-mapping-reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Uniquely Mapping Reads
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#multi-mapping-reads" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Multi-Mapping Reads
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#level-2-the-problem-of-converting-assignments-to-counts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Level 2: The Problem of Converting Assignments to Counts
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#two-approaches-to-quantification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Two Approaches to Quantification
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Two Approaches to Quantification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#approach-1-sequence-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approach 1: Sequence Alignment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Approach 1: Sequence Alignment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-star" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is STAR?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#approach-2-pseudo-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Approach 2: Pseudo-alignment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Approach 2: Pseudo-alignment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-is-salmon" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What is Salmon?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#our-recommended-approach-star-rsem" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Our Recommended Approach: STAR + RSEM
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Our Recommended Approach: STAR + RSEM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#step-1-star-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 1: STAR Alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#step-2-rsem-quantification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Step 2: RSEM Quantification
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Step 2: RSEM Quantification">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-the-em-algorithm-works-conceptually" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How the EM Algorithm Works (Conceptually)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rsem-output-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RSEM Output Files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#understanding-the-count-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Understanding the Count Types
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gene-level-vs-isoform-level-quantification" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gene-Level vs. Isoform-Level Quantification
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
   
   
     
@@ -467,10 +914,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" >
         
           
-          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="">
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
             
   
   
@@ -488,8 +935,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_7">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
             <span class="md-nav__icon md-icon"></span>
             
   
