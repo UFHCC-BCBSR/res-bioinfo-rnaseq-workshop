@@ -190,7 +190,7 @@ DGE <- DGEList(counts = expression_data,
                samples = sample_info)
 
 # Explicitly add group column to DGE
-DGE$samples$group <- factor(DGE$samples$genotype, levels = c("PRMT7 WT", "PRMT7 KD"))
+DGE$samples$group <- factor(DGE$samples$genotype, levels = c("PRMT7_WT", "PRMT7_KD"))
 # Inspect the object
 DGE
 ```
@@ -316,7 +316,7 @@ ggplot(mds_df, aes(x = dim1, y = dim2, color = genotype, label = Run)) +
   scale_color_brewer(palette = "Set1")
 
 # Save the plot
-ggsave("figures/mds_plot.png", width = 8, height = 6, dpi = 300)
+ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "mds_plot.png"), width = 8, height = 6, dpi = 300)
 ```
 
 ::: {.callout-important}
@@ -357,7 +357,7 @@ pheatmap(cor_matrix,
          color = colorRampPalette(c("blue", "white", "red"))(100),
          breaks = seq(0.7, 1, length.out = 101),
          fontsize = 8,
-         filename = "figures/correlation_heatmap.png",
+         filename = here("demo-analysis", "output", "02-differential-expression", "figures", "correlation_heatmap.png"),
          width = 8,
          height = 7)
 
@@ -388,12 +388,12 @@ The design matrix tells limma which samples belong to which groups.
 
 ```{r design-simple}
 # For our PRMT7 knockdown experiment, we're comparing KD to WT
-# The first level (PRMT7 WT) will be the reference
+# The first level (PRMT7_WT) will be the reference
 
 # Make sure the factor levels are set correctly
 # The first level will be the reference (denominator in fold-change)
 DGE$samples$genotype <- factor(DGE$samples$genotype, 
-                                levels = c("PRMT7 WT", "PRMT7 KD"))
+                                levels = c("PRMT7_WT", "PRMT7_KD"))
 
 # Create design matrix
 design_simple <- model.matrix(~genotype, data = DGE$samples)
@@ -407,8 +407,8 @@ colnames(design_simple)
 
 ::: {.callout-note}
 ## Understanding the Design Matrix
-- **Intercept (column 1)**: Average expression in the reference group (PRMT7 WT)
-- **genotypePRMT7 KD (column 2)**: Difference between KD and WT (log2 fold-change)
+- **Intercept (column 1)**: Average expression in the reference group (PRMT7_WT)
+- **genotypePRMT7_KD (column 2)**: Difference between KD and WT (log2 fold-change)
 
 If a gene has:
 - Positive coefficient: higher expression in KD
@@ -516,7 +516,7 @@ ggplot(all_results, aes(x = logFC, y = -log10(P.Value), color = significant)) +
                                 "Not Significant" = "grey")) +
   geom_vline(xintercept = c(-1, 1), linetype = "dashed", alpha = 0.5) +
   geom_hline(yintercept = -log10(0.05), linetype = "dashed", alpha = 0.5) +
-  labs(title = "Volcano Plot: PRMT7 KD vs WT",
+  labs(title = "Volcano Plot: PRMT7_KD vs WT",
        x = "Log2 Fold Change",
        y = "-Log10 P-value",
        color = "Significance") +
@@ -539,7 +539,7 @@ ggplot(all_results, aes(x = AveExpr, y = logFC, color = significant)) +
                                 "Significant" = "orange",
                                 "Not Significant" = "grey")) +
   geom_hline(yintercept = 0, linetype = "solid", alpha = 0.5) +
-  labs(title = "MA Plot: PRMT7 KD vs WT",
+  labs(title = "MA Plot: PRMT7_KD vs WT",
        x = "Average Expression (log2-CPM)",
        y = "Log2 Fold Change",
        color = "Significance") +
@@ -571,7 +571,7 @@ DGE <- DGEList(counts = expression_data,
                samples = sample_info)
 
 # Explicitly add group column to DGE
-DGE$samples$group <- factor(DGE$samples$genotype, levels = c("PRMT7 WT", "PRMT7 KD"))
+DGE$samples$group <- factor(DGE$samples$genotype, levels = c("PRMT7_WT", "PRMT7_KD"))
 
 # GREIN's actual filtering (despite documentation saying "CPM > 0")
 # They use: count >= 4 in at least min_group_size samples
@@ -647,7 +647,7 @@ The exact test compares two groups using the negative binomial distribution.
 ```{r edger-exact-test}
 # Perform exact test for KD vs WT
 # This compares the second group (KD) to the first group (WT)
-et_grein <- exactTest(DGE_grein, pair = c("PRMT7 WT", "PRMT7 KD"))
+et_grein <- exactTest(DGE_grein, pair = c("PRMT7_WT", "PRMT7_KD"))
 
 # Get summary of DE genes at FDR < 0.05
 summary(decideTests(et_grein, adjust.method = "BH", p.value = 0.05))
@@ -1559,7 +1559,7 @@ pheatmap(top50_scaled,
          fontsize_row = 6,
          fontsize_col = 8,
          color = colorRampPalette(c("blue", "white", "red"))(100),
-         filename = "figures/heatmap_top50.png",
+         filename = here("demo-analysis", "output", "02-differential-expression", "figures","heatmap_top50.png"),
          width = 8,
          height = 10)
 ```
@@ -1736,7 +1736,7 @@ Install the appropriate one for your species!
 
 ## Prepare Gene Lists
 
-We'll use the limma-voom results from Part 3 (the simple PRMT7 KD vs WT comparison).
+We'll use the limma-voom results from Part 3 (the simple PRMT7_KD vs WT comparison).
 
 ```{r prepare-gene-lists}
 # From Part 3, we have: all_results (limma-voom output)
@@ -1917,7 +1917,7 @@ ego_bp_simplified <- pairwise_termsim(ego_bp)
 # Create enrichment map
 emapplot(ego_bp_simplified, 
          showCategory = 30,
-         cex_label_category = 0.6,
+         #cex_label_category = 0.6,
          layout = "kk") +
   labs(title = "GO Enrichment Map: Related Terms Share Genes")
 
@@ -1947,11 +1947,11 @@ Shows which genes belong to which terms:
 # Show top 5 terms and their genes
 cnetplot(ego_bp, 
          showCategory = 5,
-         circular = FALSE,
-         colorEdge = TRUE,
-         node_label = "all",
-         cex_label_gene = 0.7,
-         cex_label_category = 1.2) +
+        # circular = FALSE,
+         # colorEdge = TRUE,
+         node_label = "all") +
+         # cex_label_gene = 0.7,
+         #cex_label_category = 1.2) 
   labs(title = "Gene-Concept Network: Top 5 GO Terms")
 
 ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "GO_BP_cnetplot.png"), width = 12, height = 10, dpi = 300)

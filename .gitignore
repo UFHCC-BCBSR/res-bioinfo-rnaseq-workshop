@@ -6,4 +6,9 @@ demo-analysis/output/
 figures/
 results/
 .here
-
+demo-analysis/scripts/02_differential_expression_analysis.html
+rserver/
+rstudio-rsession/
+rstudio.sbatch
+logs/*
+demo-analysis/data/metadata/sample_metadata.csv
