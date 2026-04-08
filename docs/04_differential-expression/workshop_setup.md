@@ -1,13 +1,13 @@
 ---
 title: Workshop Setup Guide
-subtitle: RNA-seq Bioinformatics Workshop - Hands On Demo Analysis Setup
+subtitle: RNA-seq Bioinformatics Workshop - Hands On Demo Analysis Guide
 author: UF Health Cancer Institute Bioinformatics
 date: 2026-04-07
 ---
 
 # Overview
 
-This document explains the workshop setup and where your data files will live.
+This document explains the demo analysis setup and where your data files are.
 
 ---
 
@@ -26,10 +26,12 @@ This document explains the workshop setup and where your data files will live.
     └── demo-analysis/
         ├── data/
         │   ├── metadata/
+        │   │   ├── SraRunTable.csv
+        │   │   └── sample_metadata.csv   (created during setup)
         │   └── raw/
         ├── output/
-        │   ├── 01-prepared-data/        (created by prep script)
-        │   └── 02-differential-expression/  (created by analysis)
+        │   ├── 01-prepared-data/         (created by prep script)
+        │   └── 02-differential-expression/   (created by analysis)
         │       ├── figures/
         │       └── results/
         └── scripts/
@@ -50,7 +52,8 @@ This document explains the workshop setup and where your data files will live.
 └── trimgalore/
 ```
 
-> **Note:** This directory is read-only. Your scripts will read from here but write output to your own working directory.
+> **Note:** This directory is read-only. Your scripts will read from here
+> but write output to your own working directory.
 
 ---
 
@@ -78,16 +81,9 @@ ls -la
 # You should see: demo-analysis/, docs/, .gitignore, mkdocs.yml, README.md
 ```
 
-## Prepare the Data
+## Launch RStudio Server
 
-The data preparation script will:
-
-- Read from the shared nf-core output directory (external, read-only)
-- Write processed files to `demo-analysis/output/01-prepared-data/`
-
-## Start RStudio Server
-
-Create and submit a SLURM job to launch RStudio Server:
+Create and submit a SLURM job to launch RStudio Server by copying and pasting this in the command prompt:
 
 ```bash
 cat > rstudio.sbatch << 'EOF'
@@ -136,14 +132,14 @@ http://localhost:8080
 **To connect to RStudio:**
 
 1. Open a **new terminal window or tab on your local machine** (not on
-   HiPerGator) and run the `ssh -N -L ...` command shown in your log. The
-   working directory on your local machine doesn't matter.
+   HiPerGator) and run the `ssh -N -L ...` command shown in your log.
+   The working directory on your local machine doesn't matter.
 2. Open any browser and paste `http://localhost:8080` into the address bar.
 
 ## Set Your Working Directory in RStudio
 
-Once RStudio opens, set your working directory in the **Console** (replace
-`your_username` with your actual username):
+Once RStudio opens, set your working directory in the **Console**
+(replace `your_username` with your actual username):
 
 ```r
 setwd("/blue/bioinf_workshop/your_username/rnaseq_workshop")
@@ -151,6 +147,32 @@ setwd("/blue/bioinf_workshop/your_username/rnaseq_workshop")
 
 Then in the **Files panel** (bottom-right), click the **gear icon ⚙** and
 select **Go To Working Directory** to confirm you are in the right place.
+
+> All scripts use the `here` package to build file paths relative to the
+> repository root, so they work for everyone without needing to change
+> any paths in the code.
+
+## Create Sample Metadata
+
+Before running the data preparation script, you need to create a metadata
+file that describes your experimental design. In the RStudio **Console**, run:
+
+```r
+library(tidyverse)
+library(here)
+
+read_csv(here("demo-analysis", "data", "metadata", "SraRunTable.csv")) %>%
+  select(sample = Run, group = genotype) %>%
+  write_csv(here("demo-analysis", "data", "metadata", "sample_metadata.csv"))
+```
+
+In the Files panel, open `demo-analysis/data/metadata/sample_metadata.csv`
+to confirm it looks correct. You should see two columns:
+
+| Column | Contents |
+|--------|----------|
+| `sample` | SRR run IDs (e.g. SRR12546980) |
+| `group` | PRMT7 WT or PRMT7 KD |
 
 ## Run the Data Preparation Script
 
@@ -170,22 +192,14 @@ This will create the following files in `demo-analysis/output/01-prepared-data/`
 
 ---
 
-# Using the `here` Package
-
-All workshop scripts use the `here` package to build file paths relative to
-the repository root. This means paths work correctly for everyone without
-needing to hardcode usernames or system-specific paths anywhere in the code.
-
----
-
 # Running the Differential Expression Analysis
 
-With RStudio open and your working directory set, open:
+With your working directory set and data prepared, open:
 
 `demo-analysis/scripts/02_differential_expression_analysis.qmd`
 
-Work through the notebook **chunk by chunk** using the green play button or
-`Ctrl+Enter`. This notebook will walk you through the full differential
+Work through the notebook **chunk by chunk** using the green play button
+or `Ctrl+Enter`. This notebook will walk you through the full differential
 expression analysis using limma-voom.
 
 After completing the analysis, you will find results in
