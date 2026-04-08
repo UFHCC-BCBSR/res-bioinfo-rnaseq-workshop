@@ -161,8 +161,13 @@ file that describes your experimental design. In the RStudio **Console**, run:
 library(tidyverse)
 library(here)
 
-read_csv(here("demo-analysis", "data", "metadata", "SraRunTable.csv")) %>%
-  select(sample = Run, group = genotype) %>%
+read_csv(here("demo-analysis", "data", "metadata", "SraRunTable.csv"),
+         show_col_types = FALSE) %>%
+  select(Run, genotype, treatment) %>%
+  mutate(across(c(genotype), ~str_replace_all(., " ", "_")),
+         sample = Run,
+         group = genotype) %>%
+  select(sample, group, genotype, treatment, Run) %>%
   write_csv(here("demo-analysis", "data", "metadata", "sample_metadata.csv"))
 ```
 
