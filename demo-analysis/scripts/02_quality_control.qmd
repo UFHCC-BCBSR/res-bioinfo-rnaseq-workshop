@@ -1,0 +1,358 @@
+---
+title: "Part 1: Quality Control and Normalization"
+subtitle: "UF Health Cancer Institute Bioinformatics Workshop - Differential Expression Analysis"
+author: "UFHCI BCB-SR Bioinformatics Unit"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    code-fold: false
+    code-tools: true
+    code-overflow: wrap
+    embed-resources: true
+    theme: cosmo
+    df-print: paged
+execute:
+  warning: false
+  message: false
+---
+
+# Introduction
+
+Before we can test for differentially expressed genes, we need to assess
+sample quality, remove genes that are too lowly expressed to test reliably,
+and normalize the data so that samples are comparable.
+
+**In this notebook you will:**
+
+- Load count data and sample metadata
+- Create a DGEList object — the core data structure for this analysis
+- Filter lowly expressed genes
+- Apply TMM normalization
+- Visualize sample quality and relationships
+
+**Output:** A normalized, filtered DGEList object saved as
+`DGE_filtered_normalized.rds` for use in the differential expression analysis.
+
+---
+
+# Setup
+
+## Load Required Libraries
+
+```{r setup}
+library(limma)
+library(edgeR)
+library(tidyverse)
+library(pheatmap)
+library(RColorBrewer)
+library(here)
+
+set.seed(42)
+
+# Define output directories
+figures_dir <- here("demo-analysis", "output", "02-differential-expression", "figures")
+rds_dir <- here("demo-analysis", "output", "02-differential-expression")
+
+dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(rds_dir, showWarnings = FALSE, recursive = TRUE)
+
+cat("Project root:", here(), "\n")
+cat("Figures directory:", figures_dir, "\n")
+```
+
+::: {.callout-tip}
+## Package Installation
+If you haven't installed these packages yet:
+```r
+install.packages(c("tidyverse", "pheatmap", "RColorBrewer"))
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+BiocManager::install(c("limma", "edgeR"))
+```
+:::
+
+## Set File Paths
+
+```{r paths}
+counts_file <- here("demo-analysis", "output", "01-prepared-data",
+                    "rsem.merged.gene_counts.tsv")
+metadata_file <- here("demo-analysis", "data", "metadata", "sample_metadata.csv")
+
+if (!file.exists(counts_file)) stop("Count file not found: ", counts_file)
+if (!file.exists(metadata_file)) stop("Metadata file not found: ", metadata_file)
+
+cat("✓ Count file found\n")
+cat("✓ Metadata file found\n")
+```
+
+---
+
+# Load Data
+
+## Load Gene Counts
+
+```{r load-counts}
+expression_data <- read.table(counts_file,
+                              header = TRUE,
+                              row.names = 1,
+                              check.names = FALSE)
+
+cat("Dimensions:", nrow(expression_data), "genes x",
+    ncol(expression_data), "samples\n\n")
+
+head(expression_data, n = 3)
+```
+
+::: {.callout-important}
+## RSEM Expected Counts
+RSEM produces **expected counts** — suitable for limma-voom or DESeq2.
+These are not TPM values. Make sure you are using the
+`rsem.merged.gene_counts.tsv` file (not the scaled or TPM variants).
+:::
+
+## Load Sample Metadata
+
+```{r load-metadata}
+sample_info <- read.csv(metadata_file,
+                        header = TRUE,
+                        stringsAsFactors = FALSE)
+
+sample_info
+
+# Verify sample names match count data
+all(sample_info$sample %in% colnames(expression_data))
+```
+
+---
+
+# Create DGEList Object
+
+The `DGEList` object bundles counts and sample metadata into a single
+container used throughout the edgeR and limma-voom workflow.
+
+```{r create-dge}
+DGE <- DGEList(counts = expression_data,
+               samples = sample_info)
+
+# Set the group factor explicitly — required for filtering and DE testing
+DGE$samples$group <- factor(DGE$samples$genotype,
+                             levels = c("PRMT7_WT", "PRMT7_KD"))
+DGE
+```
+
+::: {.callout-note}
+## The DGEList Object
+`DGE$counts` contains the count matrix. `DGE$samples` contains sample
+metadata including library sizes and normalization factors. As we process
+the data, everything stays bundled together in this object.
+:::
+
+---
+
+# Filter Lowly Expressed Genes
+
+Genes with very low counts across all samples:
+
+- Add noise without contributing useful signal
+- Inflate the multiple testing burden
+- Are often unreliable measurements
+
+`filterByExpr()` applies a principled heuristic: a gene must reach a
+minimum expression level in enough samples to be testable given your
+experimental design.
+
+```{r filter-genes}
+keep.exprs <- filterByExpr(DGE, group = DGE$samples$group)
+
+table(keep.exprs)
+
+DGE <- DGE[keep.exprs, , keep.lib.sizes = FALSE]
+
+cat("Genes remaining after filtering:", nrow(DGE), "\n")
+```
+
+::: {.callout-note}
+## filterByExpr
+By default, `filterByExpr()` requires a minimum count of 10 reads in at
+least as many samples as the smallest group. This is more principled than
+a simple count cutoff because it accounts for your experimental design.
+:::
+
+---
+
+# TMM Normalization
+
+Even after filtering, samples differ in:
+
+1. **Library size** — total number of reads
+2. **Composition bias** — a few highly expressed genes can dominate the
+   library, making other genes appear lower than they are
+
+TMM (Trimmed Mean of M-values) normalization corrects for both by
+calculating a scaling factor for each sample.
+
+```{r normalize}
+DGE <- calcNormFactors(DGE, method = "TMM")
+
+DGE$samples
+```
+
+::: {.callout-note}
+## Normalization Factors
+- Factors close to **1.0**: little correction needed
+- Factors **< 1**: sample has upward composition bias
+- Factors **> 1**: sample has downward composition bias
+
+These factors are applied internally by limma-voom — you do not need to
+manually adjust your counts.
+:::
+
+---
+
+# Quality Control Visualizations
+
+## Library Sizes
+
+This plot shows the total number of reads per sample after filtering.
+The samples are colored by experimental group.
+
+```{r library-sizes, fig.width=8, fig.height=5}
+lib_size_df <- data.frame(
+  sample   = rownames(DGE$samples),
+  lib_size = DGE$samples$lib.size,
+  group    = DGE$samples$group
+)
+
+ggplot(lib_size_df, aes(x = sample, y = lib_size / 1e6, fill = group)) +
+  geom_col() +
+  labs(title = "Library Sizes After Filtering",
+       x = "Sample",
+       y = "Library Size (Millions of Reads)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_brewer(palette = "Set2")
+```
+
+::: {.callout-warning}
+## What to Look For
+- Large differences (>2–3×) in library sizes may indicate technical issues
+- Very low libraries (<5M reads for human/mouse) may lack sufficient depth
+- Moderate variation is normal and handled by normalization
+:::
+
+## MDS Plot
+
+Multidimensional Scaling (MDS) is similar to PCA — it places samples in
+two-dimensional space such that similar samples are closer together.
+Samples from the same experimental group should cluster together.
+
+```{r mds-plot, fig.width=8, fig.height=6}
+mds <- plotMDS(DGE, top = 500, plot = FALSE, gene.selection = "common")
+
+mds_df <- data.frame(
+  sample   = rownames(DGE$samples),
+  dim1     = mds$x,
+  dim2     = mds$y,
+  genotype = DGE$samples$genotype
+)
+
+ggplot(mds_df, aes(x = dim1, y = dim2, color = genotype, label = sample)) +
+  geom_point(size = 4, alpha = 0.8) +
+  ggrepel::geom_text_repel(size = 3, max.overlaps = 20) +
+  labs(title = "MDS Plot — Sample Similarity",
+       subtitle = "Based on top 500 most variable genes",
+       x = paste0("Leading logFC dim 1 (",
+                  round(mds$var.explained[1] * 100, 1), "%)"),
+       y = paste0("Leading logFC dim 2 (",
+                  round(mds$var.explained[2] * 100, 1), "%)")) +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1")
+
+ggsave(here(figures_dir, "mds_plot.png"), width = 8, height = 6, dpi = 300)
+```
+
+::: {.callout-important}
+## Interpreting the MDS Plot
+**Good signs:**
+- Samples from the same group cluster together
+- Clear separation between conditions
+
+**Red flags:**
+- Outlier samples far from their group
+- No separation between conditions (weak signal)
+- Samples clustering by batch instead of biology
+:::
+
+## Sample Correlation Heatmap
+
+This heatmap shows pairwise Spearman correlations between all samples.
+Samples in the same group should show higher correlations with each other
+than with samples in the other group.
+
+```{r correlation-heatmap, fig.width=8, fig.height=7}
+logcpm <- cpm(DGE, log = TRUE)
+cor_matrix <- cor(logcpm, method = "spearman")
+
+annotation_col <- data.frame(
+  Genotype = DGE$samples$genotype,
+  row.names = colnames(logcpm)
+)
+
+# Save to file
+pheatmap(cor_matrix,
+         annotation_col = annotation_col,
+         annotation_row = annotation_col,
+         main = "Sample Correlation Heatmap",
+         color = colorRampPalette(c("blue", "white", "red"))(100),
+         breaks = seq(0.7, 1, length.out = 101),
+         fontsize = 8,
+         filename = here(figures_dir, "correlation_heatmap.png"),
+         width = 8,
+         height = 7)
+
+# Display in document
+pheatmap(cor_matrix,
+         annotation_col = annotation_col,
+         annotation_row = annotation_col,
+         main = "Sample Correlation Heatmap",
+         color = colorRampPalette(c("blue", "white", "red"))(100),
+         breaks = seq(0.7, 1, length.out = 101),
+         fontsize = 8)
+```
+
+::: {.callout-tip}
+## Expected Correlation Values
+- **Within-group**: typically 0.95–0.99
+- **Between-group**: typically 0.85–0.98 (depends on effect size)
+- **Outlier samples**: consistently < 0.90 correlation with all others
+:::
+
+---
+
+# Save Processed Data
+
+Save the filtered and normalized DGEList object so the differential
+expression script can load it directly without re-running QC.
+
+```{r save-rds}
+saveRDS(DGE, file = here(rds_dir, "DGE_filtered_normalized.rds"))
+
+cat("✓ DGE object saved to:",
+    here(rds_dir, "DGE_filtered_normalized.rds"), "\n\n")
+
+cat("Summary:\n")
+cat("  Genes after filtering:", nrow(DGE), "\n")
+cat("  Samples:", ncol(DGE), "\n")
+cat("  Groups:", paste(levels(DGE$samples$group), collapse = ", "), "\n")
+```
+
+---
+
+# Session Information
+
+```{r sessioninfo}
+sessionInfo()
+```

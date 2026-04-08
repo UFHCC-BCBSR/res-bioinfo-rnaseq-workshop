@@ -1,0 +1,156 @@
+---
+title: "Part 1: Quality Control and Normalization"
+author: "UFHCI BCB-SR Bioinformatics Unit"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+```{r libraries}
+library(limma)
+library(edgeR)
+library(tidyverse)
+library(pheatmap)
+library(RColorBrewer)
+library(ggrepel)
+library(here)
+
+set.seed(42)
+
+figures_dir <- here("demo-analysis", "output", "02-differential-expression", "figures")
+rds_dir     <- here("demo-analysis", "output", "02-differential-expression")
+
+dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(rds_dir,     showWarnings = FALSE, recursive = TRUE)
+```
+
+```{r paths}
+counts_file   <- here("demo-analysis", "output", "01-prepared-data",
+                      "rsem.merged.gene_counts.tsv")
+metadata_file <- here("demo-analysis", "data", "metadata", "sample_metadata.csv")
+
+if (!file.exists(counts_file))   stop("Count file not found: ",    counts_file)
+if (!file.exists(metadata_file)) stop("Metadata file not found: ", metadata_file)
+```
+
+```{r load-data}
+expression_data <- read.table(counts_file,
+                               header      = TRUE,
+                               row.names   = 1,
+                               check.names = FALSE)
+
+sample_info <- read.csv(metadata_file,
+                         header          = TRUE,
+                         stringsAsFactors = FALSE)
+
+cat("Genes:", nrow(expression_data), " | Samples:", ncol(expression_data), "\n")
+sample_info
+```
+
+```{r create-dge}
+DGE <- DGEList(counts  = expression_data,
+               samples = sample_info)
+
+DGE$samples$group <- factor(DGE$samples$genotype,
+                              levels = c("PRMT7_WT", "PRMT7_KD"))
+DGE
+```
+
+```{r filter}
+keep.exprs <- filterByExpr(DGE, group = DGE$samples$group)
+table(keep.exprs)
+
+DGE <- DGE[keep.exprs, , keep.lib.sizes = FALSE]
+cat("Genes remaining:", nrow(DGE), "\n")
+```
+
+```{r normalize}
+DGE <- calcNormFactors(DGE, method = "TMM")
+DGE$samples
+```
+
+```{r library-sizes, fig.width=8, fig.height=5}
+lib_size_df <- data.frame(
+  sample   = rownames(DGE$samples),
+  lib_size = DGE$samples$lib.size,
+  group    = DGE$samples$group
+)
+
+ggplot(lib_size_df, aes(x = sample, y = lib_size / 1e6, fill = group)) +
+  geom_col() +
+  labs(title = "Library Sizes After Filtering",
+       x = "Sample", y = "Library Size (Millions of Reads)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_brewer(palette = "Set2")
+```
+
+```{r mds-plot, fig.width=8, fig.height=6}
+mds <- plotMDS(DGE, top = 500, plot = FALSE, gene.selection = "common")
+
+mds_df <- data.frame(
+  sample   = rownames(DGE$samples),
+  dim1     = mds$x,
+  dim2     = mds$y,
+  genotype = DGE$samples$genotype
+)
+
+ggplot(mds_df, aes(x = dim1, y = dim2, color = genotype, label = sample)) +
+  geom_point(size = 4, alpha = 0.8) +
+  geom_text_repel(size = 3, max.overlaps = 20) +
+  labs(title = "MDS Plot — Sample Similarity",
+       subtitle = "Top 500 most variable genes",
+       x = paste0("Dim 1 (", round(mds$var.explained[1] * 100, 1), "%)"),
+       y = paste0("Dim 2 (", round(mds$var.explained[2] * 100, 1), "%)")) +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1")
+
+ggsave(here(figures_dir, "mds_plot.png"), width = 8, height = 6, dpi = 300)
+```
+
+```{r correlation-heatmap, fig.width=8, fig.height=7}
+logcpm     <- cpm(DGE, log = TRUE)
+cor_matrix <- cor(logcpm, method = "spearman")
+
+annotation_col <- data.frame(
+  Genotype  = DGE$samples$genotype,
+  row.names = colnames(logcpm)
+)
+
+pheatmap(cor_matrix,
+         annotation_col = annotation_col,
+         annotation_row = annotation_col,
+         main     = "Sample Correlation Heatmap",
+         color    = colorRampPalette(c("blue", "white", "red"))(100),
+         breaks   = seq(0.7, 1, length.out = 101),
+         fontsize = 8,
+         filename = here(figures_dir, "correlation_heatmap.png"),
+         width = 8, height = 7)
+
+pheatmap(cor_matrix,
+         annotation_col = annotation_col,
+         annotation_row = annotation_col,
+         main     = "Sample Correlation Heatmap",
+         color    = colorRampPalette(c("blue", "white", "red"))(100),
+         breaks   = seq(0.7, 1, length.out = 101),
+         fontsize = 8)
+```
+
+```{r save-rds}
+saveRDS(DGE, file = here(rds_dir, "DGE_filtered_normalized.rds"))
+
+cat("✓ Saved:", here(rds_dir, "DGE_filtered_normalized.rds"), "\n")
+cat("  Genes:", nrow(DGE), " | Samples:", ncol(DGE), "\n")
+```
+
+```{r sessioninfo}
+sessionInfo()
+```
