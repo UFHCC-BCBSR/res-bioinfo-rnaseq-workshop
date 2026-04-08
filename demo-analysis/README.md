@@ -13,23 +13,23 @@ demo-analysis/
 ├── data/
 │   ├── metadata/
 │   │   ├── SraRunTable.csv          # Raw metadata from NCBI SRA
-│   │   └── sample_metadata.csv      # Cleaned metadata (created during setup)
-│   ├── raw/                         # Symlinks to raw .fastq files
-│   └── two-factor-design/           # Drosophila dataset (optional script)
+│   │   └── sample_metadata.csv      # Cleaned metadata (created for you)
+│   ├── raw/                         # symlinks Raw .fastq files*
+│   └── two-factor-design/           # Drosophila dataset (for optional script)
 │       ├── salmon.merged.gene_counts.tsv
 │       └── dme_elev_samples.tsv
 └── output/
-    ├── 01-prepared-data/            # Created by 01_prepare_nfcore_data.R
-    │   ├── rsem.merged.gene_counts.tsv
-    │   ├── sample_info.tsv
-    │   ├── gene_annotation.tsv
-    │   ├── data_summary.txt
-    │   ├── library_sizes.png
-    │   └── README.txt
-    └── 02-differential-expression/  # Created by scripts 02-04
-        ├── DGE_filtered_normalized.rds
-        ├── figures/
-        └── results/
+    ├── differential-expression/     # Created by scripts 01-03
+    │   ├── DGE_filtered_normalized.rds
+    │   ├── figures/
+    │   └── results/
+    └── optional/                    # Created by optional/opt_01_prepare_nfcore_data.R
+        ├── rsem.merged.gene_counts.tsv
+        ├── sample_info.tsv
+        ├── gene_annotation.tsv
+        ├── data_summary.txt
+        ├── library_sizes.png
+        └── README.txt
 ```
 
 ---
