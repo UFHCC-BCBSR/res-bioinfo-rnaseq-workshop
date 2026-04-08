@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -988,13 +988,12 @@ sample sheet, a genome fasta, and either a gtf or a gff annotation file.</p>
 <p>A comprehensive MultiQC HTML report</p>
 </li>
 </ul>
-<blockquote>
-<p>📸 <img src="nfcore-rnaseq_metro_map_grey_animated.svg" alt="nf-core rnaseq metro map" width="800"/></p>
-</blockquote>
+<p><img alt="nf-core rnaseq metro map" src="../../assets/nf-core-rnaseq_metro_map_grey_animated.svg" /></p>
 <p>On UF's HiPerGator, nf-core is available as a pre-installed software module along with Nextflow. 
 Both the modules can be loaded using the following commands on HiPerGator:</p>
-<pre><code class="language-bash">module load nextflow
-module load nf-core
+<pre><code class="language-bash">module load nf-core
+module load nextflow/25.10.4
+
 </code></pre>
 <hr />
 <h2 id="pipeline-components-and-tools">Pipeline Components and Tools</h2>
@@ -1123,12 +1122,13 @@ RSEM's probabilistic model to handle multi-mapping reads more accurately. </p>
 <p>The sample sheet is a comma-separated file that tells the pipeline where 
 your FASTQ files are</p>
 <pre><code class="language-csv">sample,fastq_1,fastq_2,strandedness,seq_platform
-SRR12546980,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546980.fastq,,auto,ILLUMINA
-SRR12546982,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546982.fastq,,auto,ILLUMINA
-SRR12546984,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546984.fastq,,auto,ILLUMINA
-SRR12546986,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546986.fastq,,auto,ILLUMINA
-SRR12546988,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546988.fastq,,auto,ILLUMINA
-SRR12546990,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546990.fastq,,auto,ILLUMINA
+SRR12546980,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546980.fastq,,auto,ILLUMINA
+SRR12546982,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546982.fastq,,auto,ILLUMINA
+SRR12546984,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546984.fastq,,auto,ILLUMINA
+SRR12546986,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546986.fastq,,auto,ILLUMINA
+SRR12546988,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546988.fastq,,auto,ILLUMINA
+SRR12546990,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546990.fastq,,auto,ILLUMINA
+
 </code></pre>
 <h3 id="column-descriptions">Column Descriptions</h3>
 <table>
@@ -1251,47 +1251,58 @@ a YAML file makes your runs more readable, reproducible, and easy to version-con
 Save this file as <code>params.yaml</code>.</p>
 <pre><code>---
 # General Parameters
-input: &quot;samplesheet.csv&quot;                             # Provide absolute or relative path to the sample sheet
-outdir: &quot;OUTPUT&quot;                                     # Provide absolute or relative path to the output directory for results
+input: &quot;samplesheet.csv&quot;                             # Path to the sample sheet, keep as is if running from same directory
+outdir: &quot;/blue/bioinf_workshop/share/nfcore_rnaseq_files/outputs&quot;                                     # Output directory for results
 email: &quot;kshirlekar@ufl.edu&quot;                          # Email for notifications
 multiqc_title: &quot;TestData_RNASEQ_Multiqc&quot;               # Title for MultiQC report
 
 # Input Files
-fasta: &quot;/orange/cancercenter-dept/GENOMES/iGenomes/references/Mus_musculus/Ensembl/GRCm38/Sequence/WholeGenomeFasta/genome.fa&quot;
-gtf: &quot;/orange/cancercenter-dept/GENOMES/iGenomes/references/Mus_musculus/Ensembl/GRCm38/Annotation/Genes/genes.gtf&quot;
+fasta: &quot;/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/genome_files/genome.fa&quot;
+gtf: &quot;/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/genome_files/genes.gtf&quot;
 
 # Alignment
 aligner: &quot;star_rsem&quot;                                 # Aligner to use (STAR + RSEM)
-star_index: &quot;/orange/cancercenter-dept/GENOMES/iGenomes/references/Mus_musculus/Ensembl/GRCm38/Sequence/STARIndex&quot;
+star_index: &quot;/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/genome_files/STARIndex&quot;
 
 # iGenomes
 igenomes_ignore: true                                # Ignore default iGenomes settings
 
-# Process skipping
+# PRocess skipping
 skip_preseq: false
+
 </code></pre>
 <h2 id="step-5-write-the-slurm-submission-script">Step 5: Write the SLURM Submission Script</h2>
 <p>This script submits the Nextflow pipeline manager itself as a SLURM job. 
 Nextflow then submits each pipeline step as its own SLURM job internally. Save this file
-as 'run_rnaseq.sh`.</p>
+as 'rnaseq.sh`.</p>
 <pre><code>#!/bin/bash
-#SBATCH --job-name=nfcore_rnaseq
+#SBATCH --job-name=nfcorernaseq
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8Gb
 #SBATCH --qos=cancercenter-dept
 #SBATCH --account=cancercenter-dept
-#SBATCH --time=36:00:00
+#SBATCH --time=24:00:00
 #SBATCH --output=LOG/rnaseq.out
 #SBATCH --error=LOG/rnaseq.err
 
-module load nextflow/25.10.4
+# Load the necessary modules to enable the pipeline
 module load nf-core
+module load nextflow/25.10.4
 
-# nextflow pull nf-core/rnaseq # Update to the latest version
+# Saves the singularity image in shared directory, everyone can reuse it instead of downloading it
+export NXF_SINGULARITY_CACHEDIR=/blue/bioinf_workshop/share/singularity_cache
 
-nextflow run nf-core/rnaseq -r 3.23.0 -c nextflow_rnaseq.config -profile singularity -params-file params.yaml --save_reference --skip_preseq FALSE
+
+# nextflow pull nf-core/rnaseq # this is to update the pipeline to the latest version. nextflow pulls is from Github.
+
+nextflow run nf-core/rnaseq -r 3.23.0 \
+        -c nextflow.config \
+        -profile singularity \
+        -params-file params.yaml \ # Provide correct path
+        --save_reference \ # Optional, time consuming step, good practice to save it once and reuse it later
+        --skip_preseq FALSE # This is for QC, time consuming step, feel free to make is TRUE
 
 # save_reference is optional argument
 # Add -resume to resume the same workflow
@@ -1305,7 +1316,7 @@ can be initiated using the following command.</p>
 <p>⚠️ Do not run this from your home directory. You should have created a separate folder
 in your shared directory for the run. </p>
 <h3 id="submit-the-job">Submit the job</h3>
-<pre><code>sbatch run_rnaseq.sh
+<pre><code>sbatch rnaseq.sh
 </code></pre>
 <h3 id="check-job-status">Check job status</h3>
 <pre><code>squeue -u your_username
@@ -1318,7 +1329,7 @@ in your shared directory for the run. </p>
 </code></pre>
 <h2 id="pipeline-outputs">Pipeline Outputs</h2>
 <p>Once complete, your output directory will look like:</p>
-<pre><code>OUTPUT/star_rsem/
+<pre><code>outputs/star_rsem/
 ├── fastqc/                         # Raw read QC (FastQC)
 │  ├── raw
 │  └── trim
@@ -1348,7 +1359,7 @@ sem.merged.gene_counts.tsv — a matrix of raw estimated counts with genes as
 rows and samples as columns.</p>
 <h3 id="after-successful-execution">After successful execution:</h3>
 <p>Review the MultiQC report (multiqc/star_rsem/multiqc_report.html) — see the QC 
-module guide and proceed to differential expression analysis in R using DESeq2 or edgeR.</p>
+module guide and proceed to differential expression analysis in R.</p>
 
 
 

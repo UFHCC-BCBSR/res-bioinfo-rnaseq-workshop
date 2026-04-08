@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -76,7 +76,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#file-3-03_quality_controlmd" class="md-skip">
+        <a href="#quality-control-in-rna-seq-multiqc-report" class="md-skip">
           Skip to content
         </a>
       
@@ -459,6 +459,8 @@
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
       
       
+        
+      
       
         <label class="md-nav__link md-nav__link--active" for="__toc">
           
@@ -501,6 +503,8 @@
   
   
   
+    
+  
   
     <label class="md-nav__title" for="__toc">
       <span class="md-nav__icon md-icon"></span>
@@ -509,10 +513,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#file-3-03_quality_controlmd" class="md-nav__link">
+  <a href="#quality-matters" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📄 File 3: 03_quality_control.md
+        Quality Matters
       
     </span>
   </a>
@@ -520,13 +524,52 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#tool-by-tool-guide-to-understand-multiqc" class="md-nav__link">
+  <a href="#the-multiqc-report-key-points" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Tool-by-Tool Guide to Understand MultiQC
+        The MultiQC Report: Key Points
       
     </span>
   </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#qc-summary-red-flags-to-watch-for" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QC Summary: Red Flags to Watch For
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#using-the-multiqc-report-for-sample-level-decisions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using the MultiQC Report for Sample-Level Decisions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using the MultiQC Report for Sample-Level Decisions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -765,43 +808,330 @@
 
 
 
+<h1 id="quality-control-in-rna-seq-multiqc-report">Quality Control in RNA-Seq: MultiQC Report</h1>
+<h2 id="quality-matters">Quality Matters</h2>
+<p>Before trusting any downstream analysis — differential expression, pathway analysis, or otherwise — you need to verify that your raw data and processed outputs meet basic quality standards. Poor-quality RNA-seq data can arise from many sources:</p>
+<ul>
+<li>Degraded RNA at time of library preparation</li>
+<li>Low sequencing depth</li>
+<li>Adapter contamination</li>
+<li>rRNA or DNA contamination</li>
+<li>PCR over-amplification (duplicates)</li>
+<li>Biased coverage (e.g., 3' bias in degraded samples)</li>
+<li>Sample swaps or mislabeling</li>
+</ul>
+<p>The <code>nf-core/rnaseq</code> pipeline automates QC at every stage and compiles all results into a single <strong>MultiQC report</strong>. This section explains each QC tool, what it measures, and what to look for.</p>
 <hr />
-<h2 id="file-3-03_quality_controlmd">📄 File 3: <code>03_quality_control.md</code></h2>
-<pre><code class="language-markdown"># Quality Control in RNA-Seq: Tools and Interpretation
-
----
-
-## Why Quality Control Matters
-
-Before trusting any downstream analysis — differential expression, pathway analysis, or otherwise — you need to verify that your raw data and processed outputs meet basic quality standards. Poor-quality RNA-seq data can arise from many sources:
-
-- Degraded RNA at time of library preparation
-- Low sequencing depth
-- Adapter contamination
-- rRNA or DNA contamination
-- PCR over-amplification (duplicates)
-- Biased coverage (e.g., 3' bias in degraded samples)
-- Sample swaps or mislabeling
-
-The `nf-core/rnaseq` pipeline automates QC at every stage and compiles all results into a single **MultiQC report**. This section explains each QC tool, what it measures, and what to look for.
-
----
-
-## The MultiQC Report: Summary Guide 
-
-[**MultiQC**](https://multiqc.info/) aggregates the output of all QC tools across all samples into a single, interactive HTML report. It is the first place to look after a pipeline run.
-
-### How to Open It
-
-&lt; Add information about using OnDemand to browse files or use scp. Download the html file otherwise it opens as an html&gt;
-
-```bash
-# Copy to your local machine and open in a browser
+<h2 id="the-multiqc-report-key-points">The MultiQC Report: Key Points</h2>
+<p><a href="https://multiqc.info/"><strong>MultiQC</strong></a> aggregates the output of all QC tools across all samples into a single, interactive HTML report.</p>
+<p>Download the html file from the output folder. You will find the report at the following location:</p>
+<pre><code>/blue/bioinf_workshop/share/nfcore_rnaseq_files/outputs/multiqc/star_rsem
+</code></pre>
+<p>To use scp to download the report:</p>
+<pre><code class="language-bash"># Copy to your local machine and open in a browser
 scp username@hpg.rc.ufl.edu:/OUTPUT/star_rsem/multiqc/star_rsem/multiqc_report.html ./
 open multiqc_report.html   # macOs
 </code></pre>
+<p>To download it using <a href="https://ondemand.rc.ufl.edu/pun/sys/dashboard/">OnDemand</a>, log in and navigate to the same location and click 'Download' after selecting the html report.</p>
 <p>The report includes sections for every tool that ran — FastQC, Trim Galore, STAR, Picard, RSeQC, Qualimap, Preseq, and RSEM. Each section shows per-sample metrics and highlights any samples that fall outside expected ranges.</p>
-<h1 id="tool-by-tool-guide-to-understand-multiqc">Tool-by-Tool Guide to Understand MultiQC</h1>
+<hr />
+<p><strong><u>1. FastQC — Raw Read Quality Assessment</u></strong></p>
+<p><a href="https://www.bioinformatics.babraham.ac.uk/projects/fastqc/">FastQC</a> is the standard first-pass QC tool for sequencing data. It runs on raw FASTQ files and generates a set of diagnostic plots.</p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>What to Look For</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Per-base sequence quality</td>
+<td>Phred scores should be &gt;28 across the read. It's normal for quality to drop slightly at the 3' end.</td>
+</tr>
+<tr>
+<td>Per-sequence quality scores</td>
+<td>The distribution should peak at high quality (&gt;30). A low-quality peak indicates a problem.</td>
+</tr>
+<tr>
+<td>Per-base sequence content</td>
+<td>The first \~10 bases often show variation due to random hexamer priming — this is normal. Uniform composition expected after that.</td>
+</tr>
+<tr>
+<td>GC content</td>
+<td>Should follow a smooth, roughly normal distribution centered near the expected GC% for your organism. Unusual peaks or bimodal distributions suggest contamination.</td>
+</tr>
+<tr>
+<td>Sequence duplication levels</td>
+<td>High duplication is expected for RNA-seq (some transcripts are highly expressed). Extremely high duplication (&gt;80%) may indicate over-amplification.</td>
+</tr>
+<tr>
+<td>Adapter content</td>
+<td>Should be near zero after trimming. High adapter content in raw reads is expected and normal before trimming.</td>
+</tr>
+<tr>
+<td>Overrepresented sequences</td>
+<td>rRNA or adapter sequences showing up here suggest contamination.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong><u>2. Trim Galore / Cutadapt — Adapter Trimming and Quality Filtering</u></strong></p>
+<p><a href="https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/">Trim Galore</a> is a wrapper around the <a href="https://cutadapt.readthedocs.io/en/stable/">Cutadapt</a> adapter trimmer, with additional quality trimming. It removes adapter sequences and low-quality bases from read ends.</p>
+<ul>
+<li>
+<p>Detects and removes Illumina adapter sequences</p>
+</li>
+<li>
+<p>Trims low-quality bases from the 3' end (default Phred \&lt; 20)</p>
+</li>
+<li>
+<p>Removes reads that become too short after trimming (default: \&lt; 20 bp)</p>
+</li>
+<li>
+<p>Runs FastQC on the trimmed reads automatically</p>
+</li>
+<li>
+<p><strong>% reads passing filter:</strong> Should be &gt;90% for a good library</p>
+</li>
+<li>
+<p><strong>% bases trimmed:</strong> A small percentage (1–10%) is normal. Very high values (&gt;30%) suggest adapter contamination or low quality</p>
+</li>
+<li>
+<p>Reads significantly shorter after trimming may indicate RNA degradation</p>
+</li>
+</ul>
+<hr />
+<p><strong><u>3. SAMtools — Alignment Statistics</u></strong></p>
+<p><a href="http://www.htslib.org/">SAMtools</a> is a suite of tools for manipulating SAM/BAM alignment files. In the pipeline, it is used to generate per-sample alignment summary statistics via <code>samtools flagstat</code> and <code>samtools stats</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Meaning</th>
+<th>What to look for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>\% mapped reads</td>
+<td>Fraction of reads that aligned to the genome</td>
+<td>&gt;75% (typically 85–95% for good samples)</td>
+</tr>
+<tr>
+<td>\% properly paired</td>
+<td>Both reads in a pair align to the same chromosome in expected orientation</td>
+<td>&gt;90%</td>
+</tr>
+<tr>
+<td>\% singletons</td>
+<td>One read mapped but its pair did not</td>
+<td>Should be low (\&lt;5%)</td>
+</tr>
+<tr>
+<td>\% reads mapped to different chromosomes</td>
+<td>Indicative of chimeric or contaminating reads</td>
+<td>Should be very low</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<blockquote>
+<p>⚠️ A low overall mapping rate (\&lt;70%) can indicate issues such as wrong genome used, high contamination, or very low quality /degraded input RNA.</p>
+</blockquote>
+</blockquote>
+<hr />
+<p><strong><u>4. DupRadar - Duplication Rate in Context of Expression Level</u></strong></p>
+<p><a href="https://bioconductor.org/packages/release/bioc/html/dupRadar.html">DupRadar</a> is a Bioconductor R package that assesses duplication rates in the context of <strong>gene expression levels</strong>. It goes beyond what Picard's <code>MarkDuplicates</code> offers by asking a more nuanced question: <em>are duplicates arising from highly expressed genes (expected), or are they uniformly high across all genes (problematic)?</em></p>
+<ul>
+<li>A healthy library shows <strong>low duplication at low expression</strong> and <strong>high duplication only at high expression</strong></li>
+<li>A problematic library shows <strong>uniformly high duplication across all expression levels</strong></li>
+<li><strong>Duplication rate vs. expression level</strong>: Plots the duplication rate of each gene against its expression level (RPK)</li>
+</ul>
+<hr />
+<p><strong><u>5. Picard — Duplicate Marking</u></strong></p>
+<p><a href="https://broadinstitute.github.io/picard/">Picard</a> is a Java toolkit from the Broad Institute for processing sequencing data. The <code>MarkDuplicates</code> tool identifies reads that are likely PCR or optical duplicates — identical copies of the same original DNA fragment.</p>
+<p>Two reads are considered duplicates if they map to the exact same genomic coordinates. Duplicates are <strong>flagged</strong> in the BAM file but not removed by default in this pipeline.</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Meaning</th>
+<th>What to look for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>\% duplicate reads</td>
+<td>Fraction of reads flagged as duplicates</td>
+<td>&gt;30–40% may indicate over-amplification</td>
+</tr>
+<tr>
+<td>Estimated library size</td>
+<td>Estimated number of unique molecules in the library</td>
+<td>Very small values (\&lt;1M) suggest poor complexity</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<blockquote>
+<p>💡 Some duplication is expected and unavoidable in RNA-seq, especially for highly expressed transcripts. Very high duplication rates combined with low library complexity estimates indicate a problem.</p>
+</blockquote>
+</blockquote>
+<hr />
+<p><strong><u>6. Preseq — Library Complexity Estimation</u></strong></p>
+<p><a href="http://smithlabresearch.org/software/preseq/">Preseq</a> estimates how many unique reads you would expect to obtain if you sequenced the library to greater depth. This tells you whether your library is <strong>saturated</strong> (you've already captured most of the diversity) or whether deeper sequencing would yield more information.</p>
+<ul>
+<li>Expected distinct reads as a function of total reads sequenced</li>
+<li>A steep, still-rising curve indicates the library has not been exhausted and would benefit from deeper sequencing</li>
+<li>A curve that flattens early indicates the library is saturated — more sequencing yields diminishing returns</li>
+</ul>
+<p><strong>What to look for</strong></p>
+<ul>
+<li>Samples where the curve rises steeply: good complexity, potentially under-sequenced</li>
+<li>Samples where the curve plateaus early: low complexity — may indicate heavy duplication or degraded input RNA</li>
+</ul>
+<hr />
+<p><strong><u>7. RSeQC — RNA-Specific Alignment Quality</u></strong></p>
+<p><a href="https://rseqc.sourceforge.net/">RSeQC</a> is a Python package specifically designed for assessing the quality of RNA-seq alignments. Unlike SAMtools (which gives generic alignment metrics), RSeQC provides RNA-aware diagnostics.</p>
+<p><strong>Key modules used by nf-core/rnaseq:</strong></p>
+<p><strong><code>infer_experiment</code></strong> Infers the strandedness of the library by examining how reads align relative to annotated gene features.</p>
+<ul>
+<li>Confirms or contradicts the <code>strandedness</code> setting in your sample sheet</li>
+<li>Important for downstream quantification accuracy</li>
+</ul>
+<p><strong><code>read_distribution</code></strong> Categorizes reads based on which genomic feature they overlap: CDS exon, UTR, intronic, intergenic, etc.</p>
+<table>
+<thead>
+<tr>
+<th>Expected</th>
+<th>What a Problem Looks Like</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Majority of reads in CDS exons and UTRs</td>
+<td>High intronic reads: unspliced RNA, nuclear contamination, or genomic DNA contamination</td>
+</tr>
+<tr>
+<td>Low intergenic reads</td>
+<td>High intergenic reads: wrong genome or annotation, or heavy contamination</td>
+</tr>
+</tbody>
+</table>
+<p><strong><code>junction_annotation</code></strong> Compares splice junctions in the alignments to known junctions in the annotation.</p>
+<ul>
+<li>Most junctions should be <strong>known</strong> (annotated)</li>
+<li>A high proportion of novel junctions may indicate a poorly annotated genome or contamination</li>
+</ul>
+<p><strong><code>junction_saturation</code></strong> Shows whether you've sequenced deeply enough to detect most splice junctions. A plateauing curve means you've captured most junctions.</p>
+<p><strong><code>inner_distance</code></strong> Estimates the insert size of your paired-end library. Useful for detecting grossly abnormal library preparations.</p>
+<p><strong><code>bam_stat</code></strong> Provides a summary of alignment flags — similar to <code>samtools flagstat</code> but with additional RNA-relevant categories.</p>
+<hr />
+<p><strong><u>8. Qualimap — Coverage and Bias Assessment</u></strong></p>
+<p><a href="http://qualimap.conesalab.org/">Qualimap</a> provides a comprehensive set of coverage-based QC metrics for RNA-seq BAM files.</p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>5'/3' bias</td>
+<td>Measures whether reads are uniformly distributed across transcripts. High 3' bias indicates RNA degradation.</td>
+</tr>
+<tr>
+<td>Coverage across transcript</td>
+<td>A flat line is ideal. A downward slope toward the 5' end indicates degradation.</td>
+</tr>
+<tr>
+<td>Reads aligned to genes</td>
+<td>Should be high — low values suggest annotation or alignment problems.</td>
+</tr>
+<tr>
+<td>Junction reads</td>
+<td>Proportion of reads spanning splice junctions — expected to be high for mRNA.</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<blockquote>
+<p>💡 The 5' to 3' coverage plot is one of the most important diagnostics for RNA quality. If you see a strong 3' bias, it may indicate the RNA was degraded before library preparation, which can bias expression estimates toward 3' transcript ends.</p>
+</blockquote>
+</blockquote>
+<hr />
+<h2 id="qc-summary-red-flags-to-watch-for">QC Summary: Red Flags to Watch For</h2>
+<table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Likely QC Signal</th>
+<th>Possible Cause</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Low mapping rate (\&lt;70%)</td>
+<td>SAMtools flagstat</td>
+<td>Wrong genome, heavy contamination, very low quality input</td>
+</tr>
+<tr>
+<td>High duplication rate (&gt;50%)</td>
+<td>Picard MarkDuplicates</td>
+<td>Over-amplified library, low input RNA</td>
+</tr>
+<tr>
+<td>Strong 3' bias</td>
+<td>Qualimap coverage plot</td>
+<td>RNA degradation</td>
+</tr>
+<tr>
+<td>High adapter content</td>
+<td>FastQC adapter content</td>
+<td>Sequencing short inserts, trimming failure</td>
+</tr>
+<tr>
+<td>Unusual GC distribution</td>
+<td>FastQC GC content</td>
+<td>Contamination, PCR bias</td>
+</tr>
+<tr>
+<td>Low complexity</td>
+<td>Preseq</td>
+<td>Degraded RNA, over-amplification</td>
+</tr>
+<tr>
+<td>High intronic reads</td>
+<td>RSeQC read distribution</td>
+<td>Genomic DNA contamination, unspliced RNA</td>
+</tr>
+<tr>
+<td>Strandedness mismatch</td>
+<td>RSeQC infer_experiment</td>
+<td>Incorrect strandedness specified in sample sheet</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="using-the-multiqc-report-for-sample-level-decisions">Using the MultiQC Report for Sample-Level Decisions</h2>
+<p>Before proceeding to differential expression, use the MultiQC report to:</p>
+<ul>
+<li><strong>Identify outlier samples</strong> — samples that cluster away from others in QC metrics</li>
+<li><strong>Confirm acceptable mapping rates</strong> — flag any sample below 70%</li>
+<li><strong>Check for batch effects</strong> — do samples from the same sequencing run cluster together?</li>
+<li><strong>Decide whether to exclude any samples</strong> — document any exclusions clearly</li>
+<li><strong>Verify strandedness was correctly detected</strong> — check the RSeQC <code>infer_experiment</code> section</li>
+</ul>
+<blockquote>
+<p>💡 It is better to remove a poor-quality sample from the analysis than to include it and risk confounded results. Document all exclusions in your methods.</p>
+</blockquote>
+<h3 id="references">References</h3>
+<ul>
+<li><a href="https://nf-co.re/rnaseq/3.23.0/docs/usage/">https://nf-co.re/rnaseq/3.23.0/docs/usage/</a></li>
+<li><a href="https://www.youtube.com/watch?v=qPbIlO_KWN0">https://www.youtube.com/watch?v=qPbIlO_KWN0</a></li>
+</ul>
 
 
 

@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -468,89 +468,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#why-use-nextflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Why Use Nextflow?
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Why Use Nextflow?">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#reproducibility" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Reproducibility
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#portability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Portability
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#scalability" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Scalability
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#fault-tolerance" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Fault Tolerance
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#how-nextflow-works-a-conceptual-overview" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How Nextflow Works: A Conceptual Overview
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#references" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        References
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#introduction-to-nf-core" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -562,10 +479,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#references_1" class="md-nav__link">
+  <a href="#common-pipeline-errors" class="md-nav__link">
     <span class="md-ellipsis">
       
-        References
+        Common Pipeline Errors
       
     </span>
   </a>
@@ -573,82 +490,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#running-nextflow-basic-syntax" class="md-nav__link">
+  <a href="#references-citations" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Running Nextflow: Basic Syntax
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#common-nextflow-errors-and-how-to-fix-them" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Common Nextflow Errors and How to Fix Them
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Common Nextflow Errors and How to Fix Them">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#1-memory-or-time-limit-exceeded-exit-status-137-or-140-or-similar" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        1. Memory or Time Limit Exceeded (Exit status 137 or 140 or similar)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#2-missing-input-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        2. Missing input files
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#3-invalid-input-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        3. Invalid input files
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#4-resume-does-not-resume-the-pipeline" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        4. -resume Does Not Resume the Pipeline
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#important-links" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Important links:
+        References &amp; Citations
       
     </span>
   </a>
@@ -951,32 +796,29 @@
 <h2 id="what-is-nextflow">What is Nextflow?</h2>
 <p><a href="https://www.nextflow.io/">Nextflow</a> is an open-source workflow management system designed specifically for running complex, multi-step bioinformatics pipelines in a <strong>reproducible, portable, and scalable</strong> way.</p>
 <p>Before tools like Nextflow existed, running an RNA-seq analysis meant manually executing each step — trimming reads, aligning, quantifying — one at a time, in the right order, on the right files, with the right software versions installed. This was error-prone, difficult to share, and nearly impossible to reproduce exactly.</p>
-<p>Nextflow solves this by letting you define your entire analysis as a <strong>pipeline</strong>: a series of connected computational steps that automatically handle file passing, job scheduling, parallelization, and error recovery.</p>
+<p>Nextflow solves this by letting you define your entire analysis as a pipeline: a series of connected computational steps that automatically handle file passing, job scheduling, parallelization, and error recovery.</p>
 <hr />
-<h2 id="why-use-nextflow">Why Use Nextflow?</h2>
-<h3 id="reproducibility">Reproducibility</h3>
-<p>One of the biggest challenges in bioinformatics is reproducing someone else's (or your own) analysis. Nextflow addresses this through:
+<p><strong>Why Use Nextflow?</strong></p>
+<p><strong>Reproducibility</strong>
+One of the biggest challenges in bioinformatics is reproducing someone else's (or your own) analysis. Nextflow addresses this through:
 - <strong>Containers</strong>: Nextflow integrates natively with <strong>Singularity</strong> and <strong>Docker</strong>, which bundle the exact software versions used in a pipeline into a portable image. This means the same tool versions run on any machine, any cluster, any time.
 - <strong>Execution logs</strong>: Every run produces a detailed log of what was executed, when, with what inputs, and what outputs were produced.
 - <strong>Version pinning</strong>: Pipelines can specify exact versions of tools and the pipeline itself.</p>
-<h3 id="portability">Portability</h3>
-<p>The same Nextflow script can run:
+<p><strong>Portability</strong>
+The same Nextflow script can run:
 - On your <strong>local laptop</strong> (for testing small datasets)
 - On a <strong>SLURM HPC cluster</strong> like UF's HiPerGator
 - On <strong>cloud platforms</strong> like AWS, Google Cloud, or Azure</p>
 <p>This way even if you change the local configuration, you do not touch the pipeline structure.</p>
-<h3 id="scalability">Scalability</h3>
-<p>Nextflow automatically <strong>parallelizes</strong> tasks where possible. For example, if you have 20 samples, Nextflow will trim, align, and quantify all 20 in parallel (subject to available resources), without any extra effort from you. It holds the jobs till the resources are available. It allows flexibility to change time, resources of intermediate steps, skip any if required. </p>
-<h3 id="fault-tolerance">Fault Tolerance</h3>
-<p>If a job fails halfway through (e.g., due to a memory limit), Nextflow can <strong>resume</strong> from where it left off using the <code>-resume</code> flag, without rerunning completed steps.</p>
+<p><strong>Scalability</strong>
+Nextflow automatically parallelizes tasks where possible. For example, if you have 20 samples, Nextflow will trim, align, and quantify all 20 in parallel (subject to available resources), without any extra effort from you. It holds the jobs till the resources are available. It allows flexibility to change time, resources of intermediate steps, skip any if required. </p>
+<p><strong>Fault Tolerance</strong>
+If a job fails halfway through (e.g., due to a memory limit), Nextflow can resume from where it left off using the <code>-resume</code> flag, without rerunning completed steps.</p>
 <hr />
-<h2 id="how-nextflow-works-a-conceptual-overview">How Nextflow Works: A Conceptual Overview</h2>
-<p>Think of Nextflow as an <strong>assembly line</strong>:</p>
+<p><strong>How Nextflow Works: A Conceptual Overview</strong></p>
 <p><Paste nf-core/rnaseq image></p>
 <p>Each box is a <strong>process</strong>. The arrows are <strong>channels</strong> carrying files. Nextflow figures out which processes can run simultaneously and submits them as independent jobs to SLURM.</p>
 <p>You, as the user, only need to provide the starting inputs and the pipeline takes care of the rest.</p>
-<h2 id="references">References</h2>
-<p>https://training.nextflow.io/2.0/</p>
 <h2 id="introduction-to-nf-core">Introduction to nf-core</h2>
 <p>nf-core is a community-driven, open-source project that provides a curated collection of high-quality, peer-reviewed Nextflow pipelines for bioinformatics.</p>
 <p>All nf-core pipelines follow strict community guidelines:</p>
@@ -986,10 +828,8 @@ Consistent parameter naming conventions
 MultiQC integration for QC reporting
 Container support (Docker and Singularity) for all tools</p>
 <p>Treasure of pipelines can be found here: https://nf-co.re/pipelines/</p>
-<h2 id="references_1">References</h2>
-<p>https://training.nextflow.io/2.0/basic_training/rnaseq_pipeline/</p>
 <hr />
-<h2 id="running-nextflow-basic-syntax">Running Nextflow: Basic Syntax</h2>
+<p><strong>Running Nextflow: Basic Syntax</strong></p>
 <pre><code class="language-bash">nextflow run &lt;pipeline&gt; \
     --input &lt;samplesheet&gt; \
     --outdir &lt;output_directory&gt; \
@@ -999,34 +839,44 @@ Container support (Docker and Singularity) for all tools</p>
 </code></pre>
 <p>Parameters starting with -- (double dash) are pipeline-specific parameters defined by the pipeline developer (e.g., --input, --outdir).
 Parameters starting with - (single dash) are Nextflow engine parameters (e.g., -profile, -resume, -c).</p>
-<h2 id="common-nextflow-errors-and-how-to-fix-them">Common Nextflow Errors and How to Fix Them</h2>
-<h3 id="1-memory-or-time-limit-exceeded-exit-status-137-or-140-or-similar">1. Memory or Time Limit Exceeded (Exit status 137 or 140 or similar)</h3>
-<p>Jobs fail with exit code 137 (killed by OOM), 140 (time exceeded), or similar.</p>
+<h2 id="common-pipeline-errors">Common Pipeline Errors</h2>
+<p><strong>1. Memory or Time Limit Exceeded (Exit status 137 or 140 or similar)</strong>
+Jobs fail with exit code 137 (killed by OOM), 140 (time exceeded), or similar.</p>
 <p>Fix: Increase the memory/time limits in your config file:</p>
-<pre><code class="language-groovy">process {
+<pre><code>process {
     withName : 'NFCORE_RNASEQ:RNASEQ:DUPRADAR' 
     memory = 12.GB 
     time   = 8.h
     maxRetries = 3
 }
 </code></pre>
-<h3 id="2-missing-input-files">2. Missing input files</h3>
+<p><strong>2. Missing input files</strong></p>
 <p>A file path in your sample sheet or parameters does not exist. It could be a typo in the file path of relative paths are incorrect.</p>
 <p>Fix: Always verify the paths before running a pipeline.</p>
 <pre><code class="language-bash">ls -lh /path/to/your/fastq/sample1_R1.fastq.gz
 </code></pre>
-<h3 id="3-invalid-input-files">3. Invalid input files</h3>
+<p><strong>3. Invalid input files</strong></p>
 <p>Another common error is providing input files in invalid format. A simple extra tab or a comma, missing column, misspelled column header can cause validation failures. The genome files such as the .gtf or the fasta files are recommended to be in a certain format as available from the sources.</p>
 <p>Fix: Use templates from the websites, refrain from manually tampering the input files. </p>
-<h3 id="4-resume-does-not-resume-the-pipeline">4. -resume Does Not Resume the Pipeline</h3>
+<p><strong>4. -resume Does Not Resume the Pipeline</strong></p>
 <p>Nextflow is rerunning steps that were already completed.</p>
-<p>Common causes:</p>
+<p>Potential causes:</p>
 <p>The work/ directory was deleted or moved
 Input files changed (even modification timestamps can invalidate the cache)
 You are running from a different launch directory</p>
 <p>Fix: Always run Nextflow from the same directory as the previous run, and never delete the work/ directory until you are done. You can inspect and clean up older failed runs using the 'nextflow clean' command. </p>
-<h2 id="important-links">Important links:</h2>
-<p>https://nf-co.re/docs/usage/troubleshooting/basics</p>
+<h2 id="references-citations">References &amp; Citations</h2>
+<ul>
+<li>https://training.nextflow.io/2.0/</li>
+<li>https://training.nextflow.io/2.0/basic_training/rnaseq_pipeline/</li>
+<li>https://nf-co.re/docs/usage/troubleshooting/basics</li>
+<li>https://nf-co.re/pipelines/</li>
+</ul>
+<p>If you use nf-core/rnaseq for your analysis, please cite it using the following doi:10.5281/zenodo.1400710</p>
+<p>You can cite the nf-core publication as follows:</p>
+<p>The nf-core framework for community-curated bioinformatics pipelines.</p>
+<p>Philip Ewels, Alexander Peltzer, Sven Fillinger, Harshil Patel, Johannes Alneberg, Andreas Wilm, Maxime Ulysse Garcia, Paolo Di Tommaso &amp; Sven Nahnsen.</p>
+<p>Nat Biotechnol. 2020 Feb 13. doi: 10.1038/s41587-020-0439-x.</p>
 
 
 

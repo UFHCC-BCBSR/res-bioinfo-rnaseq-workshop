@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
     
     
       
@@ -552,56 +552,6 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#level-1-the-problem-of-read-assignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Level 1: The Problem of Read Assignment
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Level 1: The Problem of Read Assignment">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#uniquely-mapping-reads" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Uniquely Mapping Reads
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#multi-mapping-reads" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Multi-Mapping Reads
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#level-2-the-problem-of-converting-assignments-to-counts" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Level 2: The Problem of Converting Assignments to Counts
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
   <a href="#two-approaches-to-quantification" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -610,68 +560,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Two Approaches to Quantification">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#approach-1-sequence-alignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Approach 1: Sequence Alignment
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Approach 1: Sequence Alignment">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#what-is-star" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What is STAR?
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#approach-2-pseudo-alignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Approach 2: Pseudo-alignment
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Approach 2: Pseudo-alignment">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#what-is-salmon" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        What is Salmon?
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -679,84 +567,6 @@
     <span class="md-ellipsis">
       
         Our Recommended Approach: STAR + RSEM
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Our Recommended Approach: STAR + RSEM">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#step-1-star-alignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 1: STAR Alignment
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#step-2-rsem-quantification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Step 2: RSEM Quantification
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="Step 2: RSEM Quantification">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#how-the-em-algorithm-works-conceptually" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        How the EM Algorithm Works (Conceptually)
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#rsem-output-files" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        RSEM Output Files
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#understanding-the-count-types" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Understanding the Count Types
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#gene-level-vs-isoform-level-quantification" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Gene-Level vs. Isoform-Level Quantification
       
     </span>
   </a>
@@ -984,10 +794,10 @@ The path from raw sequencing reads to a count matrix involves solving two connec
 Both steps involve <strong>uncertainty</strong>, and how a tool handles that uncertainty has a major impact on the quality and accuracy of your expression estimates. Early bioinformatics approaches to RNA-seq quantification simply discarded multi-mapping reads, leading to loss of information and lack of robustness within the estimates, and effectively precluded investigations of expression variation among alternatively spliced transcripts. Fortunately, there are now two common approaches for handling read assignment uncertainty in a way that can be leveraged by state-of-the-art tools that quantify expression.</p>
 </li>
 </ol>
-<h2 id="level-1-the-problem-of-read-assignment">Level 1: The Problem of Read Assignment</h2>
-<h3 id="uniquely-mapping-reads">Uniquely Mapping Reads</h3>
-<p>Some reads map to only one location in the genome to an exon of a gene that has no overlapping sequences with any other gene. These <strong>uniquely mapping reads</strong> can be confidently assigned to their gene of origin.</p>
-<h3 id="multi-mapping-reads">Multi-Mapping Reads</h3>
+<p><strong><u>Level 1: The Problem of Read Assignment</u></strong></p>
+<p><em>Uniquely Mapping Reads</em>
+Some reads map to only one location in the genome to an exon of a gene that has no overlapping sequences with any other gene. These <strong>uniquely mapping reads</strong> can be confidently assigned to their gene of origin.</p>
+<p><em>Multi-Mapping Reads</em></p>
 <p>Many reads are harder to assign:</p>
 <ul>
 <li><strong>Alternatively spliced transcripts</strong>: Many genes produce multiple transcripts by including or excluding different exons. A read that falls on an exon shared between two isoforms of the same gene cannot definitively be assigned to one isoform or the other.</li>
@@ -996,8 +806,8 @@ Both steps involve <strong>uncertainty</strong>, and how a tool handles that unc
 </ul>
 <p>Early RNA-seq analysis tools simply <strong>discarded multi-mapping reads</strong>, leading to substantial loss of information. For genes with many isoforms or members of expanded gene families, this could mean losing a large fraction of reads precisely the reads needed to distinguish expression differences.
 Modern tools handle this problem using <strong>probabilistic models</strong> that distribute multi-mapping reads across their possible origins in proportion to the evidence available.</p>
-<h2 id="level-2-the-problem-of-converting-assignments-to-counts">Level 2: The Problem of Converting Assignments to Counts</h2>
-<p>Even if we know which gene a read came from, converting that to a meaningful count estimate is not straightforward:</p>
+<p><strong><u>Level 2: The Problem of Converting Assignments to Counts</u></strong>
+Even if we know which gene a read came from, converting that to a meaningful count estimate is not straightforward:</p>
 <ul>
 <li><strong>Transcript length</strong>: Longer transcripts produce more reads than shorter ones, even at the same expression level. Counts must be normalized by transcript length for within-sample comparisons.</li>
 <li><strong>Alternative isoform lengths</strong>: If a gene has isoforms of very different lengths, the expected number of reads differs even at the same expression level.</li>
@@ -1005,11 +815,11 @@ Modern tools handle this problem using <strong>probabilistic models</strong> tha
 </ul>
 <p>Tools like <strong>RSEM</strong> use a statistical model (expectation-maximization) to estimate expression values that account for all of these factors simultaneously.</p>
 <h2 id="two-approaches-to-quantification">Two Approaches to Quantification</h2>
-<h3 id="approach-1-sequence-alignment">Approach 1: Sequence Alignment</h3>
-<p>Sequence alignment tools formally align each read to the reference genome or transcriptome, recording the exact position of each match, mismatch, gap, or splice junction in a <strong>SAM/BAM format file</strong>.
+<p><strong>Approach 1: Sequence Alignment</strong>
+Sequence alignment tools formally align each read to the reference genome or transcriptome, recording the exact position of each match, mismatch, gap, or splice junction in a <strong>SAM/BAM format file</strong>.
 For RNA-seq, alignment to the genome requires a <strong>splice-aware aligner</strong> that can span introns the genomic sequences that are spliced out of mature mRNA. The most widely used splice-aware aligner is <strong>STAR</strong> (Spliced Transcripts Alignment to a Reference).</p>
-<h4 id="what-is-star">What is STAR?</h4>
-<p><a href="https://github.com/alexdobin/STAR"><strong>STAR</strong></a> (Spliced Transcripts Alignment to a Reference) is an ultra-fast RNA-seq aligner that:</p>
+<p><strong>What is STAR?</strong>
+<a href="https://github.com/alexdobin/STAR"><strong>STAR</strong></a> (Spliced Transcripts Alignment to a Reference) is an ultra-fast RNA-seq aligner that:</p>
 <ul>
 <li>Performs splice-aware alignment, correctly handling reads that span exon???intron boundaries</li>
 <li>Detects both <strong>known</strong> splice junctions (from the GTF annotation) and <strong>novel</strong> splice junctions</li>
@@ -1029,9 +839,9 @@ For RNA-seq, alignment to the genome requires a <strong>splice-aware aligner</st
 <p><strong>Memory note:</strong> STAR is fast but memory-intensive, typically requiring ~38GB RAM for the human GRCh38 reference genome. If you are working in a memory-constrained environment, you can switch to the HISAT2 aligner using <code>--aligner hisat2</code>.</p>
 <p><strong>Tip:</strong> The genome index is built from scratch on the first run a compute-intensive process that can take 30???60 minutes. It is good practice to save the generated index using <code>--save_reference</code> so it can be reused in future runs, saving both time and compute resources.</p>
 <p><strong>GPU acceleration:</strong> The pipeline supports NVIDIA GPUs via a Parabricks container, which can significantly reduce alignment runtime. HiPerGator provides GPU partition access check with your HPC administrator to confirm Parabricks availability on your allocation.</p>
-<h3 id="approach-2-pseudo-alignment">Approach 2: Pseudo-alignment</h3>
-<p>Pseudo-alignment (also called quasi-mapping or lightweight mapping) takes a fundamentally different approach. Rather than formally aligning reads to a reference, tools like <strong>Salmon</strong> and <strong>kallisto</strong> use k-mer based or hash-based substring matching to <strong>probabilistically determine</strong> the transcript of origin without base-level alignment precision.</p>
-<h4 id="what-is-salmon">What is Salmon?</h4>
+<p><strong>Approach 2: Pseudo-alignment</strong>
+Pseudo-alignment (also called quasi-mapping or lightweight mapping) takes a fundamentally different approach. Rather than formally aligning reads to a reference, tools like <strong>Salmon</strong> and <strong>kallisto</strong> use k-mer based or hash-based substring matching to <strong>probabilistically determine</strong> the transcript of origin without base-level alignment precision.</p>
+<p><strong>What is Salmon?</strong></p>
 <p><a href="https://combine-lab.github.io/salmon/"><strong>Salmon</strong></a> is a tool for fast, accurate transcript-level quantification. It uses a statistical model called <strong>variational Bayesian expectation maximization</strong> to distribute reads across transcripts and estimate expression values.
 Salmon can run in two modes:</p>
 <ol>
@@ -1056,8 +866,8 @@ The <code>nf-core/rnaseq</code> pipeline uses Salmon in alignment mode when the 
 </ul>
 <h2 id="our-recommended-approach-star-rsem">Our Recommended Approach: STAR + RSEM</h2>
 <p>We use the <strong>STAR-RSEM</strong> combination for this workshop. Here is why:</p>
-<h3 id="step-1-star-alignment">Step 1: STAR Alignment</h3>
-<p>STAR aligns reads to the genome and produces:</p>
+<p><strong>Step 1: STAR Alignment</strong>
+STAR aligns reads to the genome and produces:</p>
 <ul>
 <li>A <strong>genome-sorted BAM</strong> (for QC tools)</li>
 <li>A <strong>transcriptome BAM</strong> (for RSEM input)</li>
@@ -1066,9 +876,9 @@ The <code>nf-core/rnaseq</code> pipeline uses Salmon in alignment mode when the 
 <p>Notes:</p>
 <p><strong>Spike-in controls:</strong> The pipeline supports the addition of custom control FASTA sequences, such as ERCC spike-in controls (<code>--additional_fasta</code>), allowing you to include external reference standards for normalization and quality assessment.</p>
 <p><strong>UMI support:</strong> Unique Molecular Identifiers (UMIs) are short random sequences ligated to each RNA molecule before amplification, allowing PCR duplicates to be distinguished from true biological reads and improving quantification accuracy. If your library was prepared with UMIs, the pipeline provides dedicated options to process and deduplicate UMI-tagged reads.</p>
-<h3 id="step-2-rsem-quantification">Step 2: RSEM Quantification</h3>
+<p><strong>Step 2: RSEM Quantification</strong></p>
 <p><a href="https://deweylab.github.io/RSEM/"><strong>RSEM</strong></a> (RNA-Seq by Expectation Maximization) takes the transcriptome-aligned BAM from STAR and uses an <strong>expectation-maximization (EM) algorithm</strong> to estimate expression levels.</p>
-<h4 id="how-the-em-algorithm-works-conceptually">How the EM Algorithm Works (Conceptually)</h4>
+<p><em>How the EM Algorithm Works (Conceptually)</em></p>
 <p>Imagine you have a bag of colored balls (reads), and you're trying to figure out how many of each color was in the original mixture (transcripts). Some balls are clearly one color (uniquely mapping reads). But some balls are ambiguous they could be red or orange (multi-mapping reads).
 The EM algorithm:</p>
 <ol>
@@ -1077,7 +887,7 @@ The EM algorithm:</p>
 <li>Repeat until estimates converge</li>
 </ol>
 <p>This allows RSEM to make use of multi-mapping reads rather than discarding them.</p>
-<h4 id="rsem-output-files">RSEM Output Files</h4>
+<p><strong>RSEM Output Files</strong></p>
 <table>
 <thead>
 <tr>
@@ -1112,7 +922,7 @@ The EM algorithm:</p>
 </tr>
 </tbody>
 </table>
-<h4 id="understanding-the-count-types">Understanding the Count Types</h4>
+<p><strong>Understanding the Count Types</strong></p>
 <table>
 <thead>
 <tr>
@@ -1142,7 +952,7 @@ The EM algorithm:</p>
 <blockquote>
 <p><strong>For differential expression analysis</strong>, always use <strong>raw expected counts</strong> (<code>rsem.merged.gene_counts.tsv</code>). Tools like DESeq2 , edgeR require raw counts and perform their own normalization internally. Do not input TPM or FPKM values into DESeq2.</p>
 </blockquote>
-<h2 id="gene-level-vs-isoform-level-quantification">Gene-Level vs. Isoform-Level Quantification</h2>
+<p><strong>Gene-Level vs. Isoform-Level Quantification</strong></p>
 <p>RSEM estimates expression at both the <strong>gene</strong> and <strong>transcript (isoform)</strong> level simultaneously.</p>
 <table>
 <thead>
