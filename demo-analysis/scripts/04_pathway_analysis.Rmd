@@ -49,8 +49,8 @@ dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
 ## Load DE Results
 
 ```{r load-results}
-all_results <- read.csv(here(results_dir, "de_results_all.csv"),
-                        row.names = 1)
+all_results <- read.csv(here(results_dir, "de_results_all.csv"))
+rownames(all_results) <- all_results$gene
 
 sig_genes  <- all_results %>% filter(adj.P.Val < 0.05)
 up_genes   <- sig_genes  %>% filter(logFC > 0)
@@ -170,13 +170,18 @@ GO is hierarchical and many terms overlap. Simplification removes redundant
 terms while keeping the most significant representative from each cluster.
 
 ```{r go-simplify}
-ego_bp_simple <- simplify(ego_bp,
-                           cutoff     = 0.7,
-                           by         = "p.adjust",
-                           select_fun = min)
+# Simplify GO results by removing redundant terms
+ego_bp_simple <- clusterProfiler::simplify(ego_bp,
+                          cutoff = 0.7,      # Similarity threshold
+                          by = "p.adjust",   # Keep most significant
+                          select_fun = min)
 
-cat("Original terms:   ", nrow(ego_bp), "\n")
-cat("Simplified terms: ", nrow(ego_bp_simple), "\n")
+cat("Original GO terms:", nrow(ego_bp), "\n")
+cat("After simplification:", nrow(ego_bp_simple), "\n\n")
+
+# Compare
+cat("Top 10 simplified terms:\n")
+head(ego_bp_simple, 10)
 ```
 
 ```{r go-simplified-dotplot, fig.width=10, fig.height=6}
@@ -196,28 +201,34 @@ KEGG provides curated pathway maps for metabolism, signaling, and disease.
 It complements GO by providing a different, more focused view of the same
 biology. Common organism codes: `mmu` = mouse, `hsa` = human.
 
-```{r kegg}
-kegg_result <- enrichKEGG(gene          = gene_entrez$ENTREZID,
-                           universe      = universe,
-                           organism      = "mmu",
-                           pAdjustMethod = "BH",
-                           pvalueCutoff  = 0.05,
-                           qvalueCutoff  = 0.05)
+```{r enrichKEGG}
+# KEGG uses organism codes: "mmu" = mouse, "hsa" = human
+kegg_result <- enrichKEGG(gene = gene_entrez$ENTREZID,
+                          universe = universe,
+                          organism = "mmu",      # Mouse
+                          pAdjustMethod = "BH",
+                          pvalueCutoff = 0.05,
+                          qvalueCutoff = 0.05)
 
-# Convert Entrez IDs back to gene symbols for readability
-kegg_result <- setReadable(kegg_result,
-                            OrgDb   = org.Mm.eg.db,
-                            keyType = "ENTREZID")
+# Add gene symbols (KEGG uses Entrez IDs)
+kegg_result <- setReadable(kegg_result, 
+                           OrgDb = org.Mm.eg.db, 
+                           keyType = "ENTREZID")
 
+# Summary
 cat("Enriched KEGG pathways:", nrow(kegg_result), "\n\n")
+
+# Show results
 head(kegg_result, 15)
 ```
 
 ```{r kegg-dotplot, fig.width=10, fig.height=6}
-dotplot(kegg_result, showCategory = 20, title = "KEGG Pathway Enrichment")
+# Dot plot
+dotplot(kegg_result, 
+        showCategory = 20,
+        title = "KEGG Pathway Enrichment")
 
-ggsave(here(figures_dir, "KEGG_dotplot.png"),
-       width = 10, height = 6, dpi = 300)
+ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "KEGG_dotplot.png"), width = 10, height = 6, dpi = 300)
 ```
 
 ### GO vs KEGG Comparison

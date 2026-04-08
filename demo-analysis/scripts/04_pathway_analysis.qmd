@@ -222,13 +222,18 @@ GO is hierarchical and many terms overlap. Simplification removes
 redundant terms while keeping the most significant representative.
 
 ```{r go-simplify}
+# Simplify GO results by removing redundant terms
 ego_bp_simple <- simplify(ego_bp,
-                           cutoff     = 0.7,
-                           by         = "p.adjust",
-                           select_fun = min)
+                          cutoff = 0.7,      # Similarity threshold
+                          by = "p.adjust",   # Keep most significant
+                          select_fun = min)
 
-cat("Original terms:   ", nrow(ego_bp), "\n")
-cat("Simplified terms: ", nrow(ego_bp_simple), "\n")
+cat("Original GO terms:", nrow(ego_bp), "\n")
+cat("After simplification:", nrow(ego_bp_simple), "\n\n")
+
+# Compare
+cat("Top 10 simplified terms:\n")
+head(ego_bp_simple, 10)
 ```
 
 ```{r go-simplified-dotplot, fig.width=10, fig.height=6}
