@@ -1,0 +1,298 @@
+---
+title: "Part 1: Quality Control and Normalization"
+author: "UFHCI BCB-SR Bioinformatics Unit"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Overview
+
+Before testing for differential expression, we need to assess sample quality,
+remove genes that are too lowly expressed to test reliably, and normalize the
+data so that samples are comparable.
+
+**In this notebook you will:**
+
+- Load count data and sample metadata
+- Create a DGEList object
+- Filter lowly expressed genes
+- Apply TMM normalization
+- Visualize sample quality
+
+**Output:** A normalized DGEList saved as `DGE_filtered_normalized.rds` for
+use in the differential expression script.
+
+---
+
+## Setup
+
+Load required packages and define output directories.
+
+```{r libraries}
+library(limma)
+library(edgeR)
+library(tidyverse)
+library(pheatmap)
+library(RColorBrewer)
+library(ggrepel)
+library(here)
+
+set.seed(42)
+
+figures_dir <- here("demo-analysis", "output", "differential-expression", "figures")
+rds_dir     <- here("demo-analysis", "output", "differential-expression")
+
+dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(rds_dir,     showWarnings = FALSE, recursive = TRUE)
+```
+
+```{r paths}
+counts_file <- "/blue/bioinf_workshop/share/nfcore_rnaseq_files/star_rsem/rsem.merged.gene_counts.tsv"
+metadata_file <- here("demo-analysis", "data", "metadata", "sample_metadata.csv")
+
+if (!file.exists(counts_file))   stop("Count file not found: ",    counts_file)
+if (!file.exists(metadata_file)) stop("Metadata file not found: ", metadata_file)
+
+cat("✓ Count file found\n")
+cat("✓ Metadata file found\n")
+```
+
+---
+
+### Load Raw Counts
+
+The nf-core/rnaseq pipeline with RSEM produces a merged count matrix. We need
+the raw expected counts (`rsem.merged.gene_counts.tsv`), not the TPM or scaled
+variants. We also drop the `transcript_id(s)` column since we are working at
+the gene level.
+
+```{r load-counts}
+counts_raw <- read.table(counts_file, header = TRUE, sep = "\t",
+                         check.names = FALSE, stringsAsFactors = FALSE) %>%
+  dplyr::select(-any_of("transcript_id(s)"))
+
+cat("Genes:", nrow(counts_raw), "| Samples:", ncol(counts_raw) - 1, "\n")
+head(counts_raw[, 1:4], n = 3)
+```
+
+### Convert Ensembl IDs to Gene Symbols
+
+The count matrix uses Ensembl IDs (e.g. `ENSMUSG00000000003`) as gene
+identifiers. We convert these to gene symbols using the mouse annotation
+package `org.Mm.eg.db` so that results are easier to interpret downstream.
+Genes with no matching symbol retain their Ensembl ID as a fallback.
+
+```{r convert-ids}
+library(org.Mm.eg.db)
+
+symbols <- AnnotationDbi::mapIds(org.Mm.eg.db, keys = counts_raw$gene_id,
+                                 column = "SYMBOL", keytype = "ENSEMBL",
+                                 multiVals = "first")
+
+counts_raw$gene_name <- ifelse(is.na(symbols), counts_raw$gene_id, symbols)
+
+cat("✓ Mapped", sum(!is.na(symbols)), "of", length(symbols), "genes to symbols\n")
+```
+
+### Build Final Count Matrix
+
+A small number of genes share the same symbol (e.g. pseudogenes). We make
+these unique by appending the Ensembl ID, then set gene symbols as row names
+to produce the final counts matrix used throughout the rest of the workshop.
+
+```{r build-matrix}
+dups <- duplicated(counts_raw$gene_name) | duplicated(counts_raw$gene_name, fromLast = TRUE)
+counts_raw$gene_name[dups] <- paste0(counts_raw$gene_name[dups], "_", counts_raw$gene_id[dups])
+
+expression_data <- counts_raw %>%
+  dplyr::select(-gene_id) %>%
+  column_to_rownames("gene_name")
+
+cat("✓ Final matrix:", nrow(expression_data), "genes x", ncol(expression_data), "samples\n")
+head(expression_data[, 1:4], n = 3)
+```
+
+### Sample Metadata
+
+```{r load-metadata}
+sample_info <- read.csv(metadata_file,
+                         header           = TRUE,
+                         stringsAsFactors = FALSE)
+
+sample_info
+
+# Confirm sample names match count matrix columns
+all(sample_info$sample %in% colnames(expression_data))
+```
+
+---
+
+## Create DGEList Object
+
+The `DGEList` object bundles counts and sample metadata into a single
+container used throughout the edgeR and limma-voom workflow.
+
+```{r create-dge}
+DGE <- DGEList(counts  = expression_data,
+               samples = sample_info)
+
+# Set the group factor explicitly — WT is the reference level (listed first)
+DGE$samples$group <- factor(DGE$samples$genotype,
+                              levels = c("PRMT7_WT", "PRMT7_KD"))
+DGE
+```
+
+---
+
+## Filter Lowly Expressed Genes
+
+Genes with very low counts across all samples add noise without contributing
+useful signal and inflate the multiple testing burden. `filterByExpr()` applies
+a principled heuristic: a gene must reach a minimum expression level in enough
+samples given the experimental design.
+
+```{r filter}
+keep.exprs <- filterByExpr(DGE, group = DGE$samples$group)
+table(keep.exprs)
+
+DGE <- DGE[keep.exprs, , keep.lib.sizes = FALSE]
+cat("Genes remaining after filtering:", nrow(DGE), "\n")
+```
+
+---
+
+## TMM Normalization
+
+Even after filtering, samples differ in library size (total reads) and
+composition bias (a few highly expressed genes can dominate the library).
+TMM normalization calculates a scaling factor for each sample to correct
+for both. Factors close to 1.0 indicate little correction was needed.
+
+```{r normalize}
+DGE <- calcNormFactors(DGE, method = "TMM")
+DGE$samples
+```
+
+---
+
+## Quality Control
+
+### Library Sizes
+
+Library size is the total number of reads per sample after filtering. Large
+differences (>2–3×) between samples may indicate technical issues. Moderate
+variation is normal and is handled by normalization.
+
+```{r library-sizes, fig.width=8, fig.height=5}
+lib_size_df <- data.frame(
+  sample   = rownames(DGE$samples),
+  lib_size = DGE$samples$lib.size,
+  group    = DGE$samples$group
+)
+
+ggplot(lib_size_df, aes(x = sample, y = lib_size / 1e6, fill = group)) +
+  geom_col() +
+  labs(title = "Library Sizes After Filtering",
+       x = "Sample", y = "Library Size (Millions of Reads)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_brewer(palette = "Set2")
+```
+
+### MDS Plot
+
+Multidimensional Scaling (MDS) places samples in two-dimensional space such
+that similar samples are closer together. Samples from the same group should
+cluster together and separate clearly from the other group. Outlier samples
+or unexpected clustering patterns are red flags.
+
+```{r mds-plot, fig.width=8, fig.height=6}
+mds <- plotMDS(DGE, top = 500, plot = FALSE, gene.selection = "common")
+
+mds_df <- data.frame(
+  sample   = rownames(DGE$samples),
+  dim1     = mds$x,
+  dim2     = mds$y,
+  genotype = DGE$samples$genotype
+)
+
+ggplot(mds_df, aes(x = dim1, y = dim2, color = genotype, label = sample)) +
+  geom_point(size = 4, alpha = 0.8) +
+  geom_text_repel(size = 3, max.overlaps = 20) +
+  labs(title    = "MDS Plot — Sample Similarity",
+       subtitle = "Top 500 most variable genes",
+       x = paste0("Dim 1 (", round(mds$var.explained[1] * 100, 1), "%)"),
+       y = paste0("Dim 2 (", round(mds$var.explained[2] * 100, 1), "%)")) +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1")
+
+ggsave(here(figures_dir, "mds_plot.png"), width = 8, height = 6, dpi = 300)
+```
+
+### Sample Correlation Heatmap
+
+Pairwise Spearman correlations between all samples. Samples in the same group
+should show higher correlations with each other than with samples in the other
+group. Typical within-group correlations are 0.95–0.99.
+
+```{r correlation-heatmap, fig.width=8, fig.height=7}
+logcpm     <- cpm(DGE, log = TRUE)
+cor_matrix <- cor(logcpm, method = "spearman")
+
+annotation_col <- data.frame(
+  Genotype  = DGE$samples$genotype,
+  row.names = colnames(logcpm)
+)
+
+# Save to file
+pheatmap(cor_matrix,
+         annotation_col = annotation_col,
+         annotation_row = annotation_col,
+         main     = "Sample Correlation Heatmap",
+         color    = colorRampPalette(c("blue", "white", "red"))(100),
+         breaks   = seq(0.7, 1, length.out = 101),
+         fontsize = 8,
+         filename = here(figures_dir, "correlation_heatmap.png"),
+         width = 8, height = 7)
+
+# Display in document
+pheatmap(cor_matrix,
+         annotation_col = annotation_col,
+         annotation_row = annotation_col,
+         main     = "Sample Correlation Heatmap",
+         color    = colorRampPalette(c("blue", "white", "red"))(100),
+         breaks   = seq(0.7, 1, length.out = 101),
+         fontsize = 8)
+```
+
+---
+
+## Save Processed Data
+
+Save the filtered and normalized DGEList so the differential expression script
+can load it directly without re-running QC.
+
+```{r save-rds}
+saveRDS(DGE, file = here(rds_dir, "DGE_filtered_normalized.rds"))
+
+cat("✓ Saved:", here(rds_dir, "DGE_filtered_normalized.rds"), "\n")
+cat("  Genes:", nrow(DGE), "| Samples:", ncol(DGE), "\n")
+cat("  Groups:", paste(levels(DGE$samples$group), collapse = ", "), "\n")
+```
+
+---
+
+## Session Information
+
+```{r sessioninfo}
+sessionInfo()
+```

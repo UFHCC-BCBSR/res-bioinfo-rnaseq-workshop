@@ -1,0 +1,388 @@
+---
+title: "Optional: Advanced Designs — Two-Factor Analysis"
+author: "UFHCI BCB-SR Bioinformatics Unit"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_folding: show
+    theme: cosmo
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
+```
+
+## Overview
+
+Our PRMT7 experiment has only one factor (genotype). To demonstrate how to
+handle more complex experimental designs, we use a published *Drosophila
+melanogaster* temperature adaptation dataset with a proper 2×2 factorial
+structure: two populations (Maine and Panama) × two temperatures (low and
+high) × three replicates.
+
+This script is standalone — it does not require output from the other workshop
+scripts.
+
+**You will learn:**
+
+- How to build a two-factor additive design matrix and interpret main effects
+- How to build an interaction model using group-means parameterization
+- How to define and interpret contrast matrices
+- How to classify parallel vs. divergent response patterns
+
+These skills apply to any multi-factor experiment: genotype × treatment,
+tissue × disease, time × condition, and so on.
+
+---
+
+## Setup
+
+```{r libraries}
+library(limma)
+library(edgeR)
+library(tidyverse)
+library(ggrepel)
+library(pheatmap)
+library(RColorBrewer)
+library(here)
+
+set.seed(42)
+
+results_dir <- here("demo-analysis", "output", "differential-expression", "results")
+figures_dir <- here("demo-analysis", "output", "differential-expression", "figures")
+
+dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
+```
+
+---
+
+## Load Data
+
+```{r load-data}
+drosophila_counts <- read.table(
+  here("demo-analysis", "data", "two-factor-design", "salmon.merged.gene_counts.tsv"),
+  header    = TRUE,
+  row.names = "gene_name"
+)
+drosophila_counts$gene_id <- NULL
+
+drosophila_info <- read.table(
+  here("demo-analysis", "data", "two-factor-design", "dme_elev_samples.tsv"),
+  header           = TRUE,
+  stringsAsFactors = FALSE
+)
+
+# Combined factor for filtering
+drosophila_info$pop_temp <- paste(drosophila_info$population,
+                                   drosophila_info$temp, sep = "_")
+
+cat("Experimental Design:\n")
+print(table(drosophila_info$population, drosophila_info$temp))
+drosophila_info
+```
+
+---
+
+## Create DGEList, Filter, Normalize
+
+```{r dge}
+DGE_dros               <- DGEList(counts = drosophila_counts, samples = drosophila_info)
+DGE_dros$samples$group <- factor(drosophila_info$pop_temp)
+keep_dros              <- filterByExpr(DGE_dros, group = DGE_dros$samples$group)
+DGE_dros               <- DGE_dros[keep_dros, , keep.lib.sizes = FALSE]
+DGE_dros               <- calcNormFactors(DGE_dros, method = "TMM")
+
+cat("Genes after filtering:", nrow(DGE_dros), "\n")
+```
+
+---
+
+## QC — MDS Plot
+
+Maine and Panama samples should cluster apart. Low and high temperature samples
+should also separate. If the temperature separation differs between populations,
+that is evidence of an interaction — which we test in Part 2 below.
+
+```{r mds, fig.width=8, fig.height=6}
+mds_dros <- plotMDS(DGE_dros, top = 500, plot = FALSE, gene.selection = "common")
+
+mds_dros_df <- data.frame(
+  sample      = rownames(DGE_dros$samples),
+  dim1        = mds_dros$x,
+  dim2        = mds_dros$y,
+  population  = DGE_dros$samples$population,
+  temperature = DGE_dros$samples$temp
+)
+
+ggplot(mds_dros_df, aes(x = dim1, y = dim2,
+                         color = population, shape = temperature)) +
+  geom_point(size = 4) +
+  geom_text_repel(aes(label = sample), size = 3) +
+  labs(title = "MDS Plot: Drosophila Temperature Experiment",
+       x = paste0("Dim 1 (", round(mds_dros$var.explained[1] * 100, 1), "%)"),
+       y = paste0("Dim 2 (", round(mds_dros$var.explained[2] * 100, 1), "%)"),
+       color = "Population", shape = "Temperature") +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1")
+```
+
+---
+
+## Part 1: Additive Two-Factor Model
+
+An additive model (`~population + temp`) tests the main effect of each factor
+while assuming they act independently. The coefficients represent:
+
+- **(Intercept)**: Maine + High temperature (both reference levels)
+- **populationpanama**: Panama vs Maine, averaged across temperatures
+- **templow**: Low vs High temperature, averaged across populations
+
+```{r design-additive}
+DGE_dros$samples$population <- factor(DGE_dros$samples$population,
+                                       levels = c("maine", "panama"))
+DGE_dros$samples$temp       <- factor(DGE_dros$samples$temp,
+                                       levels = c("high", "low"))
+
+design_2factor <- model.matrix(~population + temp, data = DGE_dros$samples)
+design_2factor
+```
+
+```{r fit-additive, fig.width=8, fig.height=5}
+vwts_2factor <- voomWithQualityWeights(DGE_dros,
+                                        design           = design_2factor,
+                                        normalize.method = "none",
+                                        plot             = TRUE)
+
+fit_2factor <- lmFit(vwts_2factor, design_2factor)
+fit_2factor <- eBayes(fit_2factor, robust = TRUE)
+
+summary(decideTests(fit_2factor, adjust.method = "fdr", p.value = 0.05))
+```
+
+```{r results-additive}
+temp_results <- topTable(fit_2factor, coef = "templow",
+                          adjust.method = "BH", number = Inf)
+pop_results  <- topTable(fit_2factor, coef = "populationpanama",
+                          adjust.method = "BH", number = Inf)
+
+cat("Temperature main effect (FDR < 0.05):",
+    sum(temp_results$adj.P.Val < 0.05), "\n")
+cat("Population main effect (FDR < 0.05): ",
+    sum(pop_results$adj.P.Val < 0.05), "\n\n")
+
+cat("Top 10 temperature-responsive genes:\n")
+print(head(temp_results, 10))
+```
+
+```{r volcano-additive, fig.width=8, fig.height=6}
+temp_results$category <- case_when(
+  temp_results$adj.P.Val < 0.05 & temp_results$logFC >  1 ~ "Up in Low",
+  temp_results$adj.P.Val < 0.05 & temp_results$logFC < -1 ~ "Up in High",
+  temp_results$adj.P.Val < 0.05                            ~ "Significant",
+  TRUE                                                      ~ "Not Significant"
+)
+
+ggplot(temp_results, aes(x = logFC, y = -log10(P.Value), color = category)) +
+  geom_point(alpha = 0.5, size = 1) +
+  scale_color_manual(values = c("Up in Low"       = "blue",
+                                "Up in High"      = "red",
+                                "Significant"     = "orange",
+                                "Not Significant" = "grey80")) +
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed", alpha = 0.5) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", alpha = 0.5) +
+  labs(title    = "Temperature Main Effect (Averaged Across Populations)",
+       subtitle = "Low vs High Temperature",
+       x = "Log2 Fold Change (Low vs High)", y = "-Log10 P-value") +
+  theme_minimal()
+
+ggsave(here(figures_dir, "volcano_drosophila_temperature.png"),
+       width = 8, height = 6, dpi = 300)
+```
+
+Note: this volcano plot shows the temperature effect **averaged** across both
+populations. If the effect differs substantially between Maine and Panama, this
+average may be misleading — the interaction model below tests this directly.
+
+---
+
+## Part 2: Interaction Model with Contrasts
+
+The interaction model gives each group combination its own coefficient, then
+uses contrast matrices to test specific biological hypotheses. The interaction
+contrast tests whether the temperature effect differs between populations.
+
+### Group-Means Design
+
+```{r design-interaction}
+DGE_dros$samples$group_combined <- factor(
+  paste(DGE_dros$samples$population, DGE_dros$samples$temp, sep = "_"),
+  levels = c("maine_high", "maine_low", "panama_high", "panama_low")
+)
+
+design_interaction           <- model.matrix(~0 + group_combined,
+                                              data = DGE_dros$samples)
+colnames(design_interaction) <- levels(DGE_dros$samples$group_combined)
+design_interaction
+```
+
+### Define Contrasts
+
+Each contrast is a linear combination of group means that tests a specific
+biological question.
+
+- **Maine_TempEffect**: Temperature response in Maine only
+- **Panama_TempEffect**: Temperature response in Panama only
+- **Interaction**: Whether temperature response differs between populations.
+  Significant genes show divergent responses; non-significant genes show
+  parallel responses
+
+```{r contrasts}
+cont_matrix <- makeContrasts(
+  Maine_TempEffect  = maine_low - maine_high,
+  Panama_TempEffect = panama_low - panama_high,
+  Pop_at_High       = panama_high - maine_high,
+  Pop_at_Low        = panama_low - maine_low,
+  Interaction       = (maine_low - maine_high) - (panama_low - panama_high),
+  levels            = design_interaction
+)
+cont_matrix
+```
+
+### Fit and Apply Contrasts
+
+```{r fit-interaction, fig.width=8, fig.height=5}
+vwts_interaction <- voomWithQualityWeights(DGE_dros,
+                                            design           = design_interaction,
+                                            normalize.method = "none",
+                                            plot             = TRUE)
+
+fit_interaction <- lmFit(vwts_interaction, design_interaction)
+fit_contrasts   <- contrasts.fit(fit_interaction, cont_matrix)
+fit_contrasts   <- eBayes(fit_contrasts, robust = TRUE)
+
+contrast_summary <- decideTests(fit_contrasts, adjust.method = "fdr", p.value = 0.05)
+summary(contrast_summary)
+```
+
+```{r venn, fig.width=8, fig.height=6}
+# Venn diagram showing overlap between the two population temperature effects
+# and the interaction
+vennDiagram(contrast_summary[, c("Maine_TempEffect",
+                                   "Panama_TempEffect",
+                                   "Interaction")],
+            circle.col = c("blue", "red", "green"),
+            main       = "Overlap of DE Genes Across Contrasts")
+```
+
+### Extract Results
+
+```{r extract-contrasts}
+maine_temp  <- topTable(fit_contrasts, coef = "Maine_TempEffect",
+                         adjust.method = "BH", number = Inf, sort.by = "P")
+panama_temp <- topTable(fit_contrasts, coef = "Panama_TempEffect",
+                         adjust.method = "BH", number = Inf, sort.by = "P")
+interaction <- topTable(fit_contrasts, coef = "Interaction",
+                         adjust.method = "BH", number = Inf, sort.by = "P")
+
+cat("Maine temperature effect (FDR < 0.05): ",
+    sum(maine_temp$adj.P.Val < 0.05), "\n")
+cat("Panama temperature effect (FDR < 0.05):",
+    sum(panama_temp$adj.P.Val < 0.05), "\n")
+cat("Interaction (FDR < 0.05):              ",
+    sum(interaction$adj.P.Val < 0.05), "\n")
+```
+
+### Classify Response Patterns
+
+Genes are classified based on which contrasts they are significant in.
+Parallel genes show conserved thermal stress responses across both populations.
+Divergent genes show evidence of evolutionary divergence in temperature
+response.
+
+```{r classify-patterns}
+all_genes <- rownames(maine_temp)
+
+contrast_results <- data.frame(
+  gene              = all_genes,
+  Maine_logFC       = maine_temp[all_genes, "logFC"],
+  Maine_FDR         = maine_temp[all_genes, "adj.P.Val"],
+  Panama_logFC      = panama_temp[all_genes, "logFC"],
+  Panama_FDR        = panama_temp[all_genes, "adj.P.Val"],
+  Interaction_logFC = interaction[all_genes, "logFC"],
+  Interaction_FDR   = interaction[all_genes, "adj.P.Val"]
+) %>%
+  mutate(
+    Maine_sig       = Maine_FDR < 0.05,
+    Panama_sig      = Panama_FDR < 0.05,
+    Interaction_sig = Interaction_FDR < 0.05,
+    pattern = case_when(
+      Maine_sig & Panama_sig & !Interaction_sig &
+        sign(Maine_logFC) == sign(Panama_logFC) ~ "Parallel",
+      Interaction_sig                           ~ "Divergent",
+      Maine_sig  & !Panama_sig                  ~ "Maine-specific",
+      Panama_sig & !Maine_sig                   ~ "Panama-specific",
+      TRUE                                      ~ "Not significant"
+    )
+  )
+
+print(table(contrast_results$pattern))
+```
+
+### Heatmap of Top Divergent Genes
+
+```{r heatmap-divergent, fig.width=10, fig.height=8}
+top_divergent <- contrast_results %>%
+  filter(pattern == "Divergent") %>%
+  arrange(Interaction_FDR) %>%
+  head(50) %>%
+  pull(gene)
+
+divergent_expr <- vwts_interaction$E[top_divergent, ]
+
+col_annotation <- data.frame(
+  Population  = DGE_dros$samples$population,
+  Temperature = DGE_dros$samples$temp,
+  row.names   = colnames(divergent_expr)
+)
+
+pheatmap(divergent_expr,
+         scale          = "row",
+         annotation_col = col_annotation,
+         cluster_cols   = FALSE,
+         show_rownames  = TRUE,
+         main           = "Top 50 Genes with Divergent Temperature Responses",
+         color          = colorRampPalette(c("blue", "white", "red"))(100),
+         fontsize_row   = 6)
+```
+
+---
+
+## Export Results
+
+```{r export}
+write.csv(contrast_results,
+          here(results_dir, "drosophila_contrast_results.csv"),   row.names = FALSE)
+write.csv(maine_temp,
+          here(results_dir, "drosophila_maine_temperature.csv"))
+write.csv(panama_temp,
+          here(results_dir, "drosophila_panama_temperature.csv"))
+write.csv(interaction,
+          here(results_dir, "drosophila_interaction.csv"))
+write.csv(contrast_results %>% filter(pattern == "Parallel"),
+          here(results_dir, "drosophila_parallel_response_genes.csv"),  row.names = FALSE)
+write.csv(contrast_results %>% filter(pattern == "Divergent"),
+          here(results_dir, "drosophila_divergent_response_genes.csv"), row.names = FALSE)
+
+cat("✓ All results exported\n")
+```
+
+---
+
+## Session Information
+
+```{r sessioninfo}
+sessionInfo()
+```
