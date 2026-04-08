@@ -85,7 +85,7 @@ git clone https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop.git rnaseq_
 cd rnaseq_workshop
 
 ls -la
-# You should see: demo-analysis/, docs/, .gitignore, mkdocs.yml, README.md
+# You should see: demo-analysis/, docs/, .gitignore, .Renviron, mkdocs.yml, README.md
 ```
 
 ## Launch RStudio Server
@@ -107,7 +107,6 @@ cat > rstudio.sbatch << 'EOF'
 #SBATCH --qos=bioinf_workshop
 
 module purge; module load R/4.5 # Load a specific version of R for reproducubility between sessions
-export R_LIBS=/blue/bioinf_workshop/share/R_libs # This is where R will look for installed packages
 rserver
 EOF
 sbatch rstudio.sbatch
