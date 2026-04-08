@@ -395,7 +395,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../03_preprocessing/quantification-review/" class="md-nav__link">
+      <a href="../../03_preprocessing/quantification-review.md" class="md-nav__link">
         
   
   
@@ -423,7 +423,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../03_preprocessing/nfcore-workflow/" class="md-nav__link">
+      <a href="../../03_preprocessing/nfcore-workflow.md" class="md-nav__link">
         
   
   
@@ -772,8 +772,13 @@ file that describes your experimental design. In the RStudio <strong>Console</st
 <pre><code class="language-r">library(tidyverse)
 library(here)
 
-read_csv(here(&quot;demo-analysis&quot;, &quot;data&quot;, &quot;metadata&quot;, &quot;SraRunTable.csv&quot;)) %&gt;%
-  select(sample = Run, group = genotype) %&gt;%
+read_csv(here(&quot;demo-analysis&quot;, &quot;data&quot;, &quot;metadata&quot;, &quot;SraRunTable.csv&quot;),
+         show_col_types = FALSE) %&gt;%
+  select(Run, genotype, treatment) %&gt;%
+  mutate(across(c(genotype), ~str_replace_all(., &quot; &quot;, &quot;_&quot;)),
+         sample = Run,
+         group = genotype) %&gt;%
+  select(sample, group, genotype, treatment, Run) %&gt;%
   write_csv(here(&quot;demo-analysis&quot;, &quot;data&quot;, &quot;metadata&quot;, &quot;sample_metadata.csv&quot;))
 </code></pre>
 <p>In the Files panel, open <code>demo-analysis/data/metadata/sample_metadata.csv</code>

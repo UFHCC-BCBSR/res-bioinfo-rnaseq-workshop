@@ -11,10 +11,6 @@
       
       
       
-        <link rel="prev" href="../quantification-review/">
-      
-      
-        <link rel="next" href="../../04_differential-expression/overview/">
       
       
         
@@ -25,7 +21,7 @@
     
     
       
-        <title>nf-core/rnaseq Workflow - Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis</title>
+        <title>Introduction to Nextflow and the nf-core Community - Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis</title>
       
     
     
@@ -76,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quantifying-expression-best-practice-using-the-nf-corernaseq-workflow" class="md-skip">
+        <a href="#introduction-to-nextflow-and-the-nf-core-community" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              nf-core/rnaseq Workflow
+              Introduction to Nextflow and the nf-core Community
             
           </span>
         </div>
@@ -340,8 +336,6 @@
       
   
   
-    
-  
   
   
     
@@ -354,11 +348,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
@@ -379,7 +373,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -397,7 +391,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../quantification-review/" class="md-nav__link">
+      <a href="../quantification-review.md" class="md-nav__link">
         
   
   
@@ -422,37 +416,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    nf-core/rnaseq Workflow
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../nfcore-workflow.md" class="md-nav__link">
         
   
   
@@ -468,81 +435,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#the-nf-core-sample-sheet-format" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The nf-core Sample Sheet Format
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-gtfgff-genome-annotation-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The gtf/gff Genome Annotation File
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-config-file" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Config File
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#executing-the-nf-core-rna-seq-workflow" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Executing the nf-core RNA-seq Workflow
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#the-output" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        The Output
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -746,156 +638,87 @@
 
 
 
-<h1 id="quantifying-expression-best-practice-using-the-nf-corernaseq-workflow">Quantifying Expression: Best Practice Using the <em>nf-core/rnaseq</em> Workflow</h1>
-<p>In order to obtain a comprehensive set of quality control metrics on our fastq files, while also obtaining gene and isoform-level count matrices, we use nf-core's RNA-seq pipeline. nf-core is a collection of <em>Nextflow</em> workflows for automating analyses of high-dimensional biological data. Nextflow is a workflow language that can be used to chain together multi-step data analysis workflows, which can easily be adapted for running on high performance computing environments such as UF's HiPerGator cluster. We specifically use the "STAR-RSEM" option, which performs spliced alignment to the genome with <em>STAR</em> and expression quantification with <em>RSEM</em>.</p>
-<p>The workflow requires as input a specifically formatted sample sheet, a genome fasta, and either a gtf or a gff annotation file.</p>
-<p>In order to run the workflow you will need:</p>
-<ul>
-<li>A sample sheet in the nf-core format</li>
-<li>A gtf/gff genome annotation file</li>
-<li>A genome fasta file</li>
-<li>A config file with HPC-specific settings</li>
-</ul>
-<h2 id="the-nf-core-sample-sheet-format">The nf-core Sample Sheet Format</h2>
-<p>The sample sheet must be in comma-separated format with specific column headers:</p>
-<pre><code>sample,fastq_1,fastq_2,strandedness
-sample1,fastq/sample1_R1_fastq.gz,fastq/sample1_R2_fastq.gz,auto
-sample2,fastq/sample2_R1_fastq.gz,fastq/sample2_R2_fastq.gz,auto
+<h1 id="introduction-to-nextflow-and-the-nf-core-community">Introduction to Nextflow and the nf-core Community</h1>
+<hr />
+<h2 id="what-is-nextflow">What is Nextflow?</h2>
+<p><a href="https://www.nextflow.io/">Nextflow</a> is an open-source workflow management system designed specifically for running complex, multi-step bioinformatics pipelines in a <strong>reproducible, portable, and scalable</strong> way.</p>
+<p>Before tools like Nextflow existed, running an RNA-seq analysis meant manually executing each step — trimming reads, aligning, quantifying — one at a time, in the right order, on the right files, with the right software versions installed. This was error-prone, difficult to share, and nearly impossible to reproduce exactly.</p>
+<p>Nextflow solves this by letting you define your entire analysis as a <strong>pipeline</strong>: a series of connected computational steps that automatically handle file passing, job scheduling, parallelization, and error recovery.</p>
+<hr />
+<h2 id="why-use-nextflow">Why Use Nextflow?</h2>
+<h3 id="reproducibility">Reproducibility</h3>
+<p>One of the biggest challenges in bioinformatics is reproducing someone else's (or your own) analysis. Nextflow addresses this through:
+- <strong>Containers</strong>: Nextflow integrates natively with <strong>Singularity</strong> and <strong>Docker</strong>, which bundle the exact software versions used in a pipeline into a portable image. This means the same tool versions run on any machine, any cluster, any time.
+- <strong>Execution logs</strong>: Every run produces a detailed log of what was executed, when, with what inputs, and what outputs were produced.
+- <strong>Version pinning</strong>: Pipelines can specify exact versions of tools and the pipeline itself.</p>
+<h3 id="portability">Portability</h3>
+<p>The same Nextflow script can run:
+- On your <strong>local laptop</strong> (for testing small datasets)
+- On a <strong>SLURM HPC cluster</strong> like UF's HiPerGator
+- On <strong>cloud platforms</strong> like AWS, Google Cloud, or Azure</p>
+<p>This way even if you change the local configuration, you do not touch the pipeline structure.</p>
+<h3 id="scalability">Scalability</h3>
+<p>Nextflow automatically <strong>parallelizes</strong> tasks where possible. For example, if you have 20 samples, Nextflow will trim, align, and quantify all 20 in parallel (subject to available resources), without any extra effort from you. It holds the jobs till the resources are available. It allows flexibility to change time, resources of intermediate steps, skip any if required. </p>
+<h3 id="fault-tolerance">Fault Tolerance</h3>
+<p>If a job fails halfway through (e.g., due to a memory limit), Nextflow can <strong>resume</strong> from where it left off using the <code>-resume</code> flag, without rerunning completed steps.</p>
+<hr />
+<h2 id="how-nextflow-works-a-conceptual-overview">How Nextflow Works: A Conceptual Overview</h2>
+<p>Think of Nextflow as an <strong>assembly line</strong>:</p>
+<p><Paste nf-core/rnaseq image></p>
+<p>Each box is a <strong>process</strong>. The arrows are <strong>channels</strong> carrying files. Nextflow figures out which processes can run simultaneously and submits them as independent jobs to SLURM.</p>
+<p>You, as the user, only need to provide the starting inputs and the pipeline takes care of the rest.</p>
+<h2 id="references">References</h2>
+<p>https://training.nextflow.io/2.0/</p>
+<h2 id="introduction-to-nf-core">Introduction to nf-core</h2>
+<p>nf-core is a community-driven, open-source project that provides a curated collection of high-quality, peer-reviewed Nextflow pipelines for bioinformatics.</p>
+<p>All nf-core pipelines follow strict community guidelines:</p>
+<p>Comprehensive documentation
+Automated CI/CD testing on every release
+Consistent parameter naming conventions
+MultiQC integration for QC reporting
+Container support (Docker and Singularity) for all tools</p>
+<p>Treasure of pipelines can be found here: https://nf-co.re/pipelines/</p>
+<h2 id="references_1">References</h2>
+<p>https://training.nextflow.io/2.0/basic_training/rnaseq_pipeline/</p>
+<hr />
+<h2 id="running-nextflow-basic-syntax">Running Nextflow: Basic Syntax</h2>
+<pre><code class="language-bash">nextflow run &lt;pipeline&gt; \
+    --input &lt;samplesheet&gt; \
+    --outdir &lt;output_directory&gt; \
+    -profile &lt;profile&gt; \
+    -c &lt;config_file&gt; \
+    -resume
 </code></pre>
-<table>
-<thead>
-<tr>
-<th><strong>Column</strong></th>
-<th><strong>Description</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>sample</td>
-<td>The sample ID, used as the column header in the count matrix</td>
-</tr>
-<tr>
-<td>fastq_1</td>
-<td>The path to the R1 fastq file for the sample</td>
-</tr>
-<tr>
-<td>fastq_2</td>
-<td>The path to the R2 fastq file for the sample</td>
-</tr>
-<tr>
-<td>strandedness</td>
-<td>The strandedness of the library: "auto", "forward", "reverse", or "unstranded"</td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>We do not recommend using single-end data for expression analysis.</strong>
-More robust expression estimates can be obtained with short paired-end reads that are effectively the same cost per base as traditional single-end layouts. See: Freedman et al. 2020, BMC Bioinformatics.</p>
-</blockquote>
-<p>Locations of R1 and R2 can be paths relative to the launch location or absolute paths. Fastq files should be gzipped. If a sample ID occurs in more than one row, the workflow assumes these are separate sequencing runs of the same sample and aggregates counts across rows.</p>
-<p>While strand configuration can be manually specified, we prefer to use the auto-detect function, which will also account for cases where strandedness is unknown, mistakenly specified, or inconsistent.</p>
-<h2 id="the-gtfgff-genome-annotation-file">The gtf/gff Genome Annotation File</h2>
-<p>The nf-core ecosystem was built to work optimally with annotation files from Ensembl, though it will generally work with NCBI annotation files. For both sources, gtf versions are preferred.</p>
-<p>For NCBI annotations, the workflow will occasionally fail because some features lack a value for <em>gene_id</em> in the attributes column of the gtf. A typical error message of this type looks like:</p>
-<pre><code>ERROR: failed to find the gene identifier attribute in the 9th column of the provided GTF file.
+<p>Parameters starting with -- (double dash) are pipeline-specific parameters defined by the pipeline developer (e.g., --input, --outdir).
+Parameters starting with - (single dash) are Nextflow engine parameters (e.g., -profile, -resume, -c).</p>
+<h2 id="common-nextflow-errors-and-how-to-fix-them">Common Nextflow Errors and How to Fix Them</h2>
+<h3 id="1-memory-or-time-limit-exceeded-exit-status-137-or-140-or-similar">1. Memory or Time Limit Exceeded (Exit status 137 or 140 or similar)</h3>
+<p>Jobs fail with exit code 137 (killed by OOM), 140 (time exceeded), or similar.</p>
+<p>Fix: Increase the memory/time limits in your config file:</p>
+<pre><code class="language-groovy">process {
+    withName : 'NFCORE_RNASEQ:RNASEQ:DUPRADAR' 
+    memory = 12.GB 
+    time   = 8.h
+    maxRetries = 3
+}
 </code></pre>
-<p>We use the additional argument <code>--skip_biotype_qc</code> in our workflow to skip a biotype-based expression QC metric that can cause warnings or failures with NCBI files.</p>
-<h2 id="the-config-file">The Config File</h2>
-<p>A config file specifies the computational resources allocated for workflow jobs. To use HPC resources, specify the executor and partition names at the beginning of the <code>process</code> block. In the case of HiPerGator, on which jobs are scheduled by SLURM:</p>
-<pre><code>process {
-    executor = 'slurm'
-    cpus   = { 1      * task.attempt }
-    memory = { 6.GB   * task.attempt }
-    time   = { 4.h    * task.attempt }
-    queue  = 'hpg-default'
+<h3 id="2-missing-input-files">2. Missing input files</h3>
+<p>A file path in your sample sheet or parameters does not exist. It could be a typo in the file path of relative paths are incorrect.</p>
+<p>Fix: Always verify the paths before running a pipeline.</p>
+<pre><code class="language-bash">ls -lh /path/to/your/fastq/sample1_R1.fastq.gz
 </code></pre>
-<h2 id="executing-the-nf-core-rna-seq-workflow">Executing the nf-core RNA-seq Workflow</h2>
-<p>We recommend submitting the nextflow pipeline as a SLURM job on a compute node:</p>
-<pre><code class="language-bash">#SBATCH -J nfcorerna
-#SBATCH -N 1
-#SBATCH -c 1
-#SBATCH -t 23:00:00
-#SBATCH -p hpg-default
-#SBATCH --mem=12000
-#SBATCH -e nf-core_star_rsem_%A.err
-#SBATCH -o nf-core_star_rsem_%A.out
-
-module load nextflow
-nextflow run nf-core/rnaseq \
-    --input nfcore_samplesheet.csv \
-    --outdir $(pwd)/star_rsem \
-    --skip_biotype_qc \
-    --gtf genome/mygenome.gtf \
-    --fasta genome/mygenome.fna.gz \
-    --aligner star_rsem \
-    -profile singularity \
-    --save_reference \
-    -c rnaseq_cluster.config
-</code></pre>
-<table>
-<thead>
-<tr>
-<th><strong>Option</strong></th>
-<th><strong>Description</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>--input</code></td>
-<td>Path to the sample sheet in nf-core format</td>
-</tr>
-<tr>
-<td><code>--outdir</code></td>
-<td>Path to the output directory</td>
-</tr>
-<tr>
-<td><code>--skip_biotype_qc</code></td>
-<td>Skip biotype-based QC; necessary for NCBI gff/gtf files</td>
-</tr>
-<tr>
-<td><code>--gtf</code></td>
-<td>Path to genome annotation file in gtf format; must be <strong>uncompressed</strong></td>
-</tr>
-<tr>
-<td><code>--fasta</code></td>
-<td>Path to genome fasta file; must be <strong>gzipped</strong></td>
-</tr>
-<tr>
-<td><code>--aligner</code></td>
-<td>Aligner to use; in this case <em>star_rsem</em></td>
-</tr>
-<tr>
-<td><code>-profile</code></td>
-<td>Profile to use; in this case <em>singularity</em></td>
-</tr>
-<tr>
-<td><code>--save_reference</code></td>
-<td>Save reference genome and annotation files to the output directory</td>
-</tr>
-<tr>
-<td><code>-c</code></td>
-<td>Path to the config file with HPC-specific settings</td>
-</tr>
-</tbody>
-</table>
-<p>Key notes:</p>
-<ul>
-<li>Launching nf-core/rnaseq automatically downloads the workflow and installs all dependencies.</li>
-<li>The genome needs to be gzipped.</li>
-<li>The annotation file should be uncompressed. If using a gff file, replace <code>--gtf</code> with <code>--gff</code>.</li>
-</ul>
-<h2 id="the-output">The Output</h2>
-<p>The output of this workflow includes:</p>
-<ul>
-<li>The <em>star_rsem</em> directory, containing:<ul>
-<li>bam files from STAR alignment for each sample</li>
-<li>Gene and transcript count tables in tsv format</li>
-<li><em>rsem.merged.gene_counts.tsv</em> and <em>rsem.merged.transcript_counts.tsv</em>, the estimated raw counts in matrix form</li>
-</ul>
-</li>
-<li>The <em>multiqc/star_rsem</em> directory, containing <em>multiqc_report.html</em>, an html report compiling all sample-level quality metrics.</li>
-</ul>
-<p>We are now ready to perform differential expression analysis in R.</p>
+<h3 id="3-invalid-input-files">3. Invalid input files</h3>
+<p>Another common error is providing input files in invalid format. A simple extra tab or a comma, missing column, misspelled column header can cause validation failures. The genome files such as the .gtf or the fasta files are recommended to be in a certain format as available from the sources.</p>
+<p>Fix: Use templates from the websites, refrain from manually tampering the input files. </p>
+<h3 id="4-resume-does-not-resume-the-pipeline">4. -resume Does Not Resume the Pipeline</h3>
+<p>Nextflow is rerunning steps that were already completed.</p>
+<p>Common causes:</p>
+<p>The work/ directory was deleted or moved
+Input files changed (even modification timestamps can invalidate the cache)
+You are running from a different launch directory</p>
+<p>Fix: Always run Nextflow from the same directory as the previous run, and never delete the work/ directory until you are done. You can inspect and clean up older failed runs using the 'nextflow clean' command. </p>
+<h2 id="important-links">Important links:</h2>
+<p>https://nf-co.re/docs/usage/troubleshooting/basics</p>
 
 
 

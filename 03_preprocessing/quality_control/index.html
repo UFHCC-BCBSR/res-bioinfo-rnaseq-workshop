@@ -11,10 +11,6 @@
       
       
       
-        <link rel="prev" href="../../06_ai-chatbot/ai-chatbot/">
-      
-      
-        <link rel="next" href="../nfcore-workflow/">
       
       
         
@@ -25,7 +21,7 @@
     
     
       
-        <title>Quantification Review - Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis</title>
+        <title>Quality control - Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis</title>
       
     
     
@@ -76,7 +72,7 @@
     <div data-md-component="skip">
       
         
-        <a href="#quantifying-expression-a-brief-review" class="md-skip">
+        <a href="#file-3-03_quality_controlmd" class="md-skip">
           Skip to content
         </a>
       
@@ -111,7 +107,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Quantification Review
+              Quality control
             
           </span>
         </div>
@@ -340,8 +336,6 @@
       
   
   
-    
-  
   
   
     
@@ -354,11 +348,11 @@
       
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
           <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
@@ -379,7 +373,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
@@ -394,37 +388,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-        
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    
-  
-    Quantification Review
-  
-
-    
-  </span>
-  
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../quantification-review.md" class="md-nav__link">
         
   
   
@@ -440,70 +407,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-    
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#sequence-alignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Sequence Alignment
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#pseudo-alignment" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Pseudo-alignment
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#our-recommended-approach" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Our Recommended Approach
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#summary" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Summary
-      
-    </span>
-  </a>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -516,7 +419,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../nfcore-workflow/" class="md-nav__link">
+      <a href="../nfcore-workflow.md" class="md-nav__link">
         
   
   
@@ -735,29 +638,43 @@
 
 
 
-<h1 id="quantifying-expression-a-brief-review">Quantifying Expression: A Brief Review</h1>
-<p><strong>Attribution:</strong> Portions of this page are inspired by the <a href="https://informatics.fas.harvard.edu/resources/tutorials/differential-expression-analysis/">Harvard FAS Informatics RNA-seq tutorial</a> by Adam Freedman c. 2023-2025</p>
-<p>In order to obtain counts of RNA abundance from fastq files, one must employ statistical methods that account for two levels of uncertainty. The first is identifying the most likely transcript of origin of each RNA-seq read. The second is the conversion of read assignments to a count matrix, and doing so in a way that models the uncertainty inherent in many read assignments.</p>
-<p>While some reads may uniquely map to a transcript from a gene without alternative splicing, in many cases shared genomic segments among alternatively spliced transcripts within a gene will make it challenging (and in some cases impossible) to definitively identify the true transcript of origin. Early bioinformatics approaches to RNA-seq quantification simply discarded reads of uncertain origin, leading to substantial loss of information that undoubtedly undermined the robustness of expression estimates, and effectively precluded investigations of expression variation among alternatively spliced transcripts. Fortunately, there are now two common approaches for handling read assignment uncertainty.</p>
-<h2 id="sequence-alignment">Sequence Alignment</h2>
-<p>The first entails formally aligning sequencing reads to either a genome or a set of transcripts derived from a genome annotation, such that exact coordinates of sequence matches, mismatches, and small structural variations are recorded. In both cases, a <em>sam</em> (or bam) format output file is produced. Alignment directly to a genome requires using a splice-aware aligner to accommodate alignment gaps due to introns, with STAR being the most popular, while tools like bowtie2 can be used to map reads to a set of transcript sequences.</p>
-<h2 id="pseudo-alignment">Pseudo-alignment</h2>
-<p>The second approach, called "pseudo-alignment", does not undertake formal sequence alignment but instead uses substring matching to probabilistically determine locus of origin without obtaining base-level precision of where any given read came from. It also allows for uncertainty in the transcript of origin. The pseudo-alignment approach is much quicker than sequence alignment. Tools such as Salmon and kallisto employ this approach. An added bonus of pseudo-alignment tools is that they simultaneously figure out where reads come from and convert assignments to counts, producing sample-level counts that can later be converted to the count matrix format taken as input by differential expression tools.</p>
-<p>A different approach to converting read assignments to counts is to model assignment uncertainty recorded in sequence alignment <em>sam</em> or <em>bam</em> files produced by tools like <em>STAR</em> and <em>bowtie2</em>. A popular tool for doing this is RSEM, which uses an expectation maximization algorithm to estimate counts.</p>
-<h2 id="our-recommended-approach">Our Recommended Approach</h2>
-<p>Because bam files contain information useful for performing quality checks on your data, we believe it is worthwhile to perform sequence alignment unless it is computationally infeasible. We recommend a hybrid approach involving two steps:</p>
-<ol>
-<li>Use <code>STAR</code> to align reads to the genome to facilitate the generation of QC metrics for individual samples.</li>
-<li>Use <code>RSEM</code> to perform expression quantification, leveraging its statistical model for handling uncertainty in converting read origins to counts.</li>
-</ol>
-<h2 id="summary">Summary</h2>
-<ol>
-<li>There are two levels of uncertainty when producing expression estimates from fastq files: assigning reads to a transcript of origin, and converting read assignments to counts.</li>
-<li>Read alignment is computationally expensive, but can be important if extended quality checks on individual RNA-seq libraries are likely to be important.</li>
-<li>Pseudo-alignment is much faster than read alignment, and can be a sensible choice when thousands of samples are being analyzed.</li>
-<li>Some tools such as <code>salmon</code> can use sequence alignments, or run pseudo-alignment directly on fastq files to produce expression estimates.</li>
-<li>Neither alignment nor pseudo-alignment based quantification tools generate the count matrix required for differential expression analysis. However the <code>nf-core/rnaseq</code> workflow (described in the next section) will generate them, and tools like <code>RSEM</code> have utilities for creating them from a set of samples.</li>
-</ol>
+<hr />
+<h2 id="file-3-03_quality_controlmd">📄 File 3: <code>03_quality_control.md</code></h2>
+<pre><code class="language-markdown"># Quality Control in RNA-Seq: Tools and Interpretation
+
+---
+
+## Why Quality Control Matters
+
+Before trusting any downstream analysis — differential expression, pathway analysis, or otherwise — you need to verify that your raw data and processed outputs meet basic quality standards. Poor-quality RNA-seq data can arise from many sources:
+
+- Degraded RNA at time of library preparation
+- Low sequencing depth
+- Adapter contamination
+- rRNA or DNA contamination
+- PCR over-amplification (duplicates)
+- Biased coverage (e.g., 3' bias in degraded samples)
+- Sample swaps or mislabeling
+
+The `nf-core/rnaseq` pipeline automates QC at every stage and compiles all results into a single **MultiQC report**. This section explains each QC tool, what it measures, and what to look for.
+
+---
+
+## The MultiQC Report: Summary Guide 
+
+[**MultiQC**](https://multiqc.info/) aggregates the output of all QC tools across all samples into a single, interactive HTML report. It is the first place to look after a pipeline run.
+
+### How to Open It
+
+&lt; Add information about using OnDemand to browse files or use scp. Download the html file otherwise it opens as an html&gt;
+
+```bash
+# Copy to your local machine and open in a browser
+scp username@hpg.rc.ufl.edu:/OUTPUT/star_rsem/multiqc/star_rsem/multiqc_report.html ./
+open multiqc_report.html   # macOs
+</code></pre>
+<p>The report includes sections for every tool that ran — FastQC, Trim Galore, STAR, Picard, RSeQC, Qualimap, Preseq, and RSEM. Each section shows per-sample metrics and highlights any samples that fall outside expected ranges.</p>
+<h1 id="tool-by-tool-guide-to-understand-multiqc">Tool-by-Tool Guide to Understand MultiQC</h1>
 
 
 
