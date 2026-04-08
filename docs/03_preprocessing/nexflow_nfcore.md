@@ -52,14 +52,6 @@ You, as the user, only need to provide the starting inputs and the pipeline take
 ## Introduction to nf-core
 nf-core is a community-driven, open-source project that provides a curated collection of high-quality, peer-reviewed Nextflow pipelines for bioinformatics.
 
-All nf-core pipelines follow strict community guidelines:
-
-Comprehensive documentation
-Automated CI/CD testing on every release
-Consistent parameter naming conventions
-MultiQC integration for QC reporting
-Container support (Docker and Singularity) for all tools
-
 Treasure of pipelines can be found here: https://nf-co.re/pipelines/
 
 

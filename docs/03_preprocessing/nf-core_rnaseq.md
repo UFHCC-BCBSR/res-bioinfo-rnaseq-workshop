@@ -136,6 +136,8 @@ Genome Annotation (GTF)
 - Ensembl GTF files are preferred — they follow a consistent format that is fully compatible with all pipeline tools
 - NCBI GTF files can be used but may cause the following error due to missing gene_id attributes:
 
+The genome and the gtf files need to be from the same source. 
+
 ```
 ERROR: failed to find the gene identifier attribute in the 9th column of the provided GTF file.
 ```
