@@ -2,7 +2,6 @@
 # Quantifying Gene Expression: From Reads to Count Matrices
 
 
-
 **Attribution:** Portions of this page are inspired by the [Harvard FAS Informatics RNA-seq tutorial](https://informatics.fas.harvard.edu/resources/tutorials/differential-expression-analysis/) by Adam Freedman, c. 2023:2025.
 
 
@@ -15,12 +14,12 @@ The path from raw sequencing reads to a count matrix involves solving two connec
 2. **Converting read assignments to expression estimates**
 Both steps involve **uncertainty**, and how a tool handles that uncertainty has a major impact on the quality and accuracy of your expression estimates. Early bioinformatics approaches to RNA-seq quantification simply discarded multi-mapping reads, leading to loss of information and lack of robustness within the estimates, and effectively precluded investigations of expression variation among alternatively spliced transcripts. Fortunately, there are now two common approaches for handling read assignment uncertainty in a way that can be leveraged by state-of-the-art tools that quantify expression.
 
-## Level 1: The Problem of Read Assignment
+**<u>Level 1: The Problem of Read Assignment</u>**
 
-### Uniquely Mapping Reads
+*Uniquely Mapping Reads*
 Some reads map to only one location in the genome to an exon of a gene that has no overlapping sequences with any other gene. These **uniquely mapping reads** can be confidently assigned to their gene of origin.
 
-### Multi-Mapping Reads
+*Multi-Mapping Reads*
 
 Many reads are harder to assign:
 
@@ -32,7 +31,7 @@ Early RNA-seq analysis tools simply **discarded multi-mapping reads**, leading t
 Modern tools handle this problem using **probabilistic models** that distribute multi-mapping reads across their possible origins in proportion to the evidence available.
 
 
-## Level 2: The Problem of Converting Assignments to Counts
+**<u>Level 2: The Problem of Converting Assignments to Counts</u>**
 Even if we know which gene a read came from, converting that to a meaningful count estimate is not straightforward:
 
 - **Transcript length**: Longer transcripts produce more reads than shorter ones, even at the same expression level. Counts must be normalized by transcript length for within-sample comparisons.
@@ -43,11 +42,11 @@ Tools like **RSEM** use a statistical model (expectation-maximization) to estima
 
 ## Two Approaches to Quantification
 
-### Approach 1: Sequence Alignment
+**Approach 1: Sequence Alignment**
 Sequence alignment tools formally align each read to the reference genome or transcriptome, recording the exact position of each match, mismatch, gap, or splice junction in a **SAM/BAM format file**.
 For RNA-seq, alignment to the genome requires a **splice-aware aligner** that can span introns the genomic sequences that are spliced out of mature mRNA. The most widely used splice-aware aligner is **STAR** (Spliced Transcripts Alignment to a Reference).
 
-#### What is STAR?
+**What is STAR?**
 [**STAR**](https://github.com/alexdobin/STAR) (Spliced Transcripts Alignment to a Reference) is an ultra-fast RNA-seq aligner that:
 
 - Performs splice-aware alignment, correctly handling reads that span exon???intron boundaries
@@ -72,10 +71,10 @@ For RNA-seq, alignment to the genome requires a **splice-aware aligner** that ca
 **GPU acceleration:** The pipeline supports NVIDIA GPUs via a Parabricks container, which can significantly reduce alignment runtime. HiPerGator provides GPU partition access check with your HPC administrator to confirm Parabricks availability on your allocation.
 
 
-### Approach 2: Pseudo-alignment
+**Approach 2: Pseudo-alignment**
 Pseudo-alignment (also called quasi-mapping or lightweight mapping) takes a fundamentally different approach. Rather than formally aligning reads to a reference, tools like **Salmon** and **kallisto** use k-mer based or hash-based substring matching to **probabilistically determine** the transcript of origin without base-level alignment precision.
 
-#### What is Salmon?
+**What is Salmon?**
 
 [**Salmon**](https://combine-lab.github.io/salmon/) is a tool for fast, accurate transcript-level quantification. It uses a statistical model called **variational Bayesian expectation maximization** to distribute reads across transcripts and estimate expression values.
 Salmon can run in two modes:
@@ -101,7 +100,7 @@ The `nf-core/rnaseq` pipeline uses Salmon in alignment mode when the `star_salmo
 
 We use the **STAR-RSEM** combination for this workshop. Here is why:
 
-### Step 1: STAR Alignment
+**Step 1: STAR Alignment**
 STAR aligns reads to the genome and produces:
 
 - A **genome-sorted BAM** (for QC tools)
@@ -115,11 +114,11 @@ Notes:
 
 **UMI support:** Unique Molecular Identifiers (UMIs) are short random sequences ligated to each RNA molecule before amplification, allowing PCR duplicates to be distinguished from true biological reads and improving quantification accuracy. If your library was prepared with UMIs, the pipeline provides dedicated options to process and deduplicate UMI-tagged reads.
 
-### Step 2: RSEM Quantification
+**Step 2: RSEM Quantification**
 
 [**RSEM**](https://deweylab.github.io/RSEM/) (RNA-Seq by Expectation Maximization) takes the transcriptome-aligned BAM from STAR and uses an **expectation-maximization (EM) algorithm** to estimate expression levels.
 
-#### How the EM Algorithm Works (Conceptually)
+*How the EM Algorithm Works (Conceptually)*
 
 Imagine you have a bag of colored balls (reads), and you're trying to figure out how many of each color was in the original mixture (transcripts). Some balls are clearly one color (uniquely mapping reads). But some balls are ambiguous they could be red or orange (multi-mapping reads).
 The EM algorithm:
@@ -130,7 +129,7 @@ The EM algorithm:
 
 This allows RSEM to make use of multi-mapping reads rather than discarding them.
 
-#### RSEM Output Files
+**RSEM Output Files**
 
 | File | Description |
 |---|---|
@@ -141,7 +140,7 @@ This allows RSEM to make use of multi-mapping reads rather than discarding them.
 | `rsem.merged.gene_tpm.tsv` | Gene TPM matrix (normalized, for visualization) |
 | `rsem.merged.transcript_tpm.tsv` | Transcript TPM matrix |
 
-#### Understanding the Count Types
+**Understanding the Count Types**
 
 | Value | Full Name | Use Case |
 |---|---|---|
@@ -152,7 +151,7 @@ This allows RSEM to make use of multi-mapping reads rather than discarding them.
 > **For differential expression analysis**, always use **raw expected counts** (`rsem.merged.gene_counts.tsv`). Tools like DESeq2 , edgeR require raw counts and perform their own normalization internally. Do not input TPM or FPKM values into DESeq2.
 
 
-## Gene-Level vs. Isoform-Level Quantification
+**Gene-Level vs. Isoform-Level Quantification**
 
 RSEM estimates expression at both the **gene** and **transcript (isoform)** level simultaneously.
 

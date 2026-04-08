@@ -25,14 +25,16 @@ By the end of the pipeline you will have:
 - A comprehensive MultiQC HTML report
 
 
-> 📸 <img src="nfcore-rnaseq_metro_map_grey_animated.svg" alt="nf-core rnaseq metro map" width="800"/>
+![nf-core rnaseq metro map](../assets/nf-core-rnaseq_metro_map_grey_animated.svg)
+
 
 On UF's HiPerGator, nf-core is available as a pre-installed software module along with Nextflow. 
 Both the modules can be loaded using the following commands on HiPerGator:
 
 ```bash
-module load nextflow
 module load nf-core
+module load nextflow/25.10.4
+
 ```
 
 ---
@@ -91,12 +93,13 @@ your FASTQ files are
 
 ```csv
 sample,fastq_1,fastq_2,strandedness,seq_platform
-SRR12546980,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546980.fastq,,auto,ILLUMINA
-SRR12546982,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546982.fastq,,auto,ILLUMINA
-SRR12546984,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546984.fastq,,auto,ILLUMINA
-SRR12546986,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546986.fastq,,auto,ILLUMINA
-SRR12546988,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546988.fastq,,auto,ILLUMINA
-SRR12546990,/orange/cancercenter-dept/TRAINING/test_rnaseq_datasets_GEO/GSE157141/fastq/SRR12546990.fastq,,auto,ILLUMINA
+SRR12546980,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546980.fastq,,auto,ILLUMINA
+SRR12546982,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546982.fastq,,auto,ILLUMINA
+SRR12546984,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546984.fastq,,auto,ILLUMINA
+SRR12546986,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546986.fastq,,auto,ILLUMINA
+SRR12546988,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546988.fastq,,auto,ILLUMINA
+SRR12546990,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546990.fastq,,auto,ILLUMINA
+
 ```
 ### Column Descriptions
 | Column | Description |
@@ -215,51 +218,62 @@ Save this file as `params.yaml`.
 ```
 ---
 # General Parameters
-input: "samplesheet.csv"                             # Provide absolute or relative path to the sample sheet
-outdir: "OUTPUT"                                     # Provide absolute or relative path to the output directory for results
+input: "samplesheet.csv"                             # Path to the sample sheet, keep as is if running from same directory
+outdir: "/blue/bioinf_workshop/share/nfcore_rnaseq_files/outputs"                                     # Output directory for results
 email: "kshirlekar@ufl.edu"                          # Email for notifications
 multiqc_title: "TestData_RNASEQ_Multiqc"               # Title for MultiQC report
 
 # Input Files
-fasta: "/orange/cancercenter-dept/GENOMES/iGenomes/references/Mus_musculus/Ensembl/GRCm38/Sequence/WholeGenomeFasta/genome.fa"
-gtf: "/orange/cancercenter-dept/GENOMES/iGenomes/references/Mus_musculus/Ensembl/GRCm38/Annotation/Genes/genes.gtf"
+fasta: "/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/genome_files/genome.fa"
+gtf: "/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/genome_files/genes.gtf"
 
 # Alignment
 aligner: "star_rsem"                                 # Aligner to use (STAR + RSEM)
-star_index: "/orange/cancercenter-dept/GENOMES/iGenomes/references/Mus_musculus/Ensembl/GRCm38/Sequence/STARIndex"
+star_index: "/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/genome_files/STARIndex"
 
 # iGenomes
 igenomes_ignore: true                                # Ignore default iGenomes settings
 
-# Process skipping
+# PRocess skipping
 skip_preseq: false
+
 ```
 
 ## Step 5: Write the SLURM Submission Script
 
 This script submits the Nextflow pipeline manager itself as a SLURM job. 
 Nextflow then submits each pipeline step as its own SLURM job internally. Save this file
-as 'run_rnaseq.sh`.
+as 'rnaseq.sh`.
 
 ```
 #!/bin/bash
-#SBATCH --job-name=nfcore_rnaseq
+#SBATCH --job-name=nfcorernaseq
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=8Gb
 #SBATCH --qos=cancercenter-dept
 #SBATCH --account=cancercenter-dept
-#SBATCH --time=36:00:00
+#SBATCH --time=24:00:00
 #SBATCH --output=LOG/rnaseq.out
 #SBATCH --error=LOG/rnaseq.err
 
-module load nextflow/25.10.4
+# Load the necessary modules to enable the pipeline
 module load nf-core
+module load nextflow/25.10.4
 
-# nextflow pull nf-core/rnaseq # Update to the latest version
+# Saves the singularity image in shared directory, everyone can reuse it instead of downloading it
+export NXF_SINGULARITY_CACHEDIR=/blue/bioinf_workshop/share/singularity_cache
 
-nextflow run nf-core/rnaseq -r 3.23.0 -c nextflow_rnaseq.config -profile singularity -params-file params.yaml --save_reference --skip_preseq FALSE
+
+# nextflow pull nf-core/rnaseq # this is to update the pipeline to the latest version. nextflow pulls is from Github.
+
+nextflow run nf-core/rnaseq -r 3.23.0 \
+        -c nextflow.config \
+        -profile singularity \
+        -params-file params.yaml \ # Provide correct path
+        --save_reference \ # Optional, time consuming step, good practice to save it once and reuse it later
+        --skip_preseq FALSE # This is for QC, time consuming step, feel free to make is TRUE
 
 # save_reference is optional argument
 # Add -resume to resume the same workflow
@@ -279,7 +293,7 @@ in your shared directory for the run.
 
 ### Submit the job
 ```
-sbatch run_rnaseq.sh
+sbatch rnaseq.sh
 ```
 
 ### Check job status
@@ -304,7 +318,7 @@ tail -f logs/rnaseq.err
 Once complete, your output directory will look like:
 
 ```
-OUTPUT/star_rsem/
+outputs/star_rsem/
 ├── fastqc/                         # Raw read QC (FastQC)
 │  ├── raw
 │  └── trim
@@ -338,4 +352,4 @@ rows and samples as columns.
 ### After successful execution:
 
 Review the MultiQC report (multiqc/star_rsem/multiqc_report.html) — see the QC 
-module guide and proceed to differential expression analysis in R using DESeq2 or edgeR.
+module guide and proceed to differential expression analysis in R.
