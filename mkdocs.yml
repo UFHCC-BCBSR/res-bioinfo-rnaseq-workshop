@@ -26,8 +26,10 @@ nav:
   - R Basics: 05_r-basics/r-basics.md
   - AI Chatbot Tips: 06_ai-chatbot/ai-chatbot.md
   - Preprocessing:
-    - Quantification Review: 03_preprocessing/quantification-review.md
-    - nf-core/rnaseq Workflow: 03_preprocessing/nfcore-workflow.md
+    - Nextflow and nf-core: 03_preprocessing/nexflow_nfcore.md  
+    - nf-core/rnaseq: 03_preprocessing/nf-core_rnaseq.md  
+    - MultiQC Report: 03_preprocessing/quality_control.md  
+    - Quantification Review: 03_preprocessing/quantification.md
   - Differential Expression:
     - Overview & Background: 04_differential-expression/overview.md
     - Visualization: 04_differential-expression/visualization.md
