@@ -1,0 +1,335 @@
+---
+title: "Part 2: Differential Expression Analysis"
+subtitle: "UF Health Cancer Institute Bioinformatics Workshop - Differential Expression Analysis"
+author: "UFHCI BCB-SR Bioinformatics Unit"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    code-fold: false
+    code-tools: true
+    code-overflow: wrap
+    embed-resources: true
+    theme: cosmo
+    df-print: paged
+execute:
+  warning: false
+  message: false
+---
+
+# Introduction
+
+In this notebook we test for differentially expressed genes between PRMT7
+knockdown and wildtype samples using the limma-voom framework.
+
+**You will:**
+
+- Load the normalized DGEList object from Part 1
+- Build a design matrix describing the experimental groups
+- Apply the voom transformation
+- Fit a linear model and apply empirical Bayes moderation
+- Extract, visualize, and export results
+
+**Requires:** `DGE_filtered_normalized.rds` produced by
+`02_quality_control.qmd/.Rmd`
+
+---
+
+# Setup
+
+```{r setup}
+library(limma)
+library(edgeR)
+library(tidyverse)
+library(ggrepel)
+library(pheatmap)
+library(RColorBrewer)
+library(here)
+
+set.seed(42)
+
+results_dir <- here("demo-analysis", "output", "02-differential-expression", "results")
+figures_dir <- here("demo-analysis", "output", "02-differential-expression", "figures")
+
+dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
+```
+
+---
+
+# Load Data
+
+Load the filtered and normalized DGEList object saved at the end of Part 1.
+
+```{r load-rds}
+DGE <- readRDS(here("demo-analysis", "output", "02-differential-expression",
+                    "DGE_filtered_normalized.rds"))
+
+cat("Genes:", nrow(DGE), "\n")
+cat("Samples:", ncol(DGE), "\n")
+cat("Groups:", paste(levels(DGE$samples$group), collapse = ", "), "\n")
+
+DGE$samples
+```
+
+---
+
+# Design Matrix
+
+The design matrix tells limma which samples belong to which groups and
+what we want to test.
+
+```{r design-matrix}
+# Ensure factor levels are correct — WT is the reference
+DGE$samples$genotype <- factor(DGE$samples$genotype,
+                                levels = c("PRMT7_WT", "PRMT7_KD"))
+
+# Create design matrix
+design <- model.matrix(~genotype, data = DGE$samples)
+
+design
+colnames(design)
+```
+
+::: {.callout-note}
+## Understanding the Design Matrix
+
+- **Intercept**: Average expression in the reference group (PRMT7_WT)
+- **genotypePRMT7_KD**: The difference between KD and WT — this is the
+  log2 fold-change we are testing
+
+A positive coefficient means higher expression in KD; negative means
+lower expression in KD.
+:::
+
+---
+
+# voom Transformation
+
+voom converts counts to log2-CPM and calculates a precision weight for
+each observation based on the mean-variance relationship. This is what
+allows a method designed for normally distributed data (linear models)
+to work well with count data.
+
+```{r voom, fig.width=8, fig.height=5}
+v <- voom(DGE,
+          design = design,
+          normalize.method = "none",
+          plot = TRUE)
+```
+
+::: {.callout-note}
+## Interpreting the voom Plot
+
+- **Red curve**: The mean-variance trend being modeled
+- Lowly expressed genes (left) have high variance — voom down-weights these
+- Highly expressed genes (right) have stable variance — voom gives these more weight
+
+A smooth, downward-sloping curve indicates the data are well-behaved.
+:::
+
+---
+
+# Fit Linear Model
+
+```{r fit-model}
+# Fit a linear model to each gene
+fit <- lmFit(v, design)
+
+# Empirical Bayes moderation borrows information across genes to
+# stabilize variance estimates, especially for small sample sizes
+fit <- eBayes(fit, robust = TRUE)
+
+# Summary of DE genes at FDR < 0.05
+summary(decideTests(fit, adjust.method = "fdr", p.value = 0.05))
+```
+
+::: {.callout-note}
+## decideTests Output
+
+- **Down**: Significantly lower in KD vs WT
+- **NotSig**: Not significantly different
+- **Up**: Significantly higher in KD vs WT
+:::
+
+---
+
+# Extract Results
+
+```{r extract-results}
+# Extract all results (not just the top genes)
+all_results <- topTable(fit,
+                        coef = 2,
+                        adjust.method = "BH",
+                        number = Inf,
+                        sort.by = "none")
+
+# Summary
+cat("Total genes tested:", nrow(all_results), "\n")
+cat("DE genes (FDR < 0.05):", sum(all_results$adj.P.Val < 0.05), "\n")
+cat("Upregulated in KD:", sum(all_results$adj.P.Val < 0.05 & all_results$logFC > 0), "\n")
+cat("Downregulated in KD:", sum(all_results$adj.P.Val < 0.05 & all_results$logFC < 0), "\n\n")
+
+# Top 20 genes by p-value
+topTable(fit, coef = 2, adjust.method = "BH", number = 20, sort.by = "P")
+```
+
+---
+
+# Visualization
+
+## Volcano Plot
+
+A volcano plot shows the relationship between fold change (x-axis) and
+statistical significance (y-axis). Genes in the upper corners are both
+large in effect size and highly significant.
+
+```{r volcano, fig.width=8, fig.height=6}
+all_results$category <- case_when(
+  all_results$adj.P.Val < 0.05 & all_results$logFC >  1 ~ "Up",
+  all_results$adj.P.Val < 0.05 & all_results$logFC < -1 ~ "Down",
+  all_results$adj.P.Val < 0.05                           ~ "Significant",
+  TRUE                                                    ~ "Not Significant"
+)
+
+ggplot(all_results, aes(x = logFC, y = -log10(P.Value), color = category)) +
+  geom_point(alpha = 0.5, size = 1) +
+  scale_color_manual(values = c("Up"              = "red",
+                                "Down"            = "blue",
+                                "Significant"     = "orange",
+                                "Not Significant" = "grey80")) +
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed", alpha = 0.5) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", alpha = 0.5) +
+  labs(title  = "Volcano Plot: PRMT7_KD vs PRMT7_WT",
+       x      = "Log2 Fold Change",
+       y      = "-Log10 P-value",
+       color  = "Category") +
+  theme_minimal()
+
+ggsave(here(figures_dir, "volcano_plot.png"), width = 8, height = 6, dpi = 300)
+```
+
+::: {.callout-tip}
+## Reading a Volcano Plot
+
+- **Dashed vertical lines**: ±1 log2FC (2-fold change)
+- **Dashed horizontal line**: p = 0.05
+- **Upper right**: Strongly and significantly upregulated in KD
+- **Upper left**: Strongly and significantly downregulated in KD
+:::
+
+## MA Plot
+
+An MA plot shows log-fold change (y-axis) versus average expression
+(x-axis). Ideally the bulk of genes sit around logFC = 0, with DE genes
+scattered above and below.
+
+```{r ma-plot, fig.width=8, fig.height=6}
+ggplot(all_results, aes(x = AveExpr, y = logFC, color = category)) +
+  geom_point(alpha = 0.5, size = 1) +
+  scale_color_manual(values = c("Up"              = "red",
+                                "Down"            = "blue",
+                                "Significant"     = "orange",
+                                "Not Significant" = "grey80")) +
+  geom_hline(yintercept = 0, linetype = "solid", alpha = 0.5) +
+  labs(title = "MA Plot: PRMT7_KD vs PRMT7_WT",
+       x     = "Average Expression (log2-CPM)",
+       y     = "Log2 Fold Change",
+       color = "Category") +
+  theme_minimal()
+
+ggsave(here(figures_dir, "ma_plot.png"), width = 8, height = 6, dpi = 300)
+```
+
+::: {.callout-note}
+## Interpreting the MA Plot
+
+The MA plot is useful for checking whether fold changes are balanced
+around zero across expression levels. A systematic trend (e.g. all
+highly expressed genes are positive) would suggest a normalization
+problem.
+:::
+
+## Heatmap of Top 50 DE Genes
+
+```{r heatmap, fig.width=8, fig.height=10}
+top50 <- rownames(topTable(fit, coef = 2, number = 50))
+
+top50_logcpm <- cpm(DGE[top50, ], log = TRUE)
+top50_scaled <- t(scale(t(top50_logcpm)))
+
+annotation_col <- data.frame(
+  Genotype  = DGE$samples$genotype,
+  row.names = colnames(top50_logcpm)
+)
+
+pheatmap(top50_scaled,
+         annotation_col = annotation_col,
+         cluster_rows   = TRUE,
+         cluster_cols   = TRUE,
+         show_rownames  = TRUE,
+         show_colnames  = TRUE,
+         main           = "Top 50 DE Genes",
+         fontsize_row   = 6,
+         fontsize_col   = 8,
+         color          = colorRampPalette(c("blue", "white", "red"))(100))
+
+pheatmap(top50_scaled,
+         annotation_col = annotation_col,
+         cluster_rows   = TRUE,
+         cluster_cols   = TRUE,
+         show_rownames  = TRUE,
+         show_colnames  = TRUE,
+         main           = "Top 50 DE Genes",
+         fontsize_row   = 6,
+         fontsize_col   = 8,
+         color          = colorRampPalette(c("blue", "white", "red"))(100),
+         filename       = here(figures_dir, "heatmap_top50.png"),
+         width          = 8,
+         height         = 10)
+```
+
+::: {.callout-tip}
+## Reading the Heatmap
+
+Each row is a gene, each column is a sample. Colors show z-scored
+expression (red = above average, blue = below average for that gene).
+Samples and genes are clustered by similarity. You should see the WT and
+KD samples separate clearly if the DE signal is strong.
+:::
+
+---
+
+# Export Results
+
+```{r export}
+# All tested genes
+all_results$gene <- rownames(all_results)
+
+write.csv(all_results,
+          here(results_dir, "de_results_all.csv"),
+          row.names = FALSE)
+
+# Significant genes only (FDR < 0.05)
+sig_results <- all_results %>% filter(adj.P.Val < 0.05)
+
+write.csv(sig_results,
+          here(results_dir, "de_results_significant.csv"),
+          row.names = FALSE)
+
+cat("✓ de_results_all.csv:", nrow(all_results), "genes\n")
+cat("✓ de_results_significant.csv:", nrow(sig_results), "genes\n")
+```
+
+---
+
+# Session Information
+
+```{r sessioninfo}
+writeLines(capture.output(sessionInfo()),
+           here(results_dir, "sessionInfo_limma.txt"))
+
+sessionInfo()
+```
