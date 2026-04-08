@@ -25,7 +25,7 @@
     
     
       
-        <title>Workshop Setup Guide - Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis</title>
+        <title>Demo Analysis Guide - Bioinformatics Workshop — Basics of Bulk RNA-Seq Analysis</title>
       
     
     
@@ -111,7 +111,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              Workshop Setup Guide
+              Demo Analysis Guide
             
           </span>
         </div>
@@ -711,7 +711,7 @@
 
 
 <h1 id="overview">Overview</h1>
-<p>This document explains the demo analysis setup and where your data files are.</p>
+<p>This document explains the demo analysis setup.</p>
 <hr />
 <h1 id="workshop-file-layout">Workshop File Layout</h1>
 <h2 id="what-youll-create-your-working-space">What You'll Create (Your Working Space)</h2>
@@ -725,20 +725,27 @@
     └── demo-analysis/
         ├── data/
         │   ├── metadata/
-        │   │   ├── SraRunTable.csv
-        │   │   └── sample_metadata.csv   (created during setup)
-        │   └── raw/
-        ├── output/
-        │   ├── 01-prepared-data/         (created by prep script)
-        │   └── 02-differential-expression/   (created by analysis)
-        │       ├── figures/
-        │       └── results/
-        └── scripts/
-            ├── 01_prepare_nfcore_data.R
-            └── 02_differential_expression_analysis.qmd
+        │   │   ├── SraRunTable.csv          # Raw metadata from NCBI SRA
+        │   │   └── sample_metadata.csv      # Cleaned metadata (created for you)
+        │   ├── raw/                         # Symlinks to raw .fastq files
+        │   └── two-factor-design/           # Drosophila dataset (for optional script)
+        │       ├── salmon.merged.gene_counts.tsv
+        │       └── dme_elev_samples.tsv
+        └── output/
+            ├── differential-expression/     # Created by scripts 01-03
+            │   ├── DGE_filtered_normalized.rds
+            │   ├── figures/
+            │   └── results/
+            └── optional/                    # Created by optional/opt_01_prepare_nfcore_data.R
+                ├── rsem.merged.gene_counts.tsv
+                ├── sample_info.tsv
+                ├── gene_annotation.tsv
+                ├── data_summary.txt
+                ├── library_sizes.png
+                └── README.txt
 </code></pre>
 <h2 id="shared-workshop-data-read-only">Shared Workshop Data (Read-Only)</h2>
-<pre><code>/blue/bioinf_workshop/share/nfcore_rnaseq_output/
+<pre><code>/blue/bioinf_workshop/share/nfcore_rnaseq_files/
 ├── fastqc/
 ├── fq_lint/
 ├── genome/
@@ -782,10 +789,11 @@ ls -la
 #SBATCH --error=logs/rserver_%j.error
 #SBATCH --account=bioinf_workshop
 #SBATCH --qos=bioinf_workshop
-module purge; module load R/4.5
+
+module purge; module load R/4.5 # Load a specific version of R for reproducubility between sessions
+export R_LIBS=/blue/bioinf_workshop/share/R_libs # This is where R will look for installed packages
 rserver
 EOF
-
 sbatch rstudio.sbatch
 </code></pre>
 <p>Check that the job is running:</p>
@@ -822,45 +830,19 @@ select <strong>Go To Working Directory</strong> to confirm you are in the right 
 repository root, so they work for everyone without needing to change
 any paths in the code.</p>
 </blockquote>
-<h2 id="create-sample-metadata">Create Sample Metadata</h2>
-<p>Before running the data preparation script, you need to create a metadata
-file that describes your experimental design. In the RStudio <strong>Console</strong>, run:</p>
-<pre><code class="language-r">library(tidyverse)
-library(here)
-
-read_csv(here(&quot;demo-analysis&quot;, &quot;data&quot;, &quot;metadata&quot;, &quot;SraRunTable.csv&quot;),
-         show_col_types = FALSE) %&gt;%
-  select(Run, genotype, treatment) %&gt;%
-  mutate(across(c(genotype), ~str_replace_all(., &quot; &quot;, &quot;_&quot;)),
-         sample = Run,
-         group = genotype) %&gt;%
-  select(sample, group, genotype, treatment, Run) %&gt;%
-  write_csv(here(&quot;demo-analysis&quot;, &quot;data&quot;, &quot;metadata&quot;, &quot;sample_metadata.csv&quot;))
-</code></pre>
-<p>In the Files panel, open <code>demo-analysis/data/metadata/sample_metadata.csv</code>
-to confirm it looks correct. You should see two columns:</p>
-<table>
-<thead>
-<tr>
-<th>Column</th>
-<th>Contents</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>sample</code></td>
-<td>SRR run IDs (e.g. SRR12546980)</td>
-</tr>
-<tr>
-<td><code>group</code></td>
-<td>PRMT7 WT or PRMT7 KD</td>
-</tr>
-</tbody>
-</table>
-<h2 id="run-the-data-preparation-script">Run the Data Preparation Script</h2>
-<p>In the Files panel, open <code>demo-analysis/scripts/01_prepare_nfcore_data.R</code>
-and click <strong>Source</strong> (top-right of the script editor) to run the entire script.</p>
-<p>This will create the following files in <code>demo-analysis/output/01-prepared-data/</code>:</p>
+<h1 id="running-the-differential-expression-analysis">Running the Differential Expression Analysis</h1>
+<p>With your working directory set, open and run the three numbered scripts in
+order — each picks up where the previous one left off.</p>
+<hr />
+<h3 id="01-quality-control">01 — Quality Control</h3>
+<p><strong>File:</strong> <code>demo-analysis/scripts/01_quality_control.Rmd</code><br />
+<strong>Run as:</strong> Chunk by chunk in RStudio</p>
+<p>Loads the nf-core/rnaseq count matrix directly from the shared directory,
+converts Ensembl IDs to gene symbols, assesses sample quality, filters lowly
+expressed genes, and applies TMM normalization.</p>
+<p>Before running, confirm your metadata looks correct by opening
+<code>demo-analysis/data/metadata/sample_metadata.csv</code> in the Files panel.</p>
+<p><strong>Outputs</strong> → <code>output/differential-expression/</code>:</p>
 <table>
 <thead>
 <tr>
@@ -870,58 +852,204 @@ and click <strong>Source</strong> (top-right of the script editor) to run the en
 </thead>
 <tbody>
 <tr>
-<td><code>rsem.merged.gene_counts.tsv</code></td>
-<td>Gene count matrix</td>
+<td><code>DGE_filtered_normalized.rds</code></td>
+<td>Normalized DGEList for script 02</td>
 </tr>
 <tr>
-<td><code>sample_info.tsv</code></td>
-<td>Sample metadata</td>
+<td><code>figures/library_sizes_filtered.png</code></td>
+<td>Library size QC plot</td>
 </tr>
 <tr>
-<td><code>gene_annotation.tsv</code></td>
-<td>Gene ID to symbol mapping</td>
+<td><code>figures/mds_plot.png</code></td>
+<td>Sample similarity plot</td>
 </tr>
 <tr>
-<td><code>data_summary.txt</code></td>
-<td>Summary statistics</td>
-</tr>
-<tr>
-<td><code>library_sizes.png</code></td>
-<td>QC plot</td>
-</tr>
-<tr>
-<td><code>README.txt</code></td>
-<td>File descriptions</td>
+<td><code>figures/correlation_heatmap.png</code></td>
+<td>Sample correlation heatmap</td>
 </tr>
 </tbody>
 </table>
 <hr />
-<h1 id="running-the-differential-expression-analysis">Running the Differential Expression Analysis</h1>
-<p>With your working directory set and data prepared, open:</p>
-<p><code>demo-analysis/scripts/02_differential_expression_analysis.qmd</code></p>
-<p>Work through the notebook <strong>chunk by chunk</strong> using the green play button
-or <code>Ctrl+Enter</code>. This notebook will walk you through the full differential
-expression analysis using limma-voom.</p>
-<p>After completing the analysis, you will find results in
-<code>demo-analysis/output/02-differential-expression/</code>:</p>
+<h3 id="02-differential-expression">02 — Differential Expression</h3>
+<p><strong>File:</strong> <code>demo-analysis/scripts/02_differential_expression.Rmd</code><br />
+<strong>Run as:</strong> Chunk by chunk in RStudio<br />
+<strong>Requires:</strong> Script 01 to have been run</p>
+<p>Identifies differentially expressed genes between PRMT7 knockdown and wildtype
+using limma-voom.</p>
+<p><strong>Outputs</strong> → <code>output/differential-expression/</code>:</p>
 <table>
 <thead>
 <tr>
-<th>Location</th>
-<th>Contents</th>
+<th>File</th>
+<th>Description</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td><code>figures/</code></td>
-<td>PNG files of all plots</td>
+<td><code>results/de_results_all.csv</code></td>
+<td>Full DE results table</td>
 </tr>
 <tr>
-<td><code>results/</code></td>
-<td>CSV files with DE results</td>
+<td><code>results/de_results_significant.csv</code></td>
+<td>FDR &lt; 0.05 only</td>
+</tr>
+<tr>
+<td><code>results/sessionInfo.txt</code></td>
+<td>Session info</td>
+</tr>
+<tr>
+<td><code>figures/volcano_plot.png</code></td>
+<td>Volcano plot</td>
+</tr>
+<tr>
+<td><code>figures/ma_plot.png</code></td>
+<td>MA plot</td>
+</tr>
+<tr>
+<td><code>figures/heatmap_top50.png</code></td>
+<td>Top 50 DE genes heatmap</td>
 </tr>
 </tbody>
 </table>
+<hr />
+<h3 id="03-pathway-analysis">03 — Pathway Analysis</h3>
+<p><strong>File:</strong> <code>demo-analysis/scripts/03_pathway_analysis.Rmd</code><br />
+<strong>Run as:</strong> Chunk by chunk in RStudio<br />
+<strong>Requires:</strong> Script 02 to have been run</p>
+<p>Identifies enriched biological processes and pathways among differentially
+expressed genes using GO and KEGG over-representation analysis.</p>
+<p><strong>Outputs</strong> → <code>output/differential-expression/</code>:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>results/GO_BP_enrichment.csv</code></td>
+<td>Full GO biological process results</td>
+</tr>
+<tr>
+<td><code>results/GO_BP_enrichment_simplified.csv</code></td>
+<td>Simplified GO results</td>
+</tr>
+<tr>
+<td><code>results/GO_BP_upregulated.csv</code></td>
+<td>GO results for upregulated genes</td>
+</tr>
+<tr>
+<td><code>results/GO_BP_downregulated.csv</code></td>
+<td>GO results for downregulated genes</td>
+</tr>
+<tr>
+<td><code>results/KEGG_enrichment.csv</code></td>
+<td>KEGG pathway results</td>
+</tr>
+<tr>
+<td><code>figures/GO_BP_dotplot.png</code></td>
+<td>GO dotplot</td>
+</tr>
+<tr>
+<td><code>figures/GO_BP_emap.png</code></td>
+<td>GO enrichment map</td>
+</tr>
+<tr>
+<td><code>figures/GO_BP_cnetplot.png</code></td>
+<td>GO concept network</td>
+</tr>
+<tr>
+<td><code>figures/GO_BP_simplified_dotplot.png</code></td>
+<td>Simplified GO dotplot</td>
+</tr>
+<tr>
+<td><code>figures/GO_up_vs_down.png</code></td>
+<td>Up vs. down GO comparison</td>
+</tr>
+<tr>
+<td><code>figures/KEGG_dotplot.png</code></td>
+<td>KEGG dotplot</td>
+</tr>
+<tr>
+<td><code>figures/GO_vs_KEGG_comparison.png</code></td>
+<td>GO vs. KEGG comparison</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="optional-scripts">Optional Scripts</h2>
+<details>
+<summary><strong>opt_01 — Prepare nf-core Data</strong></summary>
+
+**File:** `scripts/optional/opt_01_prepare_nfcore_data.R`  
+**Run as:** Source in RStudio
+
+Reads the raw nf-core/rnaseq pipeline output, converts Ensembl IDs to gene
+symbols, and generates QC and summary files. The core workshop scripts read
+the count matrix directly, so this script is not required — but it is useful
+if you want to explore the data preparation steps in more detail.
+
+**Outputs** → `output/optional/`:
+
+| File | Description |
+|------|-------------|
+| `rsem.merged.gene_counts.tsv` | Gene count matrix with gene symbols |
+| `sample_info.tsv` | Sample metadata |
+| `gene_annotation.tsv` | Ensembl ID to gene symbol mapping |
+| `data_summary.txt` | Summary statistics |
+| `library_sizes.png` | Library size QC plot |
+| `README.txt` | File descriptions |
+
+</details>
+
+<details>
+<summary><strong>opt_02 — edgeR + GREIN Comparison</strong></summary>
+
+**File:** `scripts/optional/opt_02_edgeR_GREIN_comparison.Rmd`  
+**Run as:** Chunk by chunk in RStudio  
+**Requires:** Script 02 to have been run
+
+Reproduces a GREIN-style edgeR exact test analysis and compares results to
+limma-voom. Demonstrates reproducibility challenges when methods documentation
+is incomplete.
+
+**Outputs** → `output/differential-expression/`:
+
+| File | Description |
+|------|-------------|
+| `results/edger_grein_matched_results.csv` | edgeR vs. limma-voom comparison |
+| `results/sessionInfo_edger.txt` | Session info |
+| `figures/volcano_plot_edger_grein.png` | edgeR volcano plot |
+| `figures/ma_plot_edger_grein.png` | edgeR MA plot |
+
+</details>
+
+<details>
+<summary><strong>opt_03 — Advanced Designs: Two-Factor Analysis</strong></summary>
+
+**File:** `scripts/optional/opt_03_advanced_designs.Rmd`  
+**Run as:** Chunk by chunk in RStudio  
+**Requires:** Nothing — standalone script
+
+Demonstrates limma-voom with a two-factor experimental design using a
+published Drosophila temperature adaptation dataset. Covers interaction
+models, contrast matrices, and parallel vs. divergent response patterns.
+
+**Outputs** → `output/differential-expression/`:
+
+| File | Description |
+|------|-------------|
+| `results/drosophila_contrast_results.csv` | Full contrast results |
+| `results/drosophila_maine_temperature.csv` | Maine temperature effect |
+| `results/drosophila_panama_temperature.csv` | Panama temperature effect |
+| `results/drosophila_interaction.csv` | Interaction results |
+| `results/drosophila_parallel_response_genes.csv` | Parallel response genes |
+| `results/drosophila_divergent_response_genes.csv` | Divergent response genes |
+| `figures/volcano_drosophila_temperature.png` | Drosophila volcano plot |
+
+</details>
+
 <hr />
 <h1 id="troubleshooting">Troubleshooting</h1>
 <h2 id="working-directory-is-wrong">Working directory is wrong</h2>
