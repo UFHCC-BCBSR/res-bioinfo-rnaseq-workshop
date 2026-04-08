@@ -12,3 +12,4 @@ rstudio-rsession/
 rstudio.sbatch
 logs/*
 demo-analysis/data/metadata/sample_metadata.csv
+demo-analysis/scripts/*html
