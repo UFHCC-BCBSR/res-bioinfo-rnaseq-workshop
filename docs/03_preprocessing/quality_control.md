@@ -102,7 +102,7 @@ The report includes sections for every tool that ran — FastQC, Trim Galore, ST
 
 ------------------------------------------------------------------------
 
-**<u>4. Picard — Duplicate Marking</u>**
+**<u>5. Picard — Duplicate Marking</u>**
 
 [Picard](https://broadinstitute.github.io/picard/) is a Java toolkit from the Broad Institute for processing sequencing data. The `MarkDuplicates` tool identifies reads that are likely PCR or optical duplicates — identical copies of the same original DNA fragment.
 
@@ -117,7 +117,7 @@ Two reads are considered duplicates if they map to the exact same genomic coordi
 
 ------------------------------------------------------------------------
 
-**<u>5. Preseq — Library Complexity Estimation</u>**
+**<u>6. Preseq — Library Complexity Estimation</u>**
 
 [Preseq](http://smithlabresearch.org/software/preseq/) estimates how many unique reads you would expect to obtain if you sequenced the library to greater depth. This tells you whether your library is **saturated** (you've already captured most of the diversity) or whether deeper sequencing would yield more information.
 
@@ -132,7 +132,7 @@ Two reads are considered duplicates if they map to the exact same genomic coordi
 
 ------------------------------------------------------------------------
 
-**<u>6. RSeQC — RNA-Specific Alignment Quality</u>**
+**<u>7. RSeQC — RNA-Specific Alignment Quality</u>**
 
 [RSeQC](https://rseqc.sourceforge.net/) is a Python package specifically designed for assessing the quality of RNA-seq alignments. Unlike SAMtools (which gives generic alignment metrics), RSeQC provides RNA-aware diagnostics.
 
@@ -163,7 +163,7 @@ Two reads are considered duplicates if they map to the exact same genomic coordi
 
 ------------------------------------------------------------------------
 
-**<u>7. Qualimap — Coverage and Bias Assessment</u>**
+**<u>8. Qualimap — Coverage and Bias Assessment</u>**
 
 [Qualimap](http://qualimap.conesalab.org/) provides a comprehensive set of coverage-based QC metrics for RNA-seq BAM files.
 
