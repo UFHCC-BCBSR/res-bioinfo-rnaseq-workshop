@@ -36,38 +36,16 @@ demo-analysis/
 
 ## Scripts
 
-### 01 — Prepare nf-core Data
+### 01 — Quality Control
 
-**File:** `scripts/01_prepare_nfcore_data.R`  
-**Run as:** Source in RStudio
-
-**Goal:** Read raw nf-core/rnaseq pipeline output and prepare it for
-downstream analysis.
-
-**Inputs:**
-- `/blue/bioinf_workshop/share/nfcore_rnaseq_output/star_rsem/rsem.merged.gene_counts.tsv` (shared, read-only)
-- `data/metadata/sample_metadata.csv`
-
-**Outputs** → `output/01-prepared-data/`:
-- `rsem.merged.gene_counts.tsv` — gene count matrix
-- `sample_info.tsv` — sample metadata
-- `gene_annotation.tsv` — Ensembl ID to gene symbol mapping
-- `data_summary.txt` — summary statistics
-- `library_sizes.png` — QC plot
-- `README.txt` — file descriptions
-
----
-
-### 02 — Quality Control
-
-**File:** `scripts/02_quality_control.qmd` / `scripts/02_quality_control.Rmd`  
+**File:** `scripts/01_quality_control.Rmd`  
 **Run as:** Chunk by chunk in RStudio
 
-**Goal:** Assess sample quality, filter lowly expressed genes, and apply
+**Goal:** Load nf-core/rnaseq output (counts), assess sample quality, filter lowly expressed genes, and apply
 TMM normalization.
 
 **Inputs:**
-- `output/01-prepared-data/rsem.merged.gene_counts.tsv`
+- `/blue/bioinf_workshop/share/nfcore_rnaseq_output/star_rsem/rsem.merged.gene_counts.tsv`
 - `data/metadata/sample_metadata.csv`
 
 **Outputs** → `output/02-differential-expression/`:
@@ -78,11 +56,11 @@ TMM normalization.
 
 ---
 
-### 03 — Differential Expression
+### 02 — Differential Expression
 
-**File:** `scripts/03_differential_expression.qmd` / `scripts/03_differential_expression.Rmd`  
+**File:** `scripts/03_differential_expression.Rmd`  
 **Run as:** Chunk by chunk in RStudio  
-**Requires:** Script 02 to have been run
+**Requires:** Script 01 to have been run
 
 **Goal:** Identify differentially expressed genes between PRMT7 knockdown
 and wildtype using limma-voom.
@@ -100,11 +78,11 @@ and wildtype using limma-voom.
 
 ---
 
-### 04 — Pathway Analysis
+### 03 — Pathway Analysis
 
-**File:** `scripts/04_pathway_analysis.qmd` / `scripts/04_pathway_analysis.Rmd`  
+**File:** `scripts/04_pathway_analysis.Rmd`  
 **Run as:** Chunk by chunk in RStudio  
-**Requires:** Script 03 to have been run
+**Requires:** Script 02 to have been run
 
 **Goal:** Identify enriched biological processes and pathways among
 differentially expressed genes using GO and KEGG over-representation analysis.
@@ -131,9 +109,32 @@ differentially expressed genes using GO and KEGG over-representation analysis.
 ## Optional Scripts
 
 <details>
-<summary><strong>opt_01 — edgeR + GREIN Comparison</strong></summary>
+<summary><strong>opt_01 — Prepare nf-core Data</strong></summary>
 
-**File:** `scripts/optional/opt_01_edgeR_GREIN_comparison.qmd` / `.Rmd`  
+**File:** `scripts/optional/01_prepare_nfcore_data.R`  
+**Run as:** Source in RStudio
+
+**Goal:** Read raw nf-core/rnaseq pipeline output and prepare it for
+downstream analysis while generating informative QC and summary files.
+
+**Inputs:**
+- `/blue/bioinf_workshop/share/nfcore_rnaseq_output/star_rsem/rsem.merged.gene_counts.tsv` (shared, read-only)
+- `data/metadata/sample_metadata.csv`
+
+**Outputs** → `output/01-prepared-data/`:
+- `rsem.merged.gene_counts.tsv` — gene count matrix
+- `sample_info.tsv` — sample metadata
+- `gene_annotation.tsv` — Ensembl ID to gene symbol mapping
+- `data_summary.txt` — summary statistics
+- `library_sizes.png` — QC plot
+- `README.txt` — file descriptions
+
+</details>
+
+<details>
+<summary><strong>opt_02 — edgeR + GREIN Comparison</strong></summary>
+
+**File:** `scripts/optional/opt_01_edgeR_GREIN_comparison.Rmd`  
 **Run as:** Chunk by chunk in RStudio  
 **Requires:** Script 03 to have been run
 
@@ -142,7 +143,7 @@ results to limma-voom. Demonstrates reproducibility challenges when
 methods documentation is incomplete.
 
 **Inputs:**
-- `output/01-prepared-data/rsem.merged.gene_counts.tsv`
+- `/blue/bioinf_workshop/share/nfcore_rnaseq_output/star_rsem/rsem.merged.gene_counts.tsv`
 - `data/metadata/sample_metadata.csv`
 - `output/02-differential-expression/results/de_results_all.csv`
 
@@ -155,9 +156,9 @@ methods documentation is incomplete.
 </details>
 
 <details>
-<summary><strong>opt_02 — Advanced Designs: Two-Factor Analysis</strong></summary>
+<summary><strong>opt_03 — Advanced Designs: Two-Factor Analysis</strong></summary>
 
-**File:** `scripts/optional/opt_02_advanced_designs.qmd` / `.Rmd`  
+**File:** `scripts/optional/opt_03_advanced_designs.Rmd`  
 **Run as:** Chunk by chunk in RStudio  
 **Requires:** Nothing — standalone script
 
