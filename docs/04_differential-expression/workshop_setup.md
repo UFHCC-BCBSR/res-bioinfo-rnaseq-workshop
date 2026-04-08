@@ -1,115 +1,95 @@
 ---
-author:
-- UF Health Cancer Center Bioinformatics
-authors:
-- UF Health Cancer Center Bioinformatics
-date: 2026-04-07
-execute:
-  enabled: false
-subtitle: RNA-seq Bioinformatics Workshop - File Structure and
-  Configuration
 title: Workshop Setup Guide
-toc-title: Table of contents
+subtitle: RNA-seq Bioinformatics Workshop - Hands On Demo Analysis Setup
+author: UF Health Cancer Institute Bioinformatics
+date: 2026-04-07
 ---
 
 # Overview
 
-This document explains the workshop setup, how `here()` works with a
-cloned repository, and where your data files will live.
+This document explains the workshop setup and where your data files will live.
+
+---
 
 # Workshop File Layout
 
 ## What You'll Create (Your Working Space)
 
-    /blue/bioinf_workshop/$USER/
-    └── rnaseq_workshop/
-        ├── .git/
-        ├── .gitignore
-        ├── mkdocs.yml
-        ├── README.md
-        ├── docs/
-        ├── logs/                       
-        └── demo-analysis/
-            ├── data/
-            │   ├── metadata/
-            │   └── raw/
-            └── scripts/
-                ├── 01_prepare_nfcore_data.R
-                └── 02_differential_expression_analysis.qmd
+```
+/blue/bioinf_workshop/your_username/
+└── rnaseq_workshop/
+    ├── .gitignore
+    ├── mkdocs.yml
+    ├── README.md
+    ├── docs/
+    ├── logs/
+    └── demo-analysis/
+        ├── data/
+        │   ├── metadata/
+        │   └── raw/
+        ├── output/
+        │   ├── 01-prepared-data/        (created by prep script)
+        │   └── 02-differential-expression/  (created by analysis)
+        │       ├── figures/
+        │       └── results/
+        └── scripts/
+            ├── 01_prepare_nfcore_data.R
+            └── 02_differential_expression_analysis.qmd
+```
 
 ## Shared Workshop Data (Read-Only)
 
-    /blue/bioinf_workshop/share/nfcore_rnaseq_output/
-    ├── fastqc/
-    ├── fq_lint/
-    ├── genome/
-    ├── multiqc/
-    ├── pipeline_info/
-    ├── star_rsem/
-    └── trimgalore/
+```
+/blue/bioinf_workshop/share/nfcore_rnaseq_output/
+├── fastqc/
+├── fq_lint/
+├── genome/
+├── multiqc/
+├── pipeline_info/
+├── star_rsem/
+└── trimgalore/
+```
 
-# How `here()` Works in This Setup
+> **Note:** This directory is read-only. Your scripts will read from here but write output to your own working directory.
 
-<div>
-
-> **The `here` Package**
->
-> The `here` package will automatically detect your **cloned
-> repository** as the project root because it contains a `.git` folder.
-
-</div>
-
-**When you run code from RStudio:**
-
--   `here()` returns: `/blue/bioinf_workshop/$USER/rnaseq_workshop/`
--   `here("demo-analysis", "output", "counts.tsv")` →
-    `/blue/bioinf_workshop/$USER/rnaseq_workshop/data/counts.tsv`
--   `here("demo-analysis", "output", "results", "output.csv")` →
-    `/blue/bioinf_workshop/$USER/rnaseq_workshop/results/output.csv`
-
-This works **the same for everyone**, regardless of their username or
-exact path!
+---
 
 # Setup Instructions
 
 ## Create Your Working Directory and Clone the Repo
 
-On HiPerGator:
+If you are not already logged in to HiPerGator, open a terminal and SSH in
+(replace `your_username` with your actual username):
 
-``` bash
-# Navigate to your group's blue storage
-cd /blue/bioinf_workshop/$USER/
-
-# Clone the workshop repository
-git clone https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop.git rnaseq_workshop
-
-# Navigate into the cloned repo
-cd rnaseq_workshop
-
-# Verify the structure
-ls -la
-# You should see: .git, demo-analysis/, docs/, .gitignore, mkdocs.yml, README.md
+```bash
+ssh your_username@hpg.rc.ufl.edu
 ```
 
-<div>
+Then navigate to your workshop directory and clone the repo:
 
-> **The `.git/` Folder is Key!**
->
-> The `.git/` folder (created by `git clone`) is what makes `here()`
-> work! Don't delete it.
+```bash
+cd /blue/bioinf_workshop/your_username/
 
-</div>
+git clone https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop.git rnaseq_workshop
 
-## Prepare the Data (Run Once)
+cd rnaseq_workshop
+
+ls -la
+# You should see: demo-analysis/, docs/, .gitignore, mkdocs.yml, README.md
+```
+
+## Prepare the Data
 
 The data preparation script will:
 
--   Read from the shared nf-core output directory (external, read-only)
--   Write processed files to YOUR repo's `demo-analysis/output/`
-    directory
+- Read from the shared nf-core output directory (external, read-only)
+- Write processed files to `demo-analysis/output/01-prepared-data/`
 
-``` bash
+## Start RStudio Server
 
+Create and submit a SLURM job to launch RStudio Server:
+
+```bash
 cat > rstudio.sbatch << 'EOF'
 #!/bin/bash
 #SBATCH --job-name=rserver
@@ -131,277 +111,135 @@ sbatch rstudio.sbatch
 
 Check that the job is running:
 
-``` bash
+```bash
 ml bcbsr_tools
 sjobs
 ```
 
-Once running, check the log for your SSH tunnel command (replace
-`<JOBID>` with your actual job ID):
+Once running, check the log for your connection details (replace `<JOBID>`
+with your actual job ID):
 
-``` bash
+```bash
 cat logs/rserver_<JOBID>.log
 ```
 
 You will see output like:
 
-    Starting rserver on port 45261 in the /blue/bioinf_workshop/username/rnaseq_workshop directory.
-    Create an SSH tunnel with:
-    ssh -N -L 8080:c0710a-s29.ufhpc:45261 username@hpg.rc.ufl.edu
-    Then, open in the local browser:
-    http://localhost:8080
-
-Run the SSH tunnel command on your **local machine**, then open
-`http://localhost:8080` in your browser.
-
-Once in RStudio, open and run
-`demo-analysis/scripts/01_prepare_nfcore_data.R`.
-
-This will create the following files in `demo-analysis/output/`:
-
--   `rsem.merged.gene_counts.tsv`
--   `sample_info.tsv`
--   `gene_annotation.tsv`
--   `data_summary.txt`
--   `library_sizes.png`
--   `README.txt`
-
-## Start RStudio Server
-
-You should already have RStudio Server running from the previous step.
-If your session has expired, refer back to **Section 4.2** to relaunch
-it.
-
-In RStudio:
-
-1.  File → Open Project
-2.  Select `rnaseq_workshop` (if not auto-detected)
-3.  Check that `here()` is working:
-
-::: cell
-``` {.r .cell-code}
-library(here)
-here()  # Should show: /blue/bioinf_workshop/$USER/rnaseq_workshop
 ```
-:::
+Starting rserver on port 45261 in the /blue/bioinf_workshop/your_username/rnaseq_workshop directory.
+Create an SSH tunnel with:
+ssh -N -L 8080:c0710a-s29.ufhpc:45261 your_username@hpg.rc.ufl.edu
+Then, open in the local browser:
+http://localhost:8080
+```
+
+**To connect to RStudio:**
+
+1. Open a **new terminal window or tab on your local machine** (not on
+   HiPerGator) and run the `ssh -N -L ...` command shown in your log. The
+   working directory on your local machine doesn't matter.
+2. Open any browser and paste `http://localhost:8080` into the address bar.
+
+## Set Your Working Directory in RStudio
+
+Once RStudio opens, set your working directory in the **Console** (replace
+`your_username` with your actual username):
+
+```r
+setwd("/blue/bioinf_workshop/your_username/rnaseq_workshop")
+```
+
+Then in the **Files panel** (bottom-right), click the **gear icon ⚙** and
+select **Go To Working Directory** to confirm you are in the right place.
+
+## Run the Data Preparation Script
+
+In the Files panel, open `demo-analysis/scripts/01_prepare_nfcore_data.R`
+and click **Source** (top-right of the script editor) to run the entire script.
+
+This will create the following files in `demo-analysis/output/01-prepared-data/`:
+
+| File | Description |
+|------|-------------|
+| `rsem.merged.gene_counts.tsv` | Gene count matrix |
+| `sample_info.tsv` | Sample metadata |
+| `gene_annotation.tsv` | Gene ID to symbol mapping |
+| `data_summary.txt` | Summary statistics |
+| `library_sizes.png` | QC plot |
+| `README.txt` | File descriptions |
+
+---
 
 # Using the `here` Package
 
-All workshop materials use the `here` package for file paths within the
-repository. This ensures:
+All workshop scripts use the `here` package to build file paths relative to
+the repository root. This means paths work correctly for everyone without
+needing to hardcode usernames or system-specific paths anywhere in the code.
 
--   **Portability**: Works on any computer/HPC system
--   **Reproducibility**: Same code works for everyone
--   **No hardcoded paths**: No need to change file paths in the code
+---
 
-## Two Types of Paths in This Workshop
+# Running the Differential Expression Analysis
 
-<div>
-
-> **Understanding the Two-Path System**
->
-> This workshop uses two different path strategies:
-
-</div>
-
-**1. External Input (Absolute Path):**
-
-::: cell
-``` {.r .cell-code}
-# The nf-core output is OUTSIDE your repo
-# The prep script uses an absolute path to read it
-nfcore_results_dir <- "/blue/bioinf_workshop/share/nfcore_rnaseq_output/"
-```
-:::
-
-**2. Repo-Relative Paths (Using `here()`):**
-
-::: cell
-``` {.r .cell-code}
-# Everything else uses here() relative to your cloned repo
-counts <- read.table(here("demo-analysis", "output", "rsem.merged.gene_counts.tsv"))
-ggsave(here("demo-analysis", "output", "figures", "plot.png"))
-write.csv(results, here("demo-analysis", "output", "results", "output.csv"))
-```
-:::
-
-## How `here()` Works
-
-<div>
-
-> **Before and After**
->
-> **Instead of this** (breaks when you move files or share with others):
->
-> ``` r
-> counts <- read.table("/blue/alice/rnaseq_workshop/data/counts.tsv")
-> ```
->
-> **Use this** (works for everyone):
->
-> ``` r
-> counts <- read.table(here("demo-analysis", "output", "counts.tsv"))
-> ```
-
-</div>
-
-The `here()` function automatically finds your project root by looking
-for:
-
-1.  `.git` folder ← **Your cloned repo has this!**
-2.  `.Rproj` file (optional)
-3.  `.here` file (optional)
-
-Since you cloned the workshop repo, the `.git` folder serves as the
-marker.
-
-# Running the Analysis
-
-## Differential Expression Analysis
-
-With RStudio Server already open, navigate to and open:
+With RStudio open and your working directory set, open:
 
 `demo-analysis/scripts/02_differential_expression_analysis.qmd`
 
-Run through the analysis chunk by chunk using the green play button or
+Work through the notebook **chunk by chunk** using the green play button or
 `Ctrl+Enter`. This notebook will walk you through the full differential
 expression analysis using limma-voom.
 
+After completing the analysis, you will find results in
+`demo-analysis/output/02-differential-expression/`:
+
+| Location | Contents |
+|----------|----------|
+| `figures/` | PNG files of all plots |
+| `results/` | CSV files with DE results |
+
+---
+
 # Troubleshooting
 
-## `here()` is pointing to the wrong directory
+## Working directory is wrong
 
-Check what `here()` returns:
-
-::: cell
-``` {.r .cell-code}
-library(here)
-here()
+```r
+getwd()
+# Should return: /blue/bioinf_workshop/your_username/rnaseq_workshop
 ```
-:::
 
-**Should return:** `/blue/bioinf_workshop/$USER/rnaseq_workshop`
+If it doesn't, run:
 
-<div>
+```r
+setwd("/blue/bioinf_workshop/your_username/rnaseq_workshop")
+```
 
-> **If it returns something else:**
->
-> -   Make sure you're working inside the cloned repo directory
-> -   Check that the `.git` folder exists:
->     `list.files(all.files = TRUE)`
-> -   Make sure you **started R/RStudio from inside the workshop repo**,
->     not from a parent directory
-> -   Try restarting R/RStudio
-
-</div>
+Then use the **gear icon ⚙** in the Files panel → **Go To Working Directory**.
 
 ## "Cannot find file" errors
 
-::: cell
-``` {.r .cell-code}
-# Debug: check where here() thinks you are
-library(here)
-cat("Project root:", here(), "\n")
+```r
+# Check what files exist in the output directory
+list.files("demo-analysis/output/01-prepared-data")
 
-# Check if data files exist
-file.exists(here("demo-analysis", "output", "rsem.merged.gene_counts.tsv"))
-file.exists(here("demo-analysis", "output", "sample_info.tsv"))
-
-# If FALSE, you may need to run the data prep script first
+# If empty, you need to run 01_prepare_nfcore_data.R first
 ```
-:::
 
 ## Data prep script can't find nf-core output
 
-Make sure the path in `scripts/prepare_nfcore_data.R` matches the actual
-location:
+Check this line in `01_prepare_nfcore_data.R`:
 
-::: cell
-``` {.r .cell-code}
-# Check this line in the script:
+```r
 nfcore_results_dir <- "/blue/bioinf_workshop/share/nfcore_rnaseq_output/"
-
-# Ask instructors for the correct path if different
 ```
-:::
+
+Ask an instructor if the path looks different.
 
 ## Package not installed
 
-::: cell
-``` {.r .cell-code}
-# Install here if needed
-install.packages("here")
-
-# Or all workshop packages at once
+```r
 install.packages(c("tidyverse", "ggrepel", "pheatmap", "RColorBrewer", "here"))
+
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install(c("limma", "edgeR"))
 ```
-:::
-
-# Output Files
-
-After running the data preparation script, you'll find in
-`demo-analysis/output/`:
-
--   `rsem.merged.gene_counts.tsv`
--   `sample_info.tsv`
--   `gene_annotation.tsv`
--   `data_summary.txt`
--   `library_sizes.png`
--   `README.txt`
-
-After running the analysis, you'll find:
-
--   `demo-analysis/output/figures/`: PNG files of all plots
--   `demo-analysis/output/results/`: CSV files with DE results
-
-<div>
-
-> **Portability**
->
-> All paths are relative, so you can:
->
-> -   Move the entire `rnaseq_workshop` folder anywhere
-> -   Share it with collaborators
-> -   Run it on different computers
-> -   Everything will still work!
-
-</div>
-
-# Questions?
-
-Contact: \[Your Email\]
-
-------------------------------------------------------------------------
-
-# Appendix: Common `here()` Examples
-
-Here are common patterns you'll see throughout the workshop:
-
-::: cell
-``` {.r .cell-code}
-# Load data
-counts <- read.table(here("demo-analysis", "output", "rsem.merged.gene_counts.tsv"))
-metadata <- read.table(here("demo-analysis", "output", "sample_info.tsv"))
-
-# Save plots
-ggsave(here("demo-analysis", "output", "figures", "volcano_plot.png"), width = 8, height = 6)
-ggsave(here("demo-analysis", "output", "figures", "heatmap.png"), width = 10, height = 8)
-
-# Save results
-write.csv(results, here("demo-analysis", "output", "results", "de_genes.csv"), row.names = TRUE)
-write.csv(top_genes, here("demo-analysis", "output", "results", "top_50_genes.csv"))
-
-# Check if directory exists
-if (!dir.exists(here("demo-analysis", "output", "results"))) {
-  dir.create(here("demo-analysis", "output", "results"), recursive = TRUE)
-}
-
-# List files in output directory
-list.files(here("demo-analysis", "output"))
-```
-:::
-
-The pattern is always: `here("folder", "subfolder", "filename")`
