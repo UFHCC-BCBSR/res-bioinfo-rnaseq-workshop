@@ -1,0 +1,318 @@
+---
+title: "Optional: edgeR Exact Test and GREIN Reproducibility"
+subtitle: "UF Health Cancer Institute Bioinformatics Workshop"
+author: "UFHCI BCB-SR Bioinformatics Unit"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    code-fold: false
+    code-tools: true
+    code-overflow: wrap
+    embed-resources: true
+    theme: cosmo
+    df-print: paged
+execute:
+  warning: false
+  message: false
+---
+
+# Introduction
+
+This notebook explores an alternative analysis approach using the edgeR exact
+test and compares results to the limma-voom analysis completed in
+`03_differential_expression.qmd`.
+
+It also uses this comparison as a case study in reproducibility — specifically,
+how to reverse-engineer an analysis from a public database (GREIN) when the
+methods documentation is incomplete.
+
+**Requires:** `DGE_filtered_normalized.rds` and `de_results_all.csv` produced
+by `02_quality_control.qmd` and `03_differential_expression.qmd`.
+
+---
+
+# Setup
+
+```{r setup}
+library(limma)
+library(edgeR)
+library(tidyverse)
+library(here)
+
+set.seed(42)
+
+results_dir <- here("demo-analysis", "output", "02-differential-expression", "results")
+figures_dir <- here("demo-analysis", "output", "02-differential-expression", "figures")
+
+dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
+dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
+```
+
+---
+
+# Load Data
+
+Load the normalized DGEList from Part 1 and the limma-voom results from Part 2.
+
+```{r load-data}
+DGE <- readRDS(here("demo-analysis", "output", "02-differential-expression",
+                    "DGE_filtered_normalized.rds"))
+
+limma_results <- read.csv(here(results_dir, "de_results_all.csv"),
+                          row.names = 1)
+
+cat("Genes:", nrow(DGE), "| Samples:", ncol(DGE), "\n")
+cat("limma-voom results loaded:", nrow(limma_results), "genes\n")
+```
+
+---
+
+# GREIN-Style Filtering
+
+Public databases like GREIN use specific filtering criteria that are not always
+fully documented. Through careful comparison we determined their actual
+approach — which differs from what they describe.
+
+```{r grein-filtering}
+# GREIN's stated method: "CPM > 0"
+# GREIN's actual implementation: count >= 4 in at least min_group_size samples
+
+min_group_size <- min(table(DGE$samples$genotype))
+cat("Minimum group size:", min_group_size, "\n")
+
+keep_grein <- rowSums(DGE$counts >= 4) >= min_group_size
+DGE_grein  <- DGE[keep_grein, , keep.lib.sizes = FALSE]
+
+cat("Genes with our filterByExpr:", nrow(DGE), "\n")
+cat("Genes with GREIN-style filter:", nrow(DGE_grein), "\n")
+cat("(GREIN reports ~15,871 genes for this dataset)\n")
+```
+
+::: {.callout-warning}
+## Reproducibility Lesson 1
+GREIN's documentation states "CPM > 0" but their actual implementation
+uses **count >= 4**. This is a common problem in bioinformatics — methods
+descriptions are often incomplete or inaccurate. Always document your
+exact thresholds and test reproducibility.
+:::
+
+# TMM Normalization
+
+```{r normalize}
+DGE_grein <- calcNormFactors(DGE_grein, method = "TMM")
+summary(DGE_grein$samples$norm.factors)
+```
+
+---
+
+# Estimate Dispersion
+
+edgeR models count variability using dispersion parameters. We estimate
+common, trended, and tagwise dispersion.
+
+```{r dispersion, fig.width=8, fig.height=6}
+design_grein <- model.matrix(~genotype, data = DGE_grein$samples)
+
+DGE_grein <- estimateDisp(DGE_grein, design = design_grein)
+
+plotBCV(DGE_grein,
+        main = "Biological Coefficient of Variation")
+```
+
+::: {.callout-note}
+## BCV Plot
+**BCV** = Biological Coefficient of Variation = sqrt(dispersion)
+
+- **Black dots**: Gene-specific dispersion
+- **Blue line**: Common dispersion
+- **Red curve**: Trended dispersion
+
+Typical values: 0.1–0.2 for well-controlled experiments, 0.4–0.5 for
+biological replicates.
+:::
+
+---
+
+# Exact Test
+
+```{r exact-test}
+et_grein <- exactTest(DGE_grein, pair = c("PRMT7_WT", "PRMT7_KD"))
+
+summary(decideTests(et_grein, adjust.method = "BH", p.value = 0.05))
+
+topTags(et_grein, n = 10)
+```
+
+---
+
+# GREIN's Hidden Filter
+
+GREIN applies an additional undocumented filter to their reported DE gene
+counts.
+
+```{r hidden-filter}
+all_edger_results <- topTags(et_grein, n = Inf)$table
+
+cat("DE genes FDR < 0.05:", sum(all_edger_results$FDR < 0.05), "\n")
+
+# GREIN's actual criteria: FDR < 0.05 AND logCPM > 1
+grein_de_genes <- all_edger_results[all_edger_results$FDR < 0.05 &
+                                    all_edger_results$logCPM > 1, ]
+
+cat("DE genes FDR < 0.05 AND logCPM > 1:", nrow(grein_de_genes), "\n")
+cat("(GREIN reports 8,803 for this comparison)\n")
+```
+
+::: {.callout-warning}
+## Reproducibility Lesson 2
+GREIN applies a **logCPM > 1** filter to their DE gene counts that is
+never mentioned in their methods documentation. This removes ~1,700
+lowly expressed genes from the reported list.
+
+Without this information, you cannot reproduce their exact results. This
+is why sharing actual code — not just prose descriptions — is critical.
+:::
+
+---
+
+# Visualization
+
+## Volcano Plot
+
+```{r volcano, fig.width=8, fig.height=6}
+grein_de_genes$category <- case_when(
+  grein_de_genes$logFC >  1 ~ "Up (>2-fold)",
+  grein_de_genes$logFC < -1 ~ "Down (>2-fold)",
+  grein_de_genes$logFC >  0 ~ "Up",
+  TRUE                       ~ "Down"
+)
+
+ggplot(grein_de_genes, aes(x = logFC, y = -log10(PValue), color = category)) +
+  geom_point(alpha = 0.6, size = 1.5) +
+  scale_color_manual(values = c("Up (>2-fold)"   = "darkred",
+                                "Down (>2-fold)" = "darkblue",
+                                "Up"             = "red",
+                                "Down"           = "blue")) +
+  geom_vline(xintercept = c(-1, 1), linetype = "dashed", alpha = 0.5) +
+  geom_hline(yintercept = -log10(0.05), linetype = "dashed", alpha = 0.5) +
+  labs(title    = "Volcano Plot: KD vs WT (edgeR, GREIN-matched)",
+       subtitle = paste0("FDR < 0.05 & logCPM > 1 (n = ",
+                         nrow(grein_de_genes), " genes)"),
+       x     = "Log2 Fold Change",
+       y     = "-Log10 P-value",
+       color = "Category") +
+  theme_minimal()
+
+ggsave(here(figures_dir, "volcano_plot_edger_grein.png"),
+       width = 8, height = 6, dpi = 300)
+```
+
+## MA Plot
+
+```{r ma-plot, fig.width=8, fig.height=6}
+ggplot(grein_de_genes, aes(x = logCPM, y = logFC, color = category)) +
+  geom_point(alpha = 0.6, size = 1.5) +
+  scale_color_manual(values = c("Up (>2-fold)"   = "darkred",
+                                "Down (>2-fold)" = "darkblue",
+                                "Up"             = "red",
+                                "Down"           = "blue")) +
+  geom_hline(yintercept = 0,        linetype = "solid",  alpha = 0.5) +
+  geom_hline(yintercept = c(-1, 1), linetype = "dashed", alpha = 0.3) +
+  labs(title    = "MA Plot: KD vs WT (edgeR, GREIN-matched)",
+       subtitle = paste0("FDR < 0.05 & logCPM > 1 (n = ",
+                         nrow(grein_de_genes), " genes)"),
+       x     = "Average Expression (log2-CPM)",
+       y     = "Log2 Fold Change",
+       color = "Category") +
+  theme_minimal()
+
+ggsave(here(figures_dir, "ma_plot_edger_grein.png"),
+       width = 8, height = 6, dpi = 300)
+```
+
+---
+
+# Compare edgeR vs limma-voom
+
+```{r compare-methods}
+limma_matched <- limma_results %>%
+  filter(adj.P.Val < 0.05, AveExpr > 1)
+
+comparison <- data.frame(
+  gene       = rownames(grein_de_genes),
+  edgeR_logFC = grein_de_genes$logFC,
+  edgeR_FDR   = grein_de_genes$FDR,
+  limma_logFC = limma_results[rownames(grein_de_genes), "logFC"],
+  limma_FDR   = limma_results[rownames(grein_de_genes), "adj.P.Val"]
+)
+
+cat("Fold change correlation between methods:",
+    round(cor(comparison$edgeR_logFC, comparison$limma_logFC,
+              use = "complete.obs"), 3), "\n")
+
+ggplot(comparison, aes(x = limma_logFC, y = edgeR_logFC)) +
+  geom_point(alpha = 0.3, size = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linetype = "dashed") +
+  labs(title    = "Fold Change Comparison: edgeR vs limma-voom",
+       subtitle = "High correlation indicates robust findings",
+       x = "limma-voom log2FC",
+       y = "edgeR log2FC") +
+  theme_minimal()
+
+edger_genes <- rownames(grein_de_genes)
+limma_genes <- rownames(limma_matched)
+
+cat("\nGene overlap:\n")
+cat("  Both methods:", length(intersect(edger_genes, limma_genes)), "\n")
+cat("  edgeR only:  ", length(setdiff(edger_genes, limma_genes)), "\n")
+cat("  limma only:  ", length(setdiff(limma_genes, edger_genes)), "\n")
+cat("  Agreement:   ",
+    round(100 * length(intersect(edger_genes, limma_genes)) /
+          length(union(edger_genes, limma_genes)), 1), "%\n")
+```
+
+::: {.callout-important}
+## Which Method Should You Use?
+
+**edgeR exact test:**
+- Simple two-group comparisons
+- Count-based (no transformation)
+- Matches published GREIN analyses
+
+**limma-voom:**
+- Complex designs (multiple factors, interactions, time series)
+- Contrast matrices
+- Variable sample quality (`voomWithQualityWeights`)
+
+Both methods typically agree >95% for simple comparisons.
+:::
+
+---
+
+# Export
+
+```{r export}
+edger_export <- grein_de_genes
+edger_export$gene <- rownames(edger_export)
+
+write.csv(edger_export,
+          here(results_dir, "edger_grein_matched_results.csv"),
+          row.names = FALSE)
+
+writeLines(capture.output(sessionInfo()),
+           here(results_dir, "sessionInfo_edger.txt"))
+
+cat("✓ edger_grein_matched_results.csv\n")
+cat("✓ sessionInfo_edger.txt\n")
+```
+
+---
+
+# Session Information
+
+```{r sessioninfo}
+sessionInfo()
+```
