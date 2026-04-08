@@ -617,7 +617,7 @@
 
     
       <br>
-      <small>RNA-seq Bioinformatics Workshop - Hands On Demo Analysis Setup</small>
+      <small>RNA-seq Bioinformatics Workshop - Hands On Demo Analysis Guide</small>
     
   </span>
   
@@ -655,7 +655,7 @@
 
 
 <h1 id="overview">Overview</h1>
-<p>This document explains the workshop setup and where your data files will live.</p>
+<p>This document explains the demo analysis setup and where your data files are.</p>
 <hr />
 <h1 id="workshop-file-layout">Workshop File Layout</h1>
 <h2 id="what-youll-create-your-working-space">What You'll Create (Your Working Space)</h2>
@@ -669,10 +669,12 @@
     └── demo-analysis/
         ├── data/
         │   ├── metadata/
+        │   │   ├── SraRunTable.csv
+        │   │   └── sample_metadata.csv   (created during setup)
         │   └── raw/
         ├── output/
-        │   ├── 01-prepared-data/        (created by prep script)
-        │   └── 02-differential-expression/  (created by analysis)
+        │   ├── 01-prepared-data/         (created by prep script)
+        │   └── 02-differential-expression/   (created by analysis)
         │       ├── figures/
         │       └── results/
         └── scripts/
@@ -690,7 +692,8 @@
 └── trimgalore/
 </code></pre>
 <blockquote>
-<p><strong>Note:</strong> This directory is read-only. Your scripts will read from here but write output to your own working directory.</p>
+<p><strong>Note:</strong> This directory is read-only. Your scripts will read from here
+but write output to your own working directory.</p>
 </blockquote>
 <hr />
 <h1 id="setup-instructions">Setup Instructions</h1>
@@ -709,14 +712,8 @@ cd rnaseq_workshop
 ls -la
 # You should see: demo-analysis/, docs/, .gitignore, mkdocs.yml, README.md
 </code></pre>
-<h2 id="prepare-the-data">Prepare the Data</h2>
-<p>The data preparation script will:</p>
-<ul>
-<li>Read from the shared nf-core output directory (external, read-only)</li>
-<li>Write processed files to <code>demo-analysis/output/01-prepared-data/</code></li>
-</ul>
-<h2 id="start-rstudio-server">Start RStudio Server</h2>
-<p>Create and submit a SLURM job to launch RStudio Server:</p>
+<h2 id="launch-rstudio-server">Launch RStudio Server</h2>
+<p>Create and submit a SLURM job to launch RStudio Server by copying and pasting this in the command prompt:</p>
 <pre><code class="language-bash">cat &gt; rstudio.sbatch &lt;&lt; 'EOF'
 #!/bin/bash
 #SBATCH --job-name=rserver
@@ -753,17 +750,52 @@ http://localhost:8080
 <p><strong>To connect to RStudio:</strong></p>
 <ol>
 <li>Open a <strong>new terminal window or tab on your local machine</strong> (not on
-   HiPerGator) and run the <code>ssh -N -L ...</code> command shown in your log. The
-   working directory on your local machine doesn't matter.</li>
+   HiPerGator) and run the <code>ssh -N -L ...</code> command shown in your log.
+   The working directory on your local machine doesn't matter.</li>
 <li>Open any browser and paste <code>http://localhost:8080</code> into the address bar.</li>
 </ol>
 <h2 id="set-your-working-directory-in-rstudio">Set Your Working Directory in RStudio</h2>
-<p>Once RStudio opens, set your working directory in the <strong>Console</strong> (replace
-<code>your_username</code> with your actual username):</p>
+<p>Once RStudio opens, set your working directory in the <strong>Console</strong>
+(replace <code>your_username</code> with your actual username):</p>
 <pre><code class="language-r">setwd(&quot;/blue/bioinf_workshop/your_username/rnaseq_workshop&quot;)
 </code></pre>
 <p>Then in the <strong>Files panel</strong> (bottom-right), click the <strong>gear icon ⚙</strong> and
 select <strong>Go To Working Directory</strong> to confirm you are in the right place.</p>
+<blockquote>
+<p>All scripts use the <code>here</code> package to build file paths relative to the
+repository root, so they work for everyone without needing to change
+any paths in the code.</p>
+</blockquote>
+<h2 id="create-sample-metadata">Create Sample Metadata</h2>
+<p>Before running the data preparation script, you need to create a metadata
+file that describes your experimental design. In the RStudio <strong>Console</strong>, run:</p>
+<pre><code class="language-r">library(tidyverse)
+library(here)
+
+read_csv(here(&quot;demo-analysis&quot;, &quot;data&quot;, &quot;metadata&quot;, &quot;SraRunTable.csv&quot;)) %&gt;%
+  select(sample = Run, group = genotype) %&gt;%
+  write_csv(here(&quot;demo-analysis&quot;, &quot;data&quot;, &quot;metadata&quot;, &quot;sample_metadata.csv&quot;))
+</code></pre>
+<p>In the Files panel, open <code>demo-analysis/data/metadata/sample_metadata.csv</code>
+to confirm it looks correct. You should see two columns:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Contents</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample</code></td>
+<td>SRR run IDs (e.g. SRR12546980)</td>
+</tr>
+<tr>
+<td><code>group</code></td>
+<td>PRMT7 WT or PRMT7 KD</td>
+</tr>
+</tbody>
+</table>
 <h2 id="run-the-data-preparation-script">Run the Data Preparation Script</h2>
 <p>In the Files panel, open <code>demo-analysis/scripts/01_prepare_nfcore_data.R</code>
 and click <strong>Source</strong> (top-right of the script editor) to run the entire script.</p>
@@ -803,16 +835,11 @@ and click <strong>Source</strong> (top-right of the script editor) to run the en
 </tbody>
 </table>
 <hr />
-<h1 id="using-the-here-package">Using the <code>here</code> Package</h1>
-<p>All workshop scripts use the <code>here</code> package to build file paths relative to
-the repository root. This means paths work correctly for everyone without
-needing to hardcode usernames or system-specific paths anywhere in the code.</p>
-<hr />
 <h1 id="running-the-differential-expression-analysis">Running the Differential Expression Analysis</h1>
-<p>With RStudio open and your working directory set, open:</p>
+<p>With your working directory set and data prepared, open:</p>
 <p><code>demo-analysis/scripts/02_differential_expression_analysis.qmd</code></p>
-<p>Work through the notebook <strong>chunk by chunk</strong> using the green play button or
-<code>Ctrl+Enter</code>. This notebook will walk you through the full differential
+<p>Work through the notebook <strong>chunk by chunk</strong> using the green play button
+or <code>Ctrl+Enter</code>. This notebook will walk you through the full differential
 expression analysis using limma-voom.</p>
 <p>After completing the analysis, you will find results in
 <code>demo-analysis/output/02-differential-expression/</code>:</p>
