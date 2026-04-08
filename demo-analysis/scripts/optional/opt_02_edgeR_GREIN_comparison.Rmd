@@ -37,8 +37,8 @@ library(here)
 
 set.seed(42)
 
-results_dir <- here("demo-analysis", "output", "02-differential-expression", "results")
-figures_dir <- here("demo-analysis", "output", "02-differential-expression", "figures")
+results_dir <- here("demo-analysis", "output", "differential-expression", "results")
+figures_dir <- here("demo-analysis", "output", "differential-expression", "figures")
 
 dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
@@ -49,7 +49,7 @@ dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
 ## Load Data
 
 ```{r load-data}
-DGE <- readRDS(here("demo-analysis", "output", "02-differential-expression",
+DGE <- readRDS(here("demo-analysis", "output", "differential-expression",
                     "DGE_filtered_normalized.rds"))
 
 limma_results <- read.csv(here(results_dir, "de_results_all.csv"),

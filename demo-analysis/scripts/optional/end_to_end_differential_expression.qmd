@@ -69,8 +69,8 @@ set.seed(42)
 # Define directory structure using here() for portability
 # here() finds the project root automatically
 data_dir <- here("demo-analysis", "output", "01-prepared-data")
-results_dir <- here("demo-analysis", "output", "02-differential-expression", "results")
-figures_dir <- here("demo-analysis", "output", "02-differential-expression", "figures")
+results_dir <- here("demo-analysis", "output", "differential-expression", "results")
+figures_dir <- here("demo-analysis", "output", "differential-expression", "figures")
 
 # Create output directories if they don't exist
 dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
@@ -316,7 +316,7 @@ ggplot(mds_df, aes(x = dim1, y = dim2, color = genotype, label = Run)) +
   scale_color_brewer(palette = "Set1")
 
 # Save the plot
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "mds_plot.png"), width = 8, height = 6, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "mds_plot.png"), width = 8, height = 6, dpi = 300)
 ```
 
 ::: {.callout-important}
@@ -357,7 +357,7 @@ pheatmap(cor_matrix,
          color = colorRampPalette(c("blue", "white", "red"))(100),
          breaks = seq(0.7, 1, length.out = 101),
          fontsize = 8,
-         filename = here("demo-analysis", "output", "02-differential-expression", "figures", "correlation_heatmap.png"),
+         filename = here("demo-analysis", "output", "differential-expression", "figures", "correlation_heatmap.png"),
          width = 8,
          height = 7)
 
@@ -523,7 +523,7 @@ ggplot(all_results, aes(x = logFC, y = -log10(P.Value), color = significant)) +
   theme_minimal() +
   theme(legend.position = "right")
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "volcano_plot_simple.png"), width = 8, height = 6, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "volcano_plot_simple.png"), width = 8, height = 6, dpi = 300)
 ```
 
 ## MA Plot
@@ -545,7 +545,7 @@ ggplot(all_results, aes(x = AveExpr, y = logFC, color = significant)) +
        color = "Significance") +
   theme_minimal()
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "ma_plot_simple.png"), width = 8, height = 6, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "ma_plot_simple.png"), width = 8, height = 6, dpi = 300)
 ```
 
 # Part 3B: Alternative Approach - edgeR Exact Test
@@ -732,7 +732,7 @@ ggplot(edger_results, aes(x = logFC, y = -log10(PValue), color = significant)) +
   theme_minimal() +
   theme(legend.position = "right")
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "volcano_plot_edger_grein.png"), width = 8, height = 6, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "volcano_plot_edger_grein.png"), width = 8, height = 6, dpi = 300)
 ```
 
 ### MA Plot
@@ -752,7 +752,7 @@ ggplot(edger_results, aes(x = logCPM, y = logFC, color = significant)) +
        color = "Classification") +
   theme_minimal()
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "ma_plot_edger_grein.png"), width = 8, height = 6, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "ma_plot_edger_grein.png"), width = 8, height = 6, dpi = 300)
 ```
 
 ## Compare edgeR vs limma-voom Results
@@ -836,10 +836,10 @@ edger_export <- edger_export[, c("gene", "logFC", "logCPM", "PValue", "FDR", "si
 
 # Save results
 write.csv(edger_export, 
-          here("demo-analysis", "output", "02-differential-expression", "results", "edger_grein_matched_results.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "edger_grein_matched_results.csv"),
           row.names = FALSE)
 
-cat("edgeR results exported to:", here("demo-analysis", "output", "02-differential-expression", "results", "edger_grein_matched_results.csv"), "\n")
+cat("edgeR results exported to:", here("demo-analysis", "output", "differential-expression", "results", "edger_grein_matched_results.csv"), "\n")
 ```
 
 ## Document Your Analysis (Reproducibility Best Practice!)
@@ -851,7 +851,7 @@ Always save your session information so others (including future you!) can repro
 ```{r session-info}
 # Save session info
 writeLines(capture.output(sessionInfo()), 
-           here("demo-analysis", "output", "02-differential-expression", "results", "sessionInfo_edger.txt"))
+           here("demo-analysis", "output", "differential-expression", "results", "sessionInfo_edger.txt"))
 
 # Display key information
 cat("R version:", R.version.string, "\n")
@@ -1145,7 +1145,7 @@ ggplot(temp_results_dros, aes(x = logFC, y = -log10(P.Value), color = significan
        color = "Category") +
   theme_minimal()
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "volcano_drosophila_temperature.png"), 
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "volcano_drosophila_temperature.png"), 
        width = 8, height = 6, dpi = 300)
 ```
 
@@ -1559,7 +1559,7 @@ pheatmap(top50_scaled,
          fontsize_row = 6,
          fontsize_col = 8,
          color = colorRampPalette(c("blue", "white", "red"))(100),
-         filename = here("demo-analysis", "output", "02-differential-expression", "figures","heatmap_top50.png"),
+         filename = here("demo-analysis", "output", "differential-expression", "figures","heatmap_top50.png"),
          width = 8,
          height = 10)
 ```
@@ -1569,20 +1569,20 @@ pheatmap(top50_scaled,
 ```{r export-contrasts}
 # Save the merged contrast results
 write.csv(contrast_results, 
-          here("demo-analysis", "output", "02-differential-expression", "results", "drosophila_contrast_results.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "drosophila_contrast_results.csv"),
           row.names = FALSE)
 
 # Save individual contrast tables
 write.csv(maine_temp, 
-          here("demo-analysis", "output", "02-differential-expression", "results", "drosophila_maine_temperature.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "drosophila_maine_temperature.csv"),
           row.names = TRUE)
 
 write.csv(panama_temp, 
-          here("demo-analysis", "output", "02-differential-expression", "results", "drosophila_panama_temperature.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "drosophila_panama_temperature.csv"),
           row.names = TRUE)
 
 write.csv(interaction, 
-          here("demo-analysis", "output", "02-differential-expression", "results", "drosophila_interaction.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "drosophila_interaction.csv"),
           row.names = TRUE)
 
 # Optional: Export just the parallel response genes
@@ -1590,7 +1590,7 @@ parallel_response <- contrast_results %>%
   filter(pattern == "Parallel")
 
 write.csv(parallel_response, 
-          here("demo-analysis", "output", "02-differential-expression", "results", "drosophila_parallel_response_genes.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "drosophila_parallel_response_genes.csv"),
           row.names = FALSE)
 
 # Optional: Export just the divergent response genes
@@ -1598,7 +1598,7 @@ divergent_response <- contrast_results %>%
   filter(pattern == "Divergent")
 
 write.csv(divergent_response, 
-          here("demo-analysis", "output", "02-differential-expression", "results", "drosophila_divergent_response_genes.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "drosophila_divergent_response_genes.csv"),
           row.names = FALSE)
 
 cat("All contrast results exported!\n")
@@ -1889,7 +1889,7 @@ dotplot(ego_bp,
         title = "GO Biological Process Enrichment",
         font.size = 10)
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "GO_BP_dotplot.png"), width = 10, height = 8, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "GO_BP_dotplot.png"), width = 10, height = 8, dpi = 300)
 ```
 
 ::: {.callout-note}
@@ -1921,7 +1921,7 @@ emapplot(ego_bp_simplified,
          layout = "kk") +
   labs(title = "GO Enrichment Map: Related Terms Share Genes")
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "GO_BP_emap.png"), width = 12, height = 10, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "GO_BP_emap.png"), width = 12, height = 10, dpi = 300)
 ```
 
 ::: {.callout-tip}
@@ -1954,7 +1954,7 @@ cnetplot(ego_bp,
          #cex_label_category = 1.2) 
   labs(title = "Gene-Concept Network: Top 5 GO Terms")
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "GO_BP_cnetplot.png"), width = 12, height = 10, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "GO_BP_cnetplot.png"), width = 12, height = 10, dpi = 300)
 ```
 
 ::: {.callout-note}
@@ -2042,7 +2042,7 @@ dotplot(kegg_result,
         showCategory = 20,
         title = "KEGG Pathway Enrichment")
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "KEGG_dotplot.png"), width = 10, height = 6, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "KEGG_dotplot.png"), width = 10, height = 6, dpi = 300)
 ```
 
 ### Compare GO vs KEGG
@@ -2078,7 +2078,7 @@ ggplot(comparison_df, aes(x = Count, y = reorder(Term, Count), fill = Database))
   theme_minimal() +
   facet_wrap(~Database, scales = "free_y", ncol = 1)
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "GO_vs_KEGG_comparison.png"), width = 10, height = 8, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "GO_vs_KEGG_comparison.png"), width = 10, height = 8, dpi = 300)
 ```
 
 ::: {.callout-note}
@@ -2124,7 +2124,7 @@ dotplot(ego_bp_simple,
         showCategory = 20,
         title = "Simplified GO-BP Enrichment (Redundancy Removed)")
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "GO_BP_simplified_dotplot.png"), width = 10, height = 6, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "GO_BP_simplified_dotplot.png"), width = 10, height = 6, dpi = 300)
 ```
 
 ## Up vs Down-Regulated Genes Separately
@@ -2172,7 +2172,7 @@ p2 <- dotplot(ego_down, showCategory = 10, title = "Downregulated in KD") +
 library(patchwork)
 p1 | p2
 
-ggsave(here("demo-analysis", "output", "02-differential-expression", "figures", "GO_up_vs_down.png"), width = 12, height = 8, dpi = 300)
+ggsave(here("demo-analysis", "output", "differential-expression", "figures", "GO_up_vs_down.png"), width = 12, height = 8, dpi = 300)
 ```
 
 ::: {.callout-tip}
@@ -2191,25 +2191,25 @@ This provides more nuanced biological insight than treating all DE genes the sam
 ```{r export-pathway-results}
 # Export GO results as tables
 write.csv(as.data.frame(ego_bp), 
-          here("demo-analysis", "output", "02-differential-expression", "results", "GO_BP_enrichment.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "GO_BP_enrichment.csv"),
           row.names = FALSE)
 
 write.csv(as.data.frame(ego_bp_simple), 
-          here("demo-analysis", "output", "02-differential-expression", "results", "GO_BP_enrichment_simplified.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "GO_BP_enrichment_simplified.csv"),
           row.names = FALSE)
 
 # Export KEGG results
 write.csv(as.data.frame(kegg_result), 
-          here("demo-analysis", "output", "02-differential-expression", "results", "KEGG_enrichment.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "KEGG_enrichment.csv"),
           row.names = FALSE)
 
 # Export separate up/down GO results
 write.csv(as.data.frame(ego_up), 
-          here("demo-analysis", "output", "02-differential-expression", "results", "GO_BP_upregulated.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "GO_BP_upregulated.csv"),
           row.names = FALSE)
 
 write.csv(as.data.frame(ego_down), 
-          here("demo-analysis", "output", "02-differential-expression", "results", "GO_BP_downregulated.csv"),
+          here("demo-analysis", "output", "differential-expression", "results", "GO_BP_downregulated.csv"),
           row.names = FALSE)
 
 cat("Pathway enrichment results exported!\n")
