@@ -10,7 +10,7 @@ If you want to go deeper after this workshop, UF Research Computing has a more c
 
 **Mac:** Open the Terminal app by going to Applications → Utilities → Terminal, or search for "Terminal" in Spotlight (`Cmd+Space`).
 
-**Windows:** We recommend installing [Git Bash](https://gitforwindows.org/), which gives you a Linux-style terminal on Windows. Once installed, open it from the Start menu. Alternatively, Windows 10 and 11 have a built-in Linux terminal called WSL (Windows Subsystem for Linux) which you can enable through the Microsoft Store.
+**Windows:** We recommend installing [Git Bash](https://gitforwindows.org/) or [MobaXTerm](https://mobaxterm.mobatek.net/download.html) which gives you a Linux-style terminal on Windows. Once installed, open it from the Start menu. Alternatively, Windows 10 and 11 have a built-in Linux terminal called WSL (Windows Subsystem for Linux) which you can enable through the Microsoft Store.
 
 Once your terminal is open, you will see a command prompt that looks something like this:
 
