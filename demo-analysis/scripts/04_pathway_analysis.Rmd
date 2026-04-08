@@ -14,9 +14,22 @@ output:
 knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE)
 ```
 
+## Overview
+
+Having identified differentially expressed genes, we now ask what they mean
+biologically. Pathway analysis uses over-representation testing to ask: are
+our DE genes enriched in particular biological processes or pathways compared
+to what we would expect by chance?
+
+**Requires:** `de_results_all.csv` produced by `03_differential_expression.Rmd`
+
+---
+
+## Setup
+
 ```{r libraries}
 library(clusterProfiler)
-library(org.Mm.eg.db)
+library(org.Mm.eg.db)   # Mouse annotation — use org.Hs.eg.db for human
 library(enrichplot)
 library(tidyverse)
 library(patchwork)
@@ -31,6 +44,10 @@ dir.create(results_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
 ```
 
+---
+
+## Load DE Results
+
 ```{r load-results}
 all_results <- read.csv(here(results_dir, "de_results_all.csv"),
                         row.names = 1)
@@ -39,17 +56,32 @@ sig_genes  <- all_results %>% filter(adj.P.Val < 0.05)
 up_genes   <- sig_genes  %>% filter(logFC > 0)
 down_genes <- sig_genes  %>% filter(logFC < 0)
 
-cat("Total DE genes:", nrow(sig_genes), "\n")
-cat("Up in KD:      ", nrow(up_genes), "\n")
-cat("Down in KD:    ", nrow(down_genes), "\n")
+cat("Total DE genes (FDR < 0.05):", nrow(sig_genes), "\n")
+cat("Upregulated in KD:          ", nrow(up_genes), "\n")
+cat("Downregulated in KD:        ", nrow(down_genes), "\n")
 ```
 
+---
+
+## Convert Gene IDs
+
+Most pathway databases use Entrez Gene IDs rather than gene symbols. We convert
+here and also define a background gene set — all genes that were actually tested.
+Using the correct background is important for accurate enrichment statistics:
+comparing to all genes in the genome rather than genes in your experiment
+inflates false positives.
+
+A conversion rate of 85–95% is normal. Genes that fail to convert are typically
+novel genes, pseudogenes, or non-coding RNAs not yet in the annotation database.
+
 ```{r convert-ids}
+# Convert DE gene symbols to Entrez IDs
 gene_entrez <- bitr(rownames(sig_genes),
                     fromType = "SYMBOL",
                     toType   = "ENTREZID",
                     OrgDb    = org.Mm.eg.db)
 
+# Background: all genes tested
 background_entrez <- bitr(rownames(all_results),
                            fromType = "SYMBOL",
                            toType   = "ENTREZID",
@@ -57,9 +89,23 @@ background_entrez <- bitr(rownames(all_results),
 
 universe <- background_entrez$ENTREZID
 
-cat("DE genes converted:", nrow(gene_entrez), "\n")
-cat("Background genes:  ", length(universe), "\n")
+cat("DE genes submitted:     ", nrow(sig_genes), "\n")
+cat("Successfully converted: ", nrow(gene_entrez), "\n")
+cat("Background genes:       ", length(universe), "\n")
 ```
+
+---
+
+## GO Enrichment — Biological Process
+
+Gene Ontology (GO) Biological Process terms describe what genes do at the
+cellular and systems level (e.g., "DNA repair", "cell cycle arrest"). Key
+output columns:
+
+- **GeneRatio**: Fraction of your DE genes annotated to this term
+- **BgRatio**: Fraction of background genes annotated to this term
+- **p.adjust**: FDR-corrected p-value
+- **geneID**: Gene symbols driving the enrichment
 
 ```{r go-bp}
 ego_bp <- enrichGO(gene          = gene_entrez$ENTREZID,
@@ -69,11 +115,16 @@ ego_bp <- enrichGO(gene          = gene_entrez$ENTREZID,
                    pAdjustMethod = "BH",
                    pvalueCutoff  = 0.05,
                    qvalueCutoff  = 0.05,
-                   readable      = TRUE)
+                   readable      = TRUE)  # Convert Entrez IDs back to symbols
 
-cat("Enriched GO-BP terms:", nrow(ego_bp), "\n")
+cat("Enriched GO-BP terms:", nrow(ego_bp), "\n\n")
 head(ego_bp, 10)
 ```
+
+### Dot Plot
+
+The dot plot shows the top enriched terms. X-axis is the gene ratio, dot size
+is the number of genes, and dot color is the adjusted p-value.
 
 ```{r go-dotplot, fig.width=10, fig.height=8}
 dotplot(ego_bp,
@@ -85,27 +136,38 @@ ggsave(here(figures_dir, "GO_BP_dotplot.png"),
        width = 10, height = 8, dpi = 300)
 ```
 
+### Enrichment Map
+
+Shows relationships between enriched terms — terms sharing many genes are
+connected and cluster around common biological themes.
+
 ```{r go-emap, fig.width=12, fig.height=10}
 ego_bp_sim <- pairwise_termsim(ego_bp)
 
-emapplot(ego_bp_sim,
-         showCategory = 30,
-         layout       = "kk") +
+emapplot(ego_bp_sim, showCategory = 30, layout = "kk") +
   labs(title = "GO Enrichment Map")
 
 ggsave(here(figures_dir, "GO_BP_emap.png"),
        width = 12, height = 10, dpi = 300)
 ```
 
+### Gene-Concept Network
+
+Shows which specific genes belong to which GO terms. Brown nodes are GO terms,
+colored nodes are genes, and hub genes appear in multiple terms.
+
 ```{r go-cnetplot, fig.width=12, fig.height=10}
-cnetplot(ego_bp,
-         showCategory = 5,
-         node_label   = "all") +
+cnetplot(ego_bp, showCategory = 5, node_label = "all") +
   labs(title = "Gene-Concept Network: Top 5 GO Terms")
 
 ggsave(here(figures_dir, "GO_BP_cnetplot.png"),
        width = 12, height = 10, dpi = 300)
 ```
+
+### Simplify Redundant Terms
+
+GO is hierarchical and many terms overlap. Simplification removes redundant
+terms while keeping the most significant representative from each cluster.
 
 ```{r go-simplify}
 ego_bp_simple <- simplify(ego_bp,
@@ -113,8 +175,8 @@ ego_bp_simple <- simplify(ego_bp,
                            by         = "p.adjust",
                            select_fun = min)
 
-cat("Original terms:  ", nrow(ego_bp), "\n")
-cat("Simplified terms:", nrow(ego_bp_simple), "\n")
+cat("Original terms:   ", nrow(ego_bp), "\n")
+cat("Simplified terms: ", nrow(ego_bp_simple), "\n")
 ```
 
 ```{r go-simplified-dotplot, fig.width=10, fig.height=6}
@@ -126,6 +188,14 @@ ggsave(here(figures_dir, "GO_BP_simplified_dotplot.png"),
        width = 10, height = 6, dpi = 300)
 ```
 
+---
+
+## KEGG Pathway Enrichment
+
+KEGG provides curated pathway maps for metabolism, signaling, and disease.
+It complements GO by providing a different, more focused view of the same
+biology. Common organism codes: `mmu` = mouse, `hsa` = human.
+
 ```{r kegg}
 kegg_result <- enrichKEGG(gene          = gene_entrez$ENTREZID,
                            universe      = universe,
@@ -134,22 +204,23 @@ kegg_result <- enrichKEGG(gene          = gene_entrez$ENTREZID,
                            pvalueCutoff  = 0.05,
                            qvalueCutoff  = 0.05)
 
+# Convert Entrez IDs back to gene symbols for readability
 kegg_result <- setReadable(kegg_result,
                             OrgDb   = org.Mm.eg.db,
                             keyType = "ENTREZID")
 
-cat("Enriched KEGG pathways:", nrow(kegg_result), "\n")
+cat("Enriched KEGG pathways:", nrow(kegg_result), "\n\n")
 head(kegg_result, 15)
 ```
 
 ```{r kegg-dotplot, fig.width=10, fig.height=6}
-dotplot(kegg_result,
-        showCategory = 20,
-        title        = "KEGG Pathway Enrichment")
+dotplot(kegg_result, showCategory = 20, title = "KEGG Pathway Enrichment")
 
 ggsave(here(figures_dir, "KEGG_dotplot.png"),
        width = 10, height = 6, dpi = 300)
 ```
+
+### GO vs KEGG Comparison
 
 ```{r go-vs-kegg, fig.width=10, fig.height=8}
 ego_df <- as.data.frame(ego_bp) %>%
@@ -174,6 +245,15 @@ bind_rows(ego_df, kegg_df) %>%
 ggsave(here(figures_dir, "GO_vs_KEGG_comparison.png"),
        width = 10, height = 8, dpi = 300)
 ```
+
+---
+
+## Upregulated vs Downregulated Genes
+
+Analyzing genes by direction of change often reveals more specific biological
+themes than treating all DE genes together. For example, upregulated genes may
+reflect stress responses while downregulated genes reflect disrupted normal
+functions.
 
 ```{r up-vs-down}
 up_entrez <- gene_entrez %>%
@@ -203,12 +283,10 @@ cat("GO terms — downregulated:", nrow(ego_down), "\n")
 ```
 
 ```{r up-vs-down-plot, fig.width=12, fig.height=8}
-p1 <- dotplot(ego_up,   showCategory = 10,
-              title = "Upregulated in KD") +
+p1 <- dotplot(ego_up,   showCategory = 10, title = "Upregulated in KD") +
       theme(axis.text.y = element_text(size = 8))
 
-p2 <- dotplot(ego_down, showCategory = 10,
-              title = "Downregulated in KD") +
+p2 <- dotplot(ego_down, showCategory = 10, title = "Downregulated in KD") +
       theme(axis.text.y = element_text(size = 8))
 
 p1 | p2
@@ -217,20 +295,32 @@ ggsave(here(figures_dir, "GO_up_vs_down.png"),
        width = 12, height = 8, dpi = 300)
 ```
 
+---
+
+## Export Results
+
 ```{r export}
 write.csv(as.data.frame(ego_bp),
-          here(results_dir, "GO_BP_enrichment.csv"),          row.names = FALSE)
+          here(results_dir, "GO_BP_enrichment.csv"),           row.names = FALSE)
 write.csv(as.data.frame(ego_bp_simple),
           here(results_dir, "GO_BP_enrichment_simplified.csv"), row.names = FALSE)
 write.csv(as.data.frame(kegg_result),
-          here(results_dir, "KEGG_enrichment.csv"),            row.names = FALSE)
+          here(results_dir, "KEGG_enrichment.csv"),             row.names = FALSE)
 write.csv(as.data.frame(ego_up),
-          here(results_dir, "GO_BP_upregulated.csv"),          row.names = FALSE)
+          here(results_dir, "GO_BP_upregulated.csv"),           row.names = FALSE)
 write.csv(as.data.frame(ego_down),
-          here(results_dir, "GO_BP_downregulated.csv"),        row.names = FALSE)
+          here(results_dir, "GO_BP_downregulated.csv"),         row.names = FALSE)
 
-cat("✓ All pathway results exported\n")
+cat("✓ GO_BP_enrichment.csv\n")
+cat("✓ GO_BP_enrichment_simplified.csv\n")
+cat("✓ KEGG_enrichment.csv\n")
+cat("✓ GO_BP_upregulated.csv\n")
+cat("✓ GO_BP_downregulated.csv\n")
 ```
+
+---
+
+## Session Information
 
 ```{r sessioninfo}
 sessionInfo()
