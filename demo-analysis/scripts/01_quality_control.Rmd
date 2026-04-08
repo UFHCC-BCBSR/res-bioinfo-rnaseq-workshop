@@ -48,16 +48,15 @@ library(here)
 
 set.seed(42)
 
-figures_dir <- here("demo-analysis", "output", "02-differential-expression", "figures")
-rds_dir     <- here("demo-analysis", "output", "02-differential-expression")
+figures_dir <- here("demo-analysis", "output", "differential-expression", "figures")
+rds_dir     <- here("demo-analysis", "output", "differential-expression")
 
 dir.create(figures_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(rds_dir,     showWarnings = FALSE, recursive = TRUE)
 ```
 
 ```{r paths}
-counts_file   <- here("demo-analysis", "output", "01-prepared-data",
-                      "rsem.merged.gene_counts.tsv")
+counts_file <- "/blue/bioinf_workshop/share/nfcore_rnaseq_files/star_rsem/rsem.merged.gene_counts.tsv"
 metadata_file <- here("demo-analysis", "data", "metadata", "sample_metadata.csv")
 
 if (!file.exists(counts_file))   stop("Count file not found: ",    counts_file)
@@ -69,22 +68,57 @@ cat("✓ Metadata file found\n")
 
 ---
 
-## Load Data
-
-### Gene Counts
+### Load Raw Counts
 
 The nf-core/rnaseq pipeline with RSEM produces a merged count matrix. We need
 the raw expected counts (`rsem.merged.gene_counts.tsv`), not the TPM or scaled
-variants.
+variants. We also drop the `transcript_id(s)` column since we are working at
+the gene level.
 
 ```{r load-counts}
-expression_data <- read.table(counts_file,
-                               header      = TRUE,
-                               row.names   = 1,
-                               check.names = FALSE)
+counts_raw <- read.table(counts_file, header = TRUE, sep = "\t",
+                         check.names = FALSE, stringsAsFactors = FALSE) %>%
+  dplyr::select(-any_of("transcript_id(s)"))
 
-cat("Genes:", nrow(expression_data), "| Samples:", ncol(expression_data), "\n")
-head(expression_data, n = 3)
+cat("Genes:", nrow(counts_raw), "| Samples:", ncol(counts_raw) - 1, "\n")
+head(counts_raw[, 1:4], n = 3)
+```
+
+### Convert Ensembl IDs to Gene Symbols
+
+The count matrix uses Ensembl IDs (e.g. `ENSMUSG00000000003`) as gene
+identifiers. We convert these to gene symbols using the mouse annotation
+package `org.Mm.eg.db` so that results are easier to interpret downstream.
+Genes with no matching symbol retain their Ensembl ID as a fallback.
+
+```{r convert-ids}
+library(org.Mm.eg.db)
+
+symbols <- AnnotationDbi::mapIds(org.Mm.eg.db, keys = counts_raw$gene_id,
+                                 column = "SYMBOL", keytype = "ENSEMBL",
+                                 multiVals = "first")
+
+counts_raw$gene_name <- ifelse(is.na(symbols), counts_raw$gene_id, symbols)
+
+cat("✓ Mapped", sum(!is.na(symbols)), "of", length(symbols), "genes to symbols\n")
+```
+
+### Build Final Count Matrix
+
+A small number of genes share the same symbol (e.g. pseudogenes). We make
+these unique by appending the Ensembl ID, then set gene symbols as row names
+to produce the final counts matrix used throughout the rest of the workshop.
+
+```{r build-matrix}
+dups <- duplicated(counts_raw$gene_name) | duplicated(counts_raw$gene_name, fromLast = TRUE)
+counts_raw$gene_name[dups] <- paste0(counts_raw$gene_name[dups], "_", counts_raw$gene_id[dups])
+
+expression_data <- counts_raw %>%
+  dplyr::select(-gene_id) %>%
+  column_to_rownames("gene_name")
+
+cat("✓ Final matrix:", nrow(expression_data), "genes x", ncol(expression_data), "samples\n")
+head(expression_data[, 1:4], n = 3)
 ```
 
 ### Sample Metadata
