@@ -1654,6 +1654,767 @@ cat("  - drosophila_divergent_response_genes.csv (divergent patterns only)\n")
 
 ---
 
+# Part 7: Pathway Enrichment Analysis
+
+::: {.callout-note}
+## From Genes to Biology
+
+We've identified thousands of differentially expressed genes, but what does this mean biologically? 
+
+**Pathway enrichment analysis** helps us answer:
+- What biological processes are affected?
+- What pathways are dysregulated?
+- Are there common themes among DE genes?
+
+This transforms gene lists into biological insights!
+:::
+
+## Conceptual Overview: Over-Representation Analysis
+
+**The Basic Question**: Are my DE genes **enriched** in certain pathways/processes compared to what we'd expect by chance?
+
+::: {.columns}
+::: {.column width="50%"}
+**Example:**
+
+- Total genes in genome: 20,000
+- Genes in "DNA Repair" pathway: 200 (1%)
+- Your DE genes: 1,000
+- Expected in DNA Repair: 10 genes (1% of 1,000)
+- **Actual in DNA Repair: 50 genes**
+:::
+
+::: {.column width="50%"}
+**Statistical Test:**
+
+Is 50 significantly different from 10?
+
+→ Use **hypergeometric test** (Fisher's exact test)
+
+If p < 0.05: "DNA Repair is enriched!"
+
+**Biological interpretation**: Your treatment affects DNA repair processes
+:::
+:::
+
+::: {.callout-warning}
+## Important Assumption
+
+ORA assumes all DE genes are equally important. It treats a gene with logFC = 5 (32-fold change) the same as logFC = 0.6 (1.5-fold change).
+
+**GSEA** (Gene Set Enrichment Analysis) addresses this by using ranked gene lists, but it's more complex. We'll mention it at the end.
+:::
+
+## Setup: Load Required Packages
+
+```{r load-pathway-packages}
+# Install if needed (uncomment):
+# BiocManager::install(c("clusterProfiler", "org.Mm.eg.db", "enrichplot", "pathview"))
+
+library(clusterProfiler)
+library(org.Mm.eg.db)  # Mouse annotation (use org.Hs.eg.db for human)
+library(enrichplot)
+library(ggplot2)
+library(here)
+
+# Check organism database
+org.Mm.eg.db
+```
+
+::: {.callout-tip}
+## Species-Specific Annotation Packages
+
+- **Human**: `org.Hs.eg.db`
+- **Mouse**: `org.Mm.eg.db`
+- **Rat**: `org.Rn.eg.db`
+- **Fly**: `org.Dm.eg.db`
+- **Zebrafish**: `org.Dr.eg.db`
+- **C. elegans**: `org.Ce.eg.db`
+
+Install the appropriate one for your species!
+:::
+
+## Prepare Gene Lists
+
+We'll use the limma-voom results from Part 3 (the simple PRMT7 KD vs WT comparison).
+
+```{r prepare-gene-lists}
+# From Part 3, we have: all_results (limma-voom output)
+# Let's refresh it if needed
+if (!exists("all_results")) {
+  all_results <- topTable(fit_simple, 
+                          coef = 2,
+                          adjust.method = "BH",
+                          number = Inf,
+                          sort.by = "none")
+}
+
+# Extract significant genes (FDR < 0.05)
+sig_genes <- all_results %>%
+  filter(adj.P.Val < 0.05)
+
+cat("Total DE genes:", nrow(sig_genes), "\n")
+
+# Separate up and down-regulated genes
+up_genes <- sig_genes %>% filter(logFC > 0)
+down_genes <- sig_genes %>% filter(logFC < 0)
+
+cat("Upregulated in KD:", nrow(up_genes), "\n")
+cat("Downregulated in KD:", nrow(down_genes), "\n")
+```
+
+## Convert Gene Symbols to Entrez IDs
+
+Most pathway databases use **Entrez Gene IDs**, not gene symbols. We need to convert:
+
+```{r convert-to-entrez}
+# Get all gene symbols from our results
+gene_symbols <- rownames(sig_genes)
+
+# Convert symbols to Entrez IDs
+gene_entrez <- bitr(gene_symbols, 
+                    fromType = "SYMBOL",
+                    toType = "ENTREZID", 
+                    OrgDb = org.Mm.eg.db)
+
+# Check conversion
+cat("Original genes:", length(gene_symbols), "\n")
+cat("Successfully converted:", nrow(gene_entrez), "\n")
+cat("Failed to convert:", length(gene_symbols) - nrow(gene_entrez), "\n")
+
+# Show examples
+head(gene_entrez)
+```
+
+::: {.callout-warning}
+## Gene ID Conversion Issues
+
+Not all genes convert successfully:
+
+- **Novel genes**: Not yet in annotation databases
+- **Non-coding RNAs**: May lack Entrez IDs
+- **Pseudogenes**: Often not annotated
+- **Outdated symbols**: Gene nomenclature changes
+
+**Typical conversion rate**: 85-95%
+
+This is normal and expected!
+:::
+
+## Background Gene Set
+
+For accurate enrichment testing, we need to define the **background** (universe) - all genes that COULD have been detected:
+
+```{r prepare-background}
+# All genes that passed filtering and were tested
+background_symbols <- rownames(all_results)
+
+# Convert background to Entrez IDs
+background_entrez <- bitr(background_symbols,
+                          fromType = "SYMBOL",
+                          toType = "ENTREZID",
+                          OrgDb = org.Mm.eg.db)
+
+cat("Background genes:", nrow(background_entrez), "\n")
+
+# Extract just the Entrez IDs
+universe <- background_entrez$ENTREZID
+```
+
+::: {.callout-important}
+## Why Background Matters
+
+**Wrong**: Compare to all genes in genome (20,000+)
+
+**Right**: Compare to genes expressed in your experiment (13,000)
+
+Using the correct background prevents:
+- False positives (from untested genes)
+- Biased enrichment (from tissue-specific expression)
+
+Always use your filtered gene set as background!
+:::
+
+## Gene Ontology (GO) Enrichment
+
+GO provides a standardized vocabulary for gene function across three domains:
+
+- **Biological Process (BP)**: What the gene does (e.g., "DNA repair", "cell cycle")
+- **Molecular Function (MF)**: Biochemical activity (e.g., "kinase activity", "DNA binding")
+- **Cellular Component (CC)**: Where it acts (e.g., "nucleus", "mitochondrion")
+
+### Biological Process Enrichment
+
+```{r enrichGO-BP}
+# Run GO enrichment for Biological Process
+ego_bp <- enrichGO(gene = gene_entrez$ENTREZID,
+                   universe = universe,
+                   OrgDb = org.Mm.eg.db,
+                   ont = "BP",           # Biological Process
+                   pAdjustMethod = "BH",
+                   pvalueCutoff = 0.05,
+                   qvalueCutoff = 0.05,
+                   readable = TRUE)      # Convert back to gene symbols
+
+# Summary
+cat("Enriched GO-BP terms:", nrow(ego_bp), "\n\n")
+
+# Show top 10 terms
+head(ego_bp, 10)
+```
+
+::: {.callout-tip}
+## Understanding the Output
+
+Key columns:
+
+- **Description**: GO term name
+- **GeneRatio**: X/Y = X genes in your list / Y genes in term
+- **BgRatio**: A/B = A genes in term / B genes in background
+- **pvalue**: Hypergeometric test p-value
+- **p.adjust**: FDR-corrected p-value
+- **Count**: Number of your genes in this term
+- **geneID**: Which genes (gene symbols if readable=TRUE)
+
+**Rich Factor** = GeneRatio / BgRatio  
+→ Higher = more enriched
+:::
+
+### Visualize GO Results: Dot Plot
+
+```{r dotplot-GO, fig.width=10, fig.height=8}
+# Dot plot of top 20 terms
+dotplot(ego_bp, 
+        showCategory = 20,
+        title = "GO Biological Process Enrichment",
+        font.size = 10)
+
+ggsave(here("figures", "GO_BP_dotplot.png"), width = 10, height = 8, dpi = 300)
+```
+
+::: {.callout-note}
+## Reading the Dot Plot
+
+- **X-axis**: Gene Ratio (proportion of genes in term)
+- **Y-axis**: GO terms (sorted by p-value)
+- **Dot size**: Number of genes (Count)
+- **Dot color**: Adjusted p-value (darker = more significant)
+
+**Look for**:
+- Large dots = many genes
+- Dark colors = highly significant
+- High GeneRatio = large proportion of term covered
+:::
+
+### Visualize GO Results: Enrichment Map
+
+Shows relationships between enriched terms (terms sharing genes are connected):
+
+```{r enrichment-map, fig.width=12, fig.height=10}
+# Convert to enrichment map format
+ego_bp_simplified <- pairwise_termsim(ego_bp)
+
+# Create enrichment map
+emapplot(ego_bp_simplified, 
+         showCategory = 30,
+         cex_label_category = 0.6,
+         layout = "kk") +
+  labs(title = "GO Enrichment Map: Related Terms Share Genes")
+
+ggsave(here("figures", "GO_BP_emap.png"), width = 12, height = 10, dpi = 300)
+```
+
+::: {.callout-tip}
+## Interpreting Enrichment Maps
+
+- **Nodes**: GO terms
+- **Node size**: Number of genes
+- **Node color**: Significance (p-value)
+- **Edges**: Shared genes between terms
+- **Clusters**: Related biological processes
+
+**Use this to**:
+- Identify major themes
+- Reduce redundancy (many similar terms)
+- Find unexpected connections
+:::
+
+### Visualize GO Results: Gene-Concept Network
+
+Shows which genes belong to which terms:
+
+```{r cnetplot, fig.width=12, fig.height=10}
+# Show top 5 terms and their genes
+cnetplot(ego_bp, 
+         showCategory = 5,
+         circular = FALSE,
+         colorEdge = TRUE,
+         node_label = "all",
+         cex_label_gene = 0.7,
+         cex_label_category = 1.2) +
+  labs(title = "Gene-Concept Network: Top 5 GO Terms")
+
+ggsave(here("figures", "GO_BP_cnetplot.png"), width = 12, height = 10, dpi = 300)
+```
+
+::: {.callout-note}
+## Gene-Concept Networks
+
+- **Brown nodes**: GO terms
+- **Colored nodes**: Genes (color = fold change if provided)
+- **Edges**: Gene belongs to term
+
+**Useful for**:
+- Seeing which genes drive enrichment
+- Identifying "hub genes" (in multiple terms)
+- Understanding term overlap
+:::
+
+### Other GO Ontologies (Optional)
+
+```{r enrichGO-other, eval=FALSE}
+# Molecular Function
+ego_mf <- enrichGO(gene = gene_entrez$ENTREZID,
+                   universe = universe,
+                   OrgDb = org.Mm.eg.db,
+                   ont = "MF",
+                   pAdjustMethod = "BH",
+                   pvalueCutoff = 0.05,
+                   readable = TRUE)
+
+# Cellular Component
+ego_cc <- enrichGO(gene = gene_entrez$ENTREZID,
+                   universe = universe,
+                   OrgDb = org.Mm.eg.db,
+                   ont = "CC",
+                   pAdjustMethod = "BH",
+                   pvalueCutoff = 0.05,
+                   readable = TRUE)
+
+# View results
+head(ego_mf, 10)
+head(ego_cc, 10)
+```
+
+## KEGG Pathway Enrichment
+
+KEGG provides curated pathway maps for metabolism, signaling, disease, etc.
+
+```{r enrichKEGG}
+# KEGG uses organism codes: "mmu" = mouse, "hsa" = human
+kegg_result <- enrichKEGG(gene = gene_entrez$ENTREZID,
+                          universe = universe,
+                          organism = "mmu",      # Mouse
+                          pAdjustMethod = "BH",
+                          pvalueCutoff = 0.05,
+                          qvalueCutoff = 0.05)
+
+# Add gene symbols (KEGG uses Entrez IDs)
+kegg_result <- setReadable(kegg_result, 
+                           OrgDb = org.Mm.eg.db, 
+                           keyType = "ENTREZID")
+
+# Summary
+cat("Enriched KEGG pathways:", nrow(kegg_result), "\n\n")
+
+# Show results
+head(kegg_result, 15)
+```
+
+::: {.callout-tip}
+## Common KEGG Organism Codes
+
+- **mmu**: Mouse (*Mus musculus*)
+- **hsa**: Human (*Homo sapiens*)
+- **rno**: Rat (*Rattus norvegicus*)
+- **dme**: Fly (*Drosophila melanogaster*)
+- **dre**: Zebrafish (*Danio rerio*)
+- **cel**: C. elegans
+
+Find more: https://www.genome.jp/kegg/catalog/org_list.html
+:::
+
+### Visualize KEGG Results
+
+```{r kegg-dotplot, fig.width=10, fig.height=6}
+# Dot plot
+dotplot(kegg_result, 
+        showCategory = 20,
+        title = "KEGG Pathway Enrichment")
+
+ggsave(here("figures", "KEGG_dotplot.png"), width = 10, height = 6, dpi = 300)
+```
+
+### Compare GO vs KEGG
+
+```{r compare-databases, fig.width=10, fig.height=8}
+# Convert to comparable format
+ego_df <- as.data.frame(ego_bp) %>%
+  mutate(Database = "GO-BP",
+         Term = Description,
+         Count = Count,
+         FDR = p.adjust) %>%
+  dplyr::select(Database, Term, Count, FDR) %>%
+  head(10)
+
+kegg_df <- as.data.frame(kegg_result) %>%
+  mutate(Database = "KEGG",
+         Term = Description,
+         Count = Count,
+         FDR = p.adjust) %>%
+  dplyr::select(Database, Term, Count, FDR) %>%
+  head(10)
+
+# Combine
+comparison_df <- bind_rows(ego_df, kegg_df)
+
+# Plot
+ggplot(comparison_df, aes(x = Count, y = reorder(Term, Count), fill = Database)) +
+  geom_col() +
+  scale_fill_brewer(palette = "Set2") +
+  labs(title = "Top Enriched Terms: GO vs KEGG",
+       x = "Number of Genes",
+       y = "Term") +
+  theme_minimal() +
+  facet_wrap(~Database, scales = "free_y", ncol = 1)
+
+ggsave(here("figures", "GO_vs_KEGG_comparison.png"), width = 10, height = 8, dpi = 300)
+```
+
+::: {.callout-note}
+## GO vs KEGG: When to Use Each?
+
+**Gene Ontology (GO):**
+- ✓ Comprehensive (more terms)
+- ✓ Broad biological processes
+- ✓ Good for exploratory analysis
+- ✗ Can be redundant (many overlapping terms)
+
+**KEGG Pathways:**
+- ✓ Curated signaling/metabolic pathways
+- ✓ Pathway diagrams available
+- ✓ Less redundancy
+- ✗ Fewer pathways (more focused)
+
+**Recommendation**: Run both! They complement each other.
+:::
+
+## Simplify Redundant GO Terms
+
+GO terms are hierarchical and often redundant. Simplify using semantic similarity:
+
+```{r simplify-GO}
+# Simplify GO results by removing redundant terms
+ego_bp_simple <- simplify(ego_bp,
+                          cutoff = 0.7,      # Similarity threshold
+                          by = "p.adjust",   # Keep most significant
+                          select_fun = min)
+
+cat("Original GO terms:", nrow(ego_bp), "\n")
+cat("After simplification:", nrow(ego_bp_simple), "\n\n")
+
+# Compare
+cat("Top 10 simplified terms:\n")
+head(ego_bp_simple, 10)
+```
+
+```{r simplified-dotplot, fig.width=10, fig.height=6}
+# Plot simplified results
+dotplot(ego_bp_simple, 
+        showCategory = 20,
+        title = "Simplified GO-BP Enrichment (Redundancy Removed)")
+
+ggsave(here("figures", "GO_BP_simplified_dotplot.png"), width = 10, height = 6, dpi = 300)
+```
+
+## Up vs Down-Regulated Genes Separately
+
+Sometimes different processes are enriched in up vs down-regulated genes:
+
+```{r separate-directions}
+# Upregulated genes
+up_entrez <- gene_entrez %>%
+  filter(SYMBOL %in% rownames(up_genes)) %>%
+  pull(ENTREZID)
+
+ego_up <- enrichGO(gene = up_entrez,
+                   universe = universe,
+                   OrgDb = org.Mm.eg.db,
+                   ont = "BP",
+                   pvalueCutoff = 0.05,
+                   readable = TRUE)
+
+# Downregulated genes
+down_entrez <- gene_entrez %>%
+  filter(SYMBOL %in% rownames(down_genes)) %>%
+  pull(ENTREZID)
+
+ego_down <- enrichGO(gene = down_entrez,
+                     universe = universe,
+                     OrgDb = org.Mm.eg.db,
+                     ont = "BP",
+                     pvalueCutoff = 0.05,
+                     readable = TRUE)
+
+cat("GO terms enriched in upregulated genes:", nrow(ego_up), "\n")
+cat("GO terms enriched in downregulated genes:", nrow(ego_down), "\n")
+```
+
+```{r compare-up-down, fig.width=12, fig.height=8}
+# Compare up vs down
+p1 <- dotplot(ego_up, showCategory = 10, title = "Upregulated in KD") + 
+  theme(axis.text.y = element_text(size = 8))
+
+p2 <- dotplot(ego_down, showCategory = 10, title = "Downregulated in KD") + 
+  theme(axis.text.y = element_text(size = 8))
+
+# Combine plots
+library(patchwork)
+p1 | p2
+
+ggsave(here("figures", "GO_up_vs_down.png"), width = 12, height = 8, dpi = 300)
+```
+
+::: {.callout-tip}
+## Biological Interpretation
+
+Analyzing up/down separately can reveal:
+
+- **Upregulated**: Stress responses, inflammation, defense
+- **Downregulated**: Normal functions disrupted, metabolic processes
+
+This provides more nuanced biological insight than treating all DE genes the same!
+:::
+
+## Export Results
+
+```{r export-pathway-results}
+# Export GO results as tables
+write.csv(as.data.frame(ego_bp), 
+          here("results", "GO_BP_enrichment.csv"),
+          row.names = FALSE)
+
+write.csv(as.data.frame(ego_bp_simple), 
+          here("results", "GO_BP_enrichment_simplified.csv"),
+          row.names = FALSE)
+
+# Export KEGG results
+write.csv(as.data.frame(kegg_result), 
+          here("results", "KEGG_enrichment.csv"),
+          row.names = FALSE)
+
+# Export separate up/down GO results
+write.csv(as.data.frame(ego_up), 
+          here("results", "GO_BP_upregulated.csv"),
+          row.names = FALSE)
+
+write.csv(as.data.frame(ego_down), 
+          here("results", "GO_BP_downregulated.csv"),
+          row.names = FALSE)
+
+cat("Pathway enrichment results exported!\n")
+```
+
+---
+
+## Advanced Topic: Gene Set Enrichment Analysis (GSEA)
+
+::: {.callout-note}
+## What is GSEA?
+
+**Over-Representation Analysis (ORA)** uses a binary cutoff:
+- Gene is DE (FDR < 0.05) → Include
+- Gene is not DE → Exclude
+
+**Gene Set Enrichment Analysis (GSEA)** uses ALL genes:
+- Rank all genes by statistic (e.g., t-statistic, logFC)
+- Test if a gene set is enriched at top or bottom of ranked list
+- No arbitrary cutoff needed!
+
+**Advantages:**
+- Uses full dataset (more information)
+- Detects coordinated changes (many small effects)
+- No cutoff bias
+
+**Disadvantages:**
+- More complex to interpret
+- Requires proper ranking metric
+- Takes longer to run
+:::
+
+### When to Use GSEA vs ORA
+
+::: {.columns}
+::: {.column width="50%"}
+**Use ORA when:**
+- Clear DE cutoff makes sense (FDR < 0.05)
+- Strong effect sizes
+- Want simple interpretation
+- Quick exploratory analysis
+- Teaching beginners
+:::
+
+::: {.column width="50%"}
+**Use GSEA when:**
+- Subtle, coordinated changes
+- No clear DE cutoff
+- Small effect sizes across pathway
+- More rigorous analysis needed
+- Publishing results
+:::
+:::
+
+### GSEA with clusterProfiler (Quick Example)
+
+```{r gsea-example, eval=FALSE}
+# Prepare ranked gene list (all genes, ranked by statistic)
+# Use signed -log10(p-value) * sign(logFC) as ranking metric
+
+gene_list <- all_results %>%
+  mutate(rank_stat = -log10(P.Value) * sign(logFC)) %>%
+  arrange(desc(rank_stat)) %>%
+  pull(rank_stat, name = "SYMBOL")
+
+# Convert symbols to Entrez IDs
+gene_list_entrez <- bitr(names(gene_list),
+                         fromType = "SYMBOL",
+                         toType = "ENTREZID",
+                         OrgDb = org.Mm.eg.db)
+
+# Create named vector with Entrez IDs
+gene_list_final <- gene_list[gene_list_entrez$SYMBOL]
+names(gene_list_final) <- gene_list_entrez$ENTREZID
+
+# Run GSEA for GO
+gsea_go <- gseGO(geneList = gene_list_final,
+                 OrgDb = org.Mm.eg.db,
+                 ont = "BP",
+                 pvalueCutoff = 0.05,
+                 pAdjustMethod = "BH")
+
+# Run GSEA for KEGG
+gsea_kegg <- gseKEGG(geneList = gene_list_final,
+                     organism = "mmu",
+                     pvalueCutoff = 0.05)
+
+# Visualize
+gseaplot2(gsea_go, geneSetID = 1:3, title = "GSEA: Top 3 GO Terms")
+```
+
+::: {.callout-important}
+## GSEA is Beyond This Workshop
+
+GSEA requires understanding:
+- Ranking metrics (which to use?)
+- Enrichment scores (what do they mean?)
+- Leading edge genes (core enrichment)
+- Positive vs negative enrichment
+
+**For today**: ORA is sufficient and easier to interpret!
+
+**For future**: Consider GSEA for publication-quality analysis.
+:::
+
+---
+
+## Common Pitfalls in Pathway Analysis
+
+::: {.callout-warning}
+## Mistakes to Avoid
+
+**1. Wrong background**
+❌ Using all genome genes  
+✅ Use genes tested in your experiment
+
+**2. Ignoring multiple testing**
+❌ p-value < 0.05  
+✅ FDR (q-value) < 0.05
+
+**3. Over-interpreting single genes**
+- One gene can appear in many terms
+- Focus on biological themes, not single genes
+
+**4. Cherry-picking results**
+- Report all enriched terms, not just favorites
+- Include "uninteresting" results too
+
+**5. Ignoring effect size**
+- Term with 3 genes vs 50 genes
+- Both significant, but 50 is stronger evidence
+
+**6. Not simplifying GO**
+- Many redundant GO terms
+- Use `simplify()` to reduce redundancy
+
+**7. Database version matters**
+- GO updates quarterly
+- KEGG updates irregularly
+- Document database versions!
+:::
+
+## Summary and Next Steps
+
+::: {.callout-important}
+## What We Learned
+
+**Pathway Enrichment Analysis:**
+
+1. ✓ Over-representation testing (hypergeometric test)
+2. ✓ Gene ID conversion (Symbol → Entrez)
+3. ✓ Proper background selection
+4. ✓ GO enrichment (BP, MF, CC)
+5. ✓ KEGG pathway enrichment
+6. ✓ Visualization (dotplot, enrichment map, gene-concept network)
+7. ✓ Simplifying redundant terms
+8. ✓ Analyzing up/down genes separately
+
+**Key Takeaways:**
+- ORA is simple and effective for most analyses
+- Always use proper background (genes tested)
+- GO and KEGG complement each other
+- Visualize to find biological themes
+- GSEA is more advanced (future topic)
+:::
+
+### Recommended Workflow
+
+```{mermaid}
+%%| fig-width: 10
+flowchart TD
+    A[DE Gene List] --> B[Convert to Entrez IDs]
+    B --> C[Define Background]
+    C --> D[Run enrichGO]
+    C --> E[Run enrichKEGG]
+    D --> F[Simplify GO Terms]
+    F --> G[Visualize Results]
+    E --> G
+    G --> H{Interpret Biology}
+    H --> I[Export Tables & Figures]
+    H --> J[Follow-up Experiments]
+```
+
+### Resources for Learning More
+
+**clusterProfiler Documentation:**
+- Book: https://yulab-smu.top/biomedical-knowledge-mining-book/
+- Vignettes: https://bioconductor.org/packages/release/bioc/html/clusterProfiler.html
+
+**Pathway Databases:**
+- GO: http://geneontology.org/
+- KEGG: https://www.genome.jp/kegg/
+- Reactome: https://reactome.org/
+- MSigDB: https://www.gsea-msigdb.org/gsea/msigdb/
+
+**Further Reading:**
+- Reimand et al. 2019 *Nature Protocols* - Pathway enrichment best practices
+- Subramanian et al. 2005 *PNAS* - Original GSEA paper
+- Yu et al. 2012 *OMICS* - clusterProfiler paper
+
+---
+
+**Congratulations!** You've completed a full RNA-seq differential expression workflow from raw counts to biological interpretation! 🎉
+
+
 ## Session Information
 
 ```{r sessioninfo}

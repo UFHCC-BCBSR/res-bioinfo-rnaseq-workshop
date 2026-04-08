@@ -13,6 +13,8 @@ format:
     embed-resources: true
     theme: cosmo
     number-sections: true
+execute:
+  enabled: false
 ---
 
 # Overview
@@ -24,28 +26,34 @@ This document explains the workshop setup, how `here()` works with a cloned repo
 ## What You'll Create (Your Working Space)
 
 ```
-/blue/group/YOUR_USERNAME/
-└── rnaseq_workshop/          # You create this and clone repo here
-    ├── .git/                 # Created by git clone (here() detects this!)
-    ├── data/                 # Processed data will be saved here
-    │   ├── rsem.merged.gene_counts.tsv  (created by prep script)
-    │   ├── sample_info.tsv              (created by prep script)
-    │   └── gene_annotation.tsv          (created by prep script)
-    ├── scripts/              # From cloned repo
-    │   └── prepare_nfcore_data.R
-    ├── analysis/             # From cloned repo
-    │   └── rnaseq_workshop_session2.qmd
-    ├── results/              # Created automatically during analysis
-    └── figures/              # Created automatically during analysis
+/blue/bioinf_workshop/$USER/
+└── rnaseq_workshop/
+    ├── .git/
+    ├── .gitignore
+    ├── mkdocs.yml
+    ├── README.md
+    ├── docs/
+    ├── logs/                       
+    └── demo-analysis/
+        ├── data/
+        │   ├── metadata/
+        │   └── raw/
+        └── scripts/
+            ├── 01_prepare_nfcore_data.R
+            └── 02_differential_expression_analysis.qmd
 ```
 
 ## Shared Workshop Data (Read-Only)
 
 ```
-/blue/cancercenter-dept/TRAINING/
-└── nfcore_output/            # Shared nf-core pipeline results
-    └── star_rsem/
-        └── rsem.merged.gene_counts.tsv  (and other pipeline outputs)
+/blue/bioinf_workshop/share/nfcore_rnaseq_output/
+├── fastqc/
+├── fq_lint/
+├── genome/
+├── multiqc/
+├── pipeline_info/
+├── star_rsem/
+└── trimgalore/
 ```
 
 # How `here()` Works in This Setup
@@ -58,9 +66,9 @@ The `here` package will automatically detect your **cloned repository** as the p
 
 **When you run code from RStudio:**
 
-- `here()` returns: `/blue/group/YOUR_USERNAME/rnaseq_workshop/`
-- `here("data", "counts.tsv")` → `/blue/group/YOUR_USERNAME/rnaseq_workshop/data/counts.tsv`
-- `here("results", "output.csv")` → `/blue/group/YOUR_USERNAME/rnaseq_workshop/results/output.csv`
+- `here()` returns: `/blue/bioinf_workshop/$USER/rnaseq_workshop/`
+- `here("demo-analysis", "output", "counts.tsv")` → `/blue/bioinf_workshop/$USER/rnaseq_workshop/data/counts.tsv`
+- `here("demo-analysis", "output", "results", "output.csv")` → `/blue/bioinf_workshop/$USER/rnaseq_workshop/results/output.csv`
 
 This works **the same for everyone**, regardless of their username or exact path!
 
@@ -72,17 +80,17 @@ On HiPerGator:
 
 ```bash
 # Navigate to your group's blue storage
-cd /blue/YOUR_GROUP/YOUR_USERNAME/
+cd /blue/bioinf_workshop/$USER/
 
 # Clone the workshop repository
-git clone https://github.com/UFHCC/res-bioinfo-rnaseq-workshop.git rnaseq_workshop
+git clone https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop.git rnaseq_workshop
 
 # Navigate into the cloned repo
 cd rnaseq_workshop
 
 # Verify the structure
 ls -la
-# You should see: .git/, data/, scripts/, analysis/, etc.
+# You should see: .git, demo-analysis/, docs/, .gitignore, mkdocs.yml, README.md
 ```
 
 ::: {.callout-important}
@@ -96,29 +104,69 @@ The `.git/` folder (created by `git clone`) is what makes `here()` work! Don't d
 The data preparation script will:
 
 - Read from the shared nf-core output directory (external, read-only)
-- Write processed files to YOUR repo's `data/` directory
+- Write processed files to YOUR repo's `demo-analysis/output/` directory
 
 ```bash
-# Still in /blue/YOUR_GROUP/YOUR_USERNAME/rnaseq_workshop/
 
-# Open RStudio Server and navigate to this directory
-# OR run from command line:
-module load R
-Rscript scripts/prepare_nfcore_data.R
+cat > rstudio.sbatch << 'EOF'
+#!/bin/bash
+#SBATCH --job-name=rserver
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=2
+#SBATCH --mem=28gb
+#SBATCH --time=12:00:00
+#SBATCH --output=logs/rserver_%j.log
+#SBATCH --error=logs/rserver_%j.error
+#SBATCH --account=bioinf_workshop
+#SBATCH --qos=bioinf_workshop
+module purge; module load R/4.5
+rserver
+EOF
+
+sbatch rstudio.sbatch
 ```
 
-This will create:
+Check that the job is running:
 
-- `data/rsem.merged.gene_counts.tsv`
-- `data/sample_info.tsv`
-- `data/gene_annotation.tsv`
+```bash
+ml bcbsr_tools
+sjobs
+```
+
+Once running, check the log for your SSH tunnel command (replace `<JOBID>` with your actual job ID):
+
+```bash
+cat logs/rserver_<JOBID>.log
+```
+
+You will see output like:
+
+```
+Starting rserver on port 45261 in the /blue/bioinf_workshop/username/rnaseq_workshop directory.
+Create an SSH tunnel with:
+ssh -N -L 8080:c0710a-s29.ufhpc:45261 username@hpg.rc.ufl.edu
+Then, open in the local browser:
+http://localhost:8080
+```
+
+Run the SSH tunnel command on your **local machine**, then open `http://localhost:8080` in your browser.
+
+Once in RStudio, open and run `demo-analysis/scripts/01_prepare_nfcore_data.R`.
+
+This will create the following files in `demo-analysis/output/`:
+
+- `rsem.merged.gene_counts.tsv`
+- `sample_info.tsv`
+- `gene_annotation.tsv`
+- `data_summary.txt`
+- `library_sizes.png`
+- `README.txt`
 
 ## Start RStudio Server
 
-```bash
-# Launch RStudio Server session
-# Make sure you start it FROM your rnaseq_workshop directory
-```
+You should already have RStudio Server running from the previous step. If your
+session has expired, refer back to **Section 4.2** to relaunch it.
 
 In RStudio:
 
@@ -129,7 +177,7 @@ In RStudio:
 ```{r}
 #| eval: false
 library(here)
-here()  # Should show: /blue/YOUR_GROUP/YOUR_USERNAME/rnaseq_workshop
+here()  # Should show: /blue/bioinf_workshop/$USER/rnaseq_workshop
 ```
 
 # Using the `here` Package
@@ -154,7 +202,7 @@ This workshop uses two different path strategies:
 #| eval: false
 # The nf-core output is OUTSIDE your repo
 # The prep script uses an absolute path to read it
-nfcore_results_dir <- "/blue/cancercenter-dept/TRAINING/nfcore_output"
+nfcore_results_dir <- "/blue/bioinf_workshop/share/nfcore_rnaseq_output/"
 ```
 
 **2. Repo-Relative Paths (Using `here()`):**
@@ -162,9 +210,9 @@ nfcore_results_dir <- "/blue/cancercenter-dept/TRAINING/nfcore_output"
 ```{r}
 #| eval: false
 # Everything else uses here() relative to your cloned repo
-counts <- read.table(here("data", "rsem.merged.gene_counts.tsv"))
-ggsave(here("figures", "plot.png"))
-write.csv(results, here("results", "output.csv"))
+counts <- read.table(here("demo-analysis", "output", "rsem.merged.gene_counts.tsv"))
+ggsave(here("demo-analysis", "output", "figures", "plot.png"))
+write.csv(results, here("demo-analysis", "output", "results", "output.csv"))
 ```
 
 ## How `here()` Works
@@ -179,7 +227,7 @@ counts <- read.table("/blue/alice/rnaseq_workshop/data/counts.tsv")
 
 **Use this** (works for everyone):
 ```r
-counts <- read.table(here("data", "counts.tsv"))
+counts <- read.table(here("demo-analysis", "output", "counts.tsv"))
 ```
 :::
 
@@ -193,21 +241,15 @@ Since you cloned the workshop repo, the `.git` folder serves as the marker.
 
 # Running the Analysis
 
-## Option 1: In RStudio
+## Differential Expression Analysis
 
-1. Open `rnaseq_workshop.Rproj` (if you created one)
-2. Open `analysis/rnaseq_workshop_session2.qmd`
-3. Click "Render" button or press `Ctrl+Shift+K`
+With RStudio Server already open, navigate to and open:
 
-## Option 2: Command Line
+`demo-analysis/scripts/02_differential_expression_analysis.qmd`
 
-```bash
-cd /path/to/rnaseq_workshop
-
-# Render the Quarto document
-module load quarto
-quarto render analysis/rnaseq_workshop_session2.qmd
-```
+Run through the analysis chunk by chunk using the green play button or
+`Ctrl+Enter`. This notebook will walk you through the full differential
+expression analysis using limma-voom.
 
 # Troubleshooting
 
@@ -221,7 +263,7 @@ library(here)
 here()
 ```
 
-**Should return:** `/blue/YOUR_GROUP/YOUR_USERNAME/rnaseq_workshop`
+**Should return:** `/blue/bioinf_workshop/$USER/rnaseq_workshop`
 
 ::: {.callout-warning}
 ## If it returns something else:
@@ -241,8 +283,8 @@ library(here)
 cat("Project root:", here(), "\n")
 
 # Check if data files exist
-file.exists(here("data", "rsem.merged.gene_counts.tsv"))
-file.exists(here("data", "sample_info.tsv"))
+file.exists(here("demo-analysis", "output", "rsem.merged.gene_counts.tsv"))
+file.exists(here("demo-analysis", "output", "sample_info.tsv"))
 
 # If FALSE, you may need to run the data prep script first
 ```
@@ -254,7 +296,7 @@ Make sure the path in `scripts/prepare_nfcore_data.R` matches the actual locatio
 ```{r}
 #| eval: false
 # Check this line in the script:
-nfcore_results_dir <- "/blue/cancercenter-dept/TRAINING/nfcore_output"
+nfcore_results_dir <- "/blue/bioinf_workshop/share/nfcore_rnaseq_output/"
 
 # Ask instructors for the correct path if different
 ```
@@ -275,11 +317,19 @@ BiocManager::install(c("limma", "edgeR"))
 
 # Output Files
 
+After running the data preparation script, you'll find in `demo-analysis/output/`:
+
+- `rsem.merged.gene_counts.tsv`
+- `sample_info.tsv`
+- `gene_annotation.tsv`
+- `data_summary.txt`
+- `library_sizes.png`
+- `README.txt`
+
 After running the analysis, you'll find:
 
-- **figures/**: PNG files of all plots
-- **results/**: CSV files with DE results
-- **analysis/*.html**: Rendered HTML report
+- `demo-analysis/output/figures/`: PNG files of all plots
+- `demo-analysis/output/results/`: CSV files with DE results
 
 ::: {.callout-tip}
 ## Portability
@@ -306,24 +356,24 @@ Here are common patterns you'll see throughout the workshop:
 #| eval: false
 
 # Load data
-counts <- read.table(here("data", "rsem.merged.gene_counts.tsv"))
-metadata <- read.table(here("data", "sample_info.tsv"))
+counts <- read.table(here("demo-analysis", "output", "rsem.merged.gene_counts.tsv"))
+metadata <- read.table(here("demo-analysis", "output", "sample_info.tsv"))
 
 # Save plots
-ggsave(here("figures", "volcano_plot.png"), width = 8, height = 6)
-ggsave(here("figures", "heatmap.png"), width = 10, height = 8)
+ggsave(here("demo-analysis", "output", "figures", "volcano_plot.png"), width = 8, height = 6)
+ggsave(here("demo-analysis", "output", "figures", "heatmap.png"), width = 10, height = 8)
 
 # Save results
-write.csv(results, here("results", "de_genes.csv"), row.names = TRUE)
-write.csv(top_genes, here("results", "top_50_genes.csv"))
+write.csv(results, here("demo-analysis", "output", "results", "de_genes.csv"), row.names = TRUE)
+write.csv(top_genes, here("demo-analysis", "output", "results", "top_50_genes.csv"))
 
 # Check if directory exists
-if (!dir.exists(here("results"))) {
-  dir.create(here("results"), recursive = TRUE)
+if (!dir.exists(here("demo-analysis", "output", "results"))) {
+  dir.create(here("demo-analysis", "output", "results"), recursive = TRUE)
 }
 
-# List files in a directory
-list.files(here("data"))
+# List files in output directory
+list.files(here("demo-analysis", "output"))
 ```
 
 The pattern is always: `here("folder", "subfolder", "filename")`

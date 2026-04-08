@@ -32,6 +32,7 @@ nav:
     - Overview & Background: 04_differential-expression/overview.md
     - Visualization: 04_differential-expression/visualization.md
     - Pathway Analysis: 04_differential-expression/pathway-analysis.md
+    - Demo Analysis Setup: 04_differential-expression/workshop_setup.md
 
 copyright: >
   © 2026 UF Health Cancer Institute Biostatistics and Computational Biology Shared Resource |
