@@ -16,6 +16,8 @@
         <link rel="prev" href="../pathway-analysis/">
       
       
+        <link rel="next" href="../01_quality_control.html">
+      
       
         
       
@@ -686,6 +688,90 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../01_quality_control.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demo QC & Normalization Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../02_differential_expression.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demo Differential Expression Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../03_pathway_analysis.html" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Demo Pathway Analysis Results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -713,15 +799,15 @@
 <h1 id="overview">Overview</h1>
 <p>This document explains the demo analysis setup.</p>
 <hr />
-<h1 id="workshop-file-layout">Workshop File Layout</h1>
+<h1 id="demo-analysis-file-layout">Demo Analysis File Layout</h1>
+<p>The files for the demo analysis will be created by cloning the <a href="https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop">workshop's Github repository</a></p>
 <h2 id="what-youll-create-your-working-space">What You'll Create (Your Working Space)</h2>
-<div class="highlight"><pre><span></span><code>/blue/bioinf_workshop/your_username/
+<div class="highlight"><pre><span></span><code>/blue/bioinf_workshop/$USER/
 └── rnaseq_workshop/
     ├── .gitignore
     ├── mkdocs.yml
     ├── README.md
     ├── docs/
-    ├── logs/
     └── demo-analysis/
         ├── data/
         │   ├── metadata/
@@ -755,28 +841,34 @@
 └── trimgalore/
 </code></pre></div>
 <blockquote>
-<p><strong>Note:</strong> This directory is read-only. Your scripts will read from here
-but write output to your own working directory.</p>
+<p><strong>Note:</strong> This directory is read-only. Your scripts will read from here but write output to your own working directory.</p>
 </blockquote>
 <hr />
 <h1 id="setup-instructions">Setup Instructions</h1>
 <h2 id="create-your-working-directory-and-clone-the-repo">Create Your Working Directory and Clone the Repo</h2>
-<p>If you are not already logged in to HiPerGator, open a terminal and SSH in
-(replace <code>your_username</code> with your actual username):</p>
-<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>your_username@hpg.rc.ufl.edu
+<p>If you are not already logged in to HiPerGator, open a terminal and SSH in:</p>
+<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span><span class="nv">$USER</span>@hpg.rc.ufl.edu
 </code></pre></div>
 <p>Then navigate to your workshop directory and clone the repo:</p>
-<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/blue/bioinf_workshop/your_username/
-
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/blue/bioinf_workshop/<span class="nv">$USER</span>
 git<span class="w"> </span>clone<span class="w"> </span>https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop.git<span class="w"> </span>rnaseq_workshop
-
 <span class="nb">cd</span><span class="w"> </span>rnaseq_workshop
-
 ls<span class="w"> </span>-la
-<span class="c1"># You should see: demo-analysis/, docs/, .gitignore, .Renviron, mkdocs.yml, README.md</span>
 </code></pre></div>
+<blockquote>
+<p>You should see: <code>demo-analysis/</code>, <code>docs/</code>, <code>.gitignore</code>, <code>.Renviron</code>, <code>mkdocs.yml</code>, <code>README.md</code></p>
+</blockquote>
 <h2 id="launch-rstudio-server">Launch RStudio Server</h2>
-<p>Create and submit a SLURM job to launch RStudio Server by copying and pasting this in the command prompt:</p>
+<div class="admonition warning">
+<p class="admonition-title">Make sure you are in the cloned repo directory before submitting</p>
+<p>RStudio Server sources .Renviron from the directory where it is launched from. You must be inside <code>rnaseq_workshop/</code> before running <code>sbatch</code> to ensure this is sourced.</p>
+<div class="highlight"><pre><span></span><code><span class="nb">pwd</span>
+</code></pre></div>
+<blockquote>
+<p>You should see <code>/blue/bioinf_workshop/$USER/rnaseq_workshop</code> — if not, run <code>cd /blue/bioinf_workshop/$USER/rnaseq_workshop</code> first.</p>
+</blockquote>
+</div>
+<p>Create and submit a SLURM job to launch RStudio Server:</p>
 <div class="highlight"><pre><span></span><code>cat<span class="w"> </span>&gt;<span class="w"> </span>rstudio.sbatch<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
 <span class="s">#!/bin/bash</span>
 <span class="s">#SBATCH --job-name=rserver</span>
@@ -784,63 +876,80 @@ ls<span class="w"> </span>-la
 <span class="s">#SBATCH --ntasks=1</span>
 <span class="s">#SBATCH --cpus-per-task=2</span>
 <span class="s">#SBATCH --mem=28gb</span>
-<span class="s">#SBATCH --time=12:00:00</span>
-<span class="s">#SBATCH --output=logs/rserver_%j.log</span>
-<span class="s">#SBATCH --error=logs/rserver_%j.error</span>
+<span class="s">#SBATCH --time=05:00:00</span>
+<span class="s">#SBATCH --output=rserver_%j.log</span>
+<span class="s">#SBATCH --error=rserver_%j.err</span>
 <span class="s">#SBATCH --account=bioinf_workshop</span>
 <span class="s">#SBATCH --qos=bioinf_workshop</span>
 
-<span class="s">module purge; module load R/4.5 # Load a specific version of R for reproducubility between sessions</span>
+<span class="s">module purge; module load R/4.5</span>
 <span class="s">rserver</span>
 <span class="s">EOF</span>
 sbatch<span class="w"> </span>rstudio.sbatch
 </code></pre></div>
 <p>Check that the job is running:</p>
-<div class="highlight"><pre><span></span><code>ml<span class="w"> </span>bcbsr_tools
-sjobs
+<div class="highlight"><pre><span></span><code>squeue<span class="w"> </span>-u<span class="w"> </span><span class="nv">$USER</span>
 </code></pre></div>
-<p>Once running, check the log for your connection details (replace <code>&lt;JOBID&gt;</code>
-with your actual job ID):</p>
-<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>logs/rserver_&lt;JOBID&gt;.log
+<p>Once running, check the log for your connection details (replace <code>12345678</code> with your actual job ID):</p>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>rserver_12345678.log
 </code></pre></div>
 <p>You will see output like:</p>
-<div class="highlight"><pre><span></span><code>Starting rserver on port 45261 in the /blue/bioinf_workshop/your_username/rnaseq_workshop directory.
-Create an SSH tunnel with:
-ssh -N -L 8080:c0710a-s29.ufhpc:45261 your_username@hpg.rc.ufl.edu
-Then, open in the local browser:
-http://localhost:8080
-</code></pre></div>
+<blockquote>
+<p>Starting rserver on port 45261 in the /blue/bioinf_workshop/username/rnaseq_workshop directory.<br />
+Create an SSH tunnel with:<br />
+<code>ssh -N -L 8080:c0710a-s29.ufhpc:45261 username@hpg.rc.ufl.edu</code><br />
+Then, open in the local browser:<br />
+<code>http://localhost:8080</code></p>
+</blockquote>
+<div class="admonition info">
+<p class="admonition-title">What is all that other output in the log?</p>
+<p>You will see RStudio Server startup messages after the SSH tunnel instructions, including what looks like an ERROR about a missing config file. This is normal and can be ignored. If RStudio loaded in your browser, everything is working correctly.</p>
+</div>
 <p><strong>To connect to RStudio:</strong></p>
 <ol>
-<li>Open a <strong>new terminal window or tab on your local machine</strong> (not on
-   HiPerGator) and run the <code>ssh -N -L ...</code> command shown in your log.
-   The working directory on your local machine doesn't matter.</li>
-<li>Open any browser and paste <code>http://localhost:8080</code> into the address bar.</li>
+<li>Open a <strong>new terminal window on your local machine</strong> (not on HiPerGator) and run the <code>ssh -N -L ...</code> command shown in your log. The terminal will appear to hang — this is normal, leave it running.</li>
+<li>Open any browser and go to <code>http://localhost:8080</code>.</li>
 </ol>
-<h2 id="set-your-working-directory-in-rstudio">Set Your Working Directory in RStudio</h2>
-<p>Once RStudio opens, set your working directory in the <strong>Console</strong>
-(replace <code>your_username</code> with your actual username):</p>
-<div class="highlight"><pre><span></span><code><span class="nf">setwd</span><span class="p">(</span><span class="s">&quot;/blue/bioinf_workshop/your_username/rnaseq_workshop&quot;</span><span class="p">)</span>
+<h2 id="verify-your-setup-in-rstudio">Verify Your Setup in RStudio</h2>
+<p>Once RStudio opens, verify your working directory and package library path in the <strong>Console</strong>.</p>
+<p>First check your working directory — it should already be set to the repo root if you submitted the job from the right place:</p>
+<div class="highlight"><pre><span></span><code><span class="nf">getwd</span><span class="p">()</span>
 </code></pre></div>
-<p>Then in the <strong>Files panel</strong> (bottom-right), click the <strong>gear icon ⚙</strong> and
-select <strong>Go To Working Directory</strong> to confirm you are in the right place.</p>
 <blockquote>
-<p>All scripts use the <code>here</code> package to build file paths relative to the
-repository root, so they work for everyone without needing to change
-any paths in the code.</p>
+<p><code>/blue/bioinf_workshop/username/rnaseq_workshop</code></p>
 </blockquote>
+<p>If it is not correct, set it manually (replace <code>username</code> with your GatorLink username):</p>
+<div class="highlight"><pre><span></span><code><span class="nf">setwd</span><span class="p">(</span><span class="s">&quot;/blue/bioinf_workshop/username/rnaseq_workshop&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Then use the <strong>gear icon ⚙</strong> in the Files panel → <strong>Go To Working Directory</strong> to confirm.</p>
+<p>Next, verify your package library path is correct:</p>
+<div class="highlight"><pre><span></span><code><span class="nf">.libPaths</span><span class="p">()</span>
+</code></pre></div>
+<blockquote>
+<p><code>[1] "/blue/bioinf_workshop/share/R_libs"</code><br />
+<code>[2] "/usr/local/lib/R/site-library"</code><br />
+<code>[3] "/usr/lib/R/site-library"</code><br />
+<code>[4] "/usr/lib/R/library"</code></p>
+</blockquote>
+<div class="admonition warning">
+<p class="admonition-title">If your .libPaths() looks different</p>
+<p>The shared library at <code>/blue/bioinf_workshop/share/R_libs</code> must be first in the list — this is where all the workshop packages are pre-installed. If it is not listed or not first, the scripts will fail with "package not found" errors. Check that your <code>.Renviron</code> file is present in the repo root:</p>
+<div class="highlight"><pre><span></span><code><span class="nf">file.exists</span><span class="p">(</span><span class="s">&quot;.Renviron&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>If it returns <code>FALSE</code>, let an instructor know.</p>
+</div>
+<blockquote>
+<p>All scripts use the <code>here</code> package to build file paths relative to the repository root, so they work for everyone without needing to change any paths in the code.</p>
+</blockquote>
+<hr />
 <h1 id="running-the-differential-expression-analysis">Running the Differential Expression Analysis</h1>
-<p>With your working directory set, open and run the three numbered scripts in
-order — each picks up where the previous one left off.</p>
+<p>With your working directory set, open and run the three numbered scripts in order — each picks up where the previous one left off.</p>
 <hr />
 <h3 id="01-quality-control">01 — Quality Control</h3>
 <p><strong>File:</strong> <code>demo-analysis/scripts/01_quality_control.Rmd</code><br />
 <strong>Run as:</strong> Chunk by chunk in RStudio</p>
-<p>Loads the nf-core/rnaseq count matrix directly from the shared directory,
-converts Ensembl IDs to gene symbols, assesses sample quality, filters lowly
-expressed genes, and applies TMM normalization.</p>
-<p>Before running, confirm your metadata looks correct by opening
-<code>demo-analysis/data/metadata/sample_metadata.csv</code> in the Files panel.</p>
+<p>Loads the nf-core/rnaseq count matrix directly from the shared directory, converts Ensembl IDs to gene symbols, assesses sample quality, filters lowly expressed genes, and applies TMM normalization.</p>
+<p>Before running, confirm your metadata looks correct by opening <code>demo-analysis/data/metadata/sample_metadata.csv</code> in the Files panel.</p>
 <p><strong>Outputs</strong> → <code>output/differential-expression/</code>:</p>
 <table>
 <thead>
@@ -873,8 +982,7 @@ expressed genes, and applies TMM normalization.</p>
 <p><strong>File:</strong> <code>demo-analysis/scripts/02_differential_expression.Rmd</code><br />
 <strong>Run as:</strong> Chunk by chunk in RStudio<br />
 <strong>Requires:</strong> Script 01 to have been run</p>
-<p>Identifies differentially expressed genes between PRMT7 knockdown and wildtype
-using limma-voom.</p>
+<p>Identifies differentially expressed genes between PRMT7 knockdown and wildtype using limma-voom.</p>
 <p><strong>Outputs</strong> → <code>output/differential-expression/</code>:</p>
 <table>
 <thead>
@@ -915,8 +1023,7 @@ using limma-voom.</p>
 <p><strong>File:</strong> <code>demo-analysis/scripts/03_pathway_analysis.Rmd</code><br />
 <strong>Run as:</strong> Chunk by chunk in RStudio<br />
 <strong>Requires:</strong> Script 02 to have been run</p>
-<p>Identifies enriched biological processes and pathways among differentially
-expressed genes using GO and KEGG over-representation analysis.</p>
+<p>Identifies enriched biological processes and pathways among differentially expressed genes using GO and KEGG over-representation analysis.</p>
 <p><strong>Outputs</strong> → <code>output/differential-expression/</code>:</p>
 <table>
 <thead>
@@ -984,10 +1091,7 @@ expressed genes using GO and KEGG over-representation analysis.</p>
 **File:** `scripts/optional/opt_01_prepare_nfcore_data.R`  
 **Run as:** Source in RStudio
 
-Reads the raw nf-core/rnaseq pipeline output, converts Ensembl IDs to gene
-symbols, and generates QC and summary files. The core workshop scripts read
-the count matrix directly, so this script is not required — but it is useful
-if you want to explore the data preparation steps in more detail.
+Reads the raw nf-core/rnaseq pipeline output, converts Ensembl IDs to gene symbols, and generates QC and summary files. The core workshop scripts read the count matrix directly, so this script is not required — but it is useful if you want to explore the data preparation steps in more detail.
 
 **Outputs** → `output/optional/`:
 
@@ -1009,9 +1113,7 @@ if you want to explore the data preparation steps in more detail.
 **Run as:** Chunk by chunk in RStudio  
 **Requires:** Script 02 to have been run
 
-Reproduces a GREIN-style edgeR exact test analysis and compares results to
-limma-voom. Demonstrates reproducibility challenges when methods documentation
-is incomplete.
+Reproduces a GREIN-style edgeR exact test analysis and compares results to limma-voom. Demonstrates reproducibility challenges when methods documentation is incomplete.
 
 **Outputs** → `output/differential-expression/`:
 
@@ -1031,9 +1133,7 @@ is incomplete.
 **Run as:** Chunk by chunk in RStudio  
 **Requires:** Nothing — standalone script
 
-Demonstrates limma-voom with a two-factor experimental design using a
-published Drosophila temperature adaptation dataset. Covers interaction
-models, contrast matrices, and parallel vs. divergent response patterns.
+Demonstrates limma-voom with a two-factor experimental design using a published Drosophila temperature adaptation dataset. Covers interaction models, contrast matrices, and parallel vs. divergent response patterns.
 
 **Outputs** → `output/differential-expression/`:
 
@@ -1053,26 +1153,18 @@ models, contrast matrices, and parallel vs. divergent response patterns.
 <h1 id="troubleshooting">Troubleshooting</h1>
 <h2 id="working-directory-is-wrong">Working directory is wrong</h2>
 <div class="highlight"><pre><span></span><code><span class="nf">getwd</span><span class="p">()</span>
-<span class="c1"># Should return: /blue/bioinf_workshop/your_username/rnaseq_workshop</span>
 </code></pre></div>
-<p>If it doesn't, run:</p>
-<div class="highlight"><pre><span></span><code><span class="nf">setwd</span><span class="p">(</span><span class="s">&quot;/blue/bioinf_workshop/your_username/rnaseq_workshop&quot;</span><span class="p">)</span>
+<p>If it doesn't return <code>/blue/bioinf_workshop/username/rnaseq_workshop</code>, run:</p>
+<div class="highlight"><pre><span></span><code><span class="nf">setwd</span><span class="p">(</span><span class="s">&quot;/blue/bioinf_workshop/username/rnaseq_workshop&quot;</span><span class="p">)</span>
 </code></pre></div>
 <p>Then use the <strong>gear icon ⚙</strong> in the Files panel → <strong>Go To Working Directory</strong>.</p>
 <h2 id="cannot-find-file-errors">"Cannot find file" errors</h2>
-<div class="highlight"><pre><span></span><code><span class="c1"># Check what files exist in the output directory</span>
-<span class="nf">list.files</span><span class="p">(</span><span class="s">&quot;demo-analysis/output/01-prepared-data&quot;</span><span class="p">)</span>
-
-<span class="c1"># If empty, you need to run 01_prepare_nfcore_data.R first</span>
+<div class="highlight"><pre><span></span><code><span class="nf">list.files</span><span class="p">(</span><span class="s">&quot;demo-analysis/output/differential-expression&quot;</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="data-prep-script-cant-find-nf-core-output">Data prep script can't find nf-core output</h2>
-<p>Check this line in <code>01_prepare_nfcore_data.R</code>:</p>
-<div class="highlight"><pre><span></span><code><span class="n">nfcore_results_dir</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">&quot;/blue/bioinf_workshop/share/nfcore_rnaseq_output/&quot;</span>
-</code></pre></div>
-<p>Ask an instructor if the path looks different.</p>
+<p>If empty, you need to run the preceding script first.</p>
 <h2 id="package-not-installed">Package not installed</h2>
+<p>If <code>.libPaths()</code> is correct and you still get package errors, let an instructor know — all required packages should be pre-installed in the shared library. If you need to install a package yourself:</p>
 <div class="highlight"><pre><span></span><code><span class="nf">install.packages</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;tidyverse&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ggrepel&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;pheatmap&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;RColorBrewer&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;here&quot;</span><span class="p">))</span>
-
 <span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nf">require</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">quietly</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">))</span>
 <span class="w">    </span><span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">)</span>
 <span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;limma&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;edgeR&quot;</span><span class="p">))</span>
