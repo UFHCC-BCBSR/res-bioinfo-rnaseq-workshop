@@ -800,7 +800,9 @@
 <p>This document explains the demo analysis setup.</p>
 <hr />
 <h1 id="demo-analysis-file-layout">Demo Analysis File Layout</h1>
-<p>The files for the demo analysis will be created by cloning the <a href="https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop">workshop's Github repository</a></p>
+<h2 id="what-is-github-and-why-are-we-using-it">What is GitHub and Why Are We Using It?</h2>
+<p>GitHub is a platform for hosting and sharing code. The workshop analysis scripts, configuration files, and directory structure are all stored in a <strong>repository</strong> (repo) — essentially a project folder that lives on GitHub. Rather than downloading files one by one, we use <code>git clone</code> to copy the entire repo to HiPerGator in one command. You won't need to know much more about Git for this workshop, but if you want to learn more, <a href="https://docs.github.com/en/get-started">GitHub's own guides</a> are a good starting point.</p>
+<p>The files for the demo analysis will be created by cloning the <a href="https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop">workshop's GitHub repository</a>:</p>
 <h2 id="what-youll-create-your-working-space">What You'll Create (Your Working Space)</h2>
 <div class="highlight"><pre><span></span><code>/blue/bioinf_workshop/$USER/
 └── rnaseq_workshop/
@@ -933,10 +935,9 @@ Then, open in the local browser:<br />
 </blockquote>
 <div class="admonition warning">
 <p class="admonition-title">If your .libPaths() looks different</p>
-<p>The shared library at <code>/blue/bioinf_workshop/share/R_libs</code> must be first in the list — this is where all the workshop packages are pre-installed. If it is not listed or not first, the scripts will fail with "package not found" errors. Check that your <code>.Renviron</code> file is present in the repo root:</p>
-<div class="highlight"><pre><span></span><code><span class="nf">file.exists</span><span class="p">(</span><span class="s">&quot;.Renviron&quot;</span><span class="p">)</span>
+<p>The shared library at <code>/blue/bioinf_workshop/share/R_libs</code> must be first in the list — this is where all the workshop packages are pre-installed. If it is not listed or not first, the scripts will fail with "package not found" errors. In R Console, run:</p>
+<div class="highlight"><pre><span></span><code><span class="nf">source</span><span class="p">(</span><span class="s">&quot;/blue/bioinf_workshop/&lt;username&gt;/rnaseq_workshop/.Rprofile&quot;</span><span class="p">)</span>
 </code></pre></div>
-<p>If it returns <code>FALSE</code>, let an instructor know.</p>
 </div>
 <blockquote>
 <p>All scripts use the <code>here</code> package to build file paths relative to the repository root, so they work for everyone without needing to change any paths in the code.</p>
