@@ -18,6 +18,8 @@ markdown_extensions:
   - admonition
   - pymdownx.details
   - pymdownx.superfences
+  - md_in_html
+
 extra_css:
   - assets/css/custom.css
 
