@@ -182,13 +182,11 @@ Next, verify your package library path is correct:
 > `[4] "/usr/lib/R/library"`
 
 !!! warning "If your .libPaths() looks different"
-    The shared library at `/blue/bioinf_workshop/share/R_libs` must be first in the list — this is where all the workshop packages are pre-installed. If it is not listed or not first, the scripts will fail with "package not found" errors. Check that your `.Renviron` file is present in the repo root:
+    The shared library at `/blue/bioinf_workshop/share/R_libs` must be first in the list — this is where all the workshop packages are pre-installed. If it is not listed or not first, the scripts will fail with "package not found" errors. In R Console, run:
 
     ```r
-    file.exists(".Renviron")
+    source("/blue/bioinf_workshop/<username>/rnaseq_workshop/.Rprofile")
     ```
-
-    If it returns `FALSE`, let an instructor know.
 
 > All scripts use the `here` package to build file paths relative to the repository root, so they work for everyone without needing to change any paths in the code.
 
