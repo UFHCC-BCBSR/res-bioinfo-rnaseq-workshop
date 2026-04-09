@@ -376,28 +376,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#monitoring-jobs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Monitoring Jobs
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#checking-job-logs" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Checking Job Logs
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -896,6 +874,7 @@
 <p><span class="command-title">module spider — search for available software</span></p>
 <div class="highlight"><pre><span></span><code>module<span class="w"> </span>spider<span class="w"> </span>nextflow
 </code></pre></div>
+<p>type <code>q</code> to exit the documentation </p>
 <p><span class="command-title">module load — load a module</span></p>
 <div class="highlight"><pre><span></span><code>module<span class="w"> </span>load<span class="w"> </span>nextflow
 </code></pre></div>
@@ -915,7 +894,8 @@
 <span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Today&#39;s date is: </span><span class="k">$(</span>date<span class="k">)</span><span class="s2">&quot;</span>
 <span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;I am running on node: </span><span class="k">$(</span>hostname<span class="k">)</span><span class="s2">&quot;</span>
 </code></pre></div>
-<p>You could run this directly on the login node with <code>bash hello.sh</code>. Now here is the exact same script as a SLURM job — the only difference is the <code>#SBATCH</code> header:</p>
+<p>You can run this directly on the login node by copying this text in a file that you create and name <code>hello.sh</code> and run with <code>bash hello.sh</code>. </p>
+<p>Now here is the exact same script as a SLURM job — the only difference is the <code>#SBATCH</code> header:</p>
 <div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
 <span class="c1">#SBATCH --job-name=hello</span>
 <span class="c1">#SBATCH --nodes=1</span>
@@ -949,21 +929,6 @@
 <p>Paste the script above into nano, save, and exit. Then verify the file was created:</p>
 <div class="highlight"><pre><span></span><code>cat<span class="w"> </span>hello.sbatch
 </code></pre></div>
-<p>Now submit it:</p>
-<div class="highlight"><pre><span></span><code>sbatch<span class="w"> </span>hello.sbatch
-</code></pre></div>
-<blockquote>
-<p><code>Submitted batch job 12345678</code></p>
-</blockquote>
-<p>When the job completes, check the output log (replace <code>12345678</code> with your actual job ID):</p>
-<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>hello_12345678.out
-</code></pre></div>
-<blockquote>
-<p>Hello from HiPerGator!<br />
-My username is: username<br />
-Today's date is: Thu Apr  3 10:42:11 EDT 2026<br />
-I am running on node: c0709a-s30</p>
-</blockquote>
 <p>The key <code>#SBATCH</code> flags are summarized here:</p>
 <table>
 <thead>
@@ -1003,32 +968,39 @@ I am running on node: c0709a-s30</p>
 </code></pre></div>
 <p>Burst jobs are lower priority and can be preempted (cancelled and requeued) if the resources are needed by higher-priority jobs, so it's best used for jobs that can be restarted or that you don't need to complete by a specific time.</p>
 </details>
-<h2 id="monitoring-jobs">Monitoring Jobs</h2>
-<p><span class="command-title">squeue — check job status</span></p>
-<p>The <code>ST</code> column shows job state: <code>PD</code> = pending, <code>R</code> = running, <code>CG</code> = completing:</p>
+<p>Now submit it:</p>
+<div class="highlight"><pre><span></span><code>sbatch<span class="w"> </span>hello.sbatch
+</code></pre></div>
+<blockquote>
+<p><code>Submitted batch job 12345678</code></p>
+</blockquote>
+<p>SLURM will give you a job ID — keep track of it. You can check the status of your job with <code>squeue</code>. The <code>ST</code> column shows job state: <code>PD</code> = pending, <code>R</code> = running, <code>CG</code> = completing:</p>
 <div class="highlight"><pre><span></span><code>squeue<span class="w"> </span>-u<span class="w"> </span><span class="nv">$USER</span>
 </code></pre></div>
-<p><span class="command-title">slurmInfo — see resource usage for your group</span></p>
-<div class="highlight"><pre><span></span><code>slurmInfo
-</code></pre></div>
-<p><span class="command-title">scancel — cancel a job</span></p>
+<p>If you need to cancel the job:</p>
 <div class="highlight"><pre><span></span><code>scancel<span class="w"> </span><span class="m">12345678</span>
 </code></pre></div>
-<p><span class="command-title">sacct — see a summary of recent completed jobs</span></p>
-<div class="highlight"><pre><span></span><code>sacct
-</code></pre></div>
-<h2 id="checking-job-logs">Checking Job Logs</h2>
-<p>When you submit a job, SLURM writes output and error messages to log files named with the job ID, e.g. <code>hello_12345678.out</code> and <code>hello_12345678.err</code>. These are the first place to look if something goes wrong.</p>
-<p>To view the full output log:</p>
+<p>Once the job completes, check the output log (replace <code>12345678</code> with your actual job ID). SLURM writes output and errors to separate log files — these are the first place to look if something goes wrong:</p>
 <div class="highlight"><pre><span></span><code>cat<span class="w"> </span>hello_12345678.out
 </code></pre></div>
-<p>To follow the log in real time as the job runs (press <code>Ctrl+C</code> to stop):</p>
+<blockquote>
+<p>Hello from HiPerGator!<br />
+My username is: username<br />
+Today's date is: Thu Apr  3 10:42:11 EDT 2026<br />
+I am running on node: c0709a-s30</p>
+</blockquote>
+<p>If you want to follow the log in real time while a job is still running, use <code>tail -f</code> (press <code>Ctrl+C</code> to stop):</p>
 <div class="highlight"><pre><span></span><code>tail<span class="w"> </span>-f<span class="w"> </span>hello_12345678.out
 </code></pre></div>
-<p>To check the last few lines of the error log:</p>
+<p>To check the error log:</p>
 <div class="highlight"><pre><span></span><code>tail<span class="w"> </span>hello_12345678.err
 </code></pre></div>
-<p><code>tail -f</code> is particularly useful for monitoring a running job — it will keep printing new lines as they are written to the log file.</p>
+<p>To see a summary of your recent completed jobs:</p>
+<div class="highlight"><pre><span></span><code>sacct
+</code></pre></div>
+<p>To see overall resource usage for your group:</p>
+<div class="highlight"><pre><span></span><code>slurmInfo
+</code></pre></div>
 
 
 
