@@ -50,7 +50,7 @@ For this workshop, your working directory will be:
 To navigate there:
 
 ```bash
-cd /blue/bioinf_workshop/username
+cd /blue/bioinf_workshop/$USER
 ```
 
 You can check your storage quotas with:
@@ -105,7 +105,7 @@ Some software requires loading a prerequisite module first. `module spider` will
 
 HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly on the login node, you write a job script that specifies the resources you need and the commands to run, then submit it to the scheduler with `sbatch`.
 
-A SLURM script is just a regular bash script with a block of `#SBATCH` directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script:
+A SLURM script is just a regular bash script with a block of `#SBATCH` directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script — each `echo` command just prints a line of text to the screen:
 
 ```bash
 #!/bin/bash
@@ -125,13 +125,12 @@ You could run this directly on the login node with `bash hello.sh`. Now here is 
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=1gb
 #SBATCH --time=00:05:00
-#SBATCH --partition=[training-partition]
 #SBATCH --account=bioinf_workshop
 #SBATCH --qos=bioinf_workshop
 #SBATCH --output=hello_%j.out
 #SBATCH --error=hello_%j.err
 #SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=username@ufl.edu
+#SBATCH --mail-user=$USER@ufl.edu
 
 echo "Hello from HiPerGator!"
 echo "My username is: $(whoami)"
@@ -139,7 +138,24 @@ echo "Today's date is: $(date)"
 echo "I am running on node: $(hostname)"
 ```
 
-Save this as `hello.sbatch` and submit it:
+Now create this file on HiPerGator. Open a new file with nano:
+
+```bash
+nano hello.sbatch
+```
+
+??? tip "Need a nano refresher?"
+    - Type or paste your content
+    - `Ctrl+O` then `Enter` to save
+    - `Ctrl+X` to exit
+
+Paste the script above into nano, save, and exit. Then verify the file was created:
+
+```bash
+cat hello.sbatch
+```
+
+Now submit it:
 
 ```bash
 sbatch hello.sbatch
@@ -168,14 +184,24 @@ The key `#SBATCH` flags are summarized here:
 | `--partition` | The queue to submit to. Use `[training-partition]` for this workshop. |
 | `--account` and `--qos` | Must match your group. Use `bioinf_workshop` for this workshop. |
 
+??? info "Using burst QOS for your own group"
+    Most HiPerGator groups have access to a burst QOS that allows you to temporarily use more resources than your group's allocation. To use it, append `-b` to your group name for the `--qos` flag:
+
+    ```bash
+    #SBATCH --account=mygroup
+    #SBATCH --qos=mygroup-b
+    ```
+
+    Burst jobs are lower priority and can be preempted (cancelled and requeued) if the resources are needed by higher-priority jobs, so it's best used for jobs that can be restarted or that you don't need to complete by a specific time.
+
 ## Monitoring Jobs
 
 <span class="command-title">squeue — check job status</span>
 
-Replace `username` with your GatorLink username. The `ST` column shows job state: `PD` = pending, `R` = running, `CG` = completing:
+The `ST` column shows job state: `PD` = pending, `R` = running, `CG` = completing:
 
 ```bash
-squeue -u username
+squeue -u $USER
 ```
 
 <span class="command-title">slurmInfo — see resource usage for your group</span>
