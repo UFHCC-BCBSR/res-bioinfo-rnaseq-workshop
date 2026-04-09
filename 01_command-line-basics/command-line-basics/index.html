@@ -888,22 +888,20 @@ pwd
 <p><code>ls</code> lists the files and directories in your current directory. Your home directory may have some files already — that's fine:</p>
 <pre><code class="language-bash">ls
 </code></pre>
-<p>A few useful variations:</p>
-<pre><code class="language-bash"># long format, shows permissions, size, and date
-ls -l        
-# same but with human-readable file sizes (KB, MB, GB)
-ls -lh       
-# includes hidden files (those starting with a dot)
-ls -la      
+<p>The <code>-l</code> flag gives you a long format with permissions, size, and date. Adding <code>h</code> makes file sizes human-readable (KB, MB, GB). Adding <code>a</code> includes hidden files that start with a dot:</p>
+<pre><code class="language-bash">ls -l
+</code></pre>
+<pre><code class="language-bash">ls -lh
+</code></pre>
+<pre><code class="language-bash">ls -la
 </code></pre>
 <p><span class="command-title">cd — change directory</span></p>
-<p><code>cd</code> moves you into a different directory. A few useful shortcuts:</p>
-<pre><code class="language-bash"># go up one directory
-cd ..        
-# go to your home directory
-cd ~         
-# go back to the previous directory
-cd -         
+<p><code>cd</code> moves you into a different directory. <code>cd ..</code> goes up one level, <code>cd ~</code> always takes you back to your home directory, and <code>cd -</code> takes you back to wherever you just were:</p>
+<pre><code class="language-bash">cd ..
+</code></pre>
+<pre><code class="language-bash">cd ~
+</code></pre>
+<pre><code class="language-bash">cd -
 </code></pre>
 <h2 id="setting-up-a-practice-directory">Setting Up a Practice Directory</h2>
 <p>Before we go further, let's create a dedicated space to practice in so we don't clutter your home directory.</p>
@@ -915,10 +913,9 @@ pwd
 <blockquote>
 <p>Your path will look different, but you should see <code>command_line_practice</code> at the end.</p>
 </blockquote>
-<p>Now let's create some subdirectories:</p>
+<p>Now let's create some subdirectories. The <code>-p</code> flag lets you create nested directories all at once:</p>
 <pre><code class="language-bash">mkdir notes
-# create nested directories all at once
-mkdir -p data/raw    
+mkdir -p data/raw
 ls
 </code></pre>
 <blockquote>
@@ -987,43 +984,39 @@ I am learning the command line.<br />
 This is line three.</p>
 </blockquote>
 <p><span class="command-title">head and tail — print the beginning or end of a file</span></p>
-<pre><code class="language-bash"># first 10 lines (shows all 4 in our case)
-head notes/genes.txt        
-# first 2 lines
-head -n 2 notes/genes.txt   
-# last 2 lines
-tail -n 2 notes/genes.txt  
+<p><code>head</code> prints the first 10 lines of a file by default, and <code>tail</code> prints the last 10. The <code>-n</code> flag lets you specify how many lines you want. <code>head</code> is particularly useful for quickly checking the format of large files without printing the whole thing:</p>
+<pre><code class="language-bash">head notes/genes.txt
 </code></pre>
-<p><code>head</code> is particularly useful for quickly checking the format of large files without printing the whole thing.</p>
+<pre><code class="language-bash">head -n 2 notes/genes.txt
+</code></pre>
+<pre><code class="language-bash">tail -n 2 notes/genes.txt
+</code></pre>
 <h2 id="managing-files-and-directories">Managing Files and Directories</h2>
 <p><span class="command-title">cp — copy</span></p>
-<pre><code class="language-bash"># copy a file
-cp notes/hello.txt notes/hello_backup.txt    
+<p>To copy a file, give <code>cp</code> the source and the destination. The <code>-r</code> flag copies a whole directory and everything inside it:</p>
+<pre><code class="language-bash">cp notes/hello.txt notes/hello_backup.txt
 ls notes/
 </code></pre>
 <blockquote>
 <p><code>genes.txt  hello.txt  hello_backup.txt  myfile.txt</code></p>
 </blockquote>
-<pre><code class="language-bash"># copy a directory and all its contents
-cp -r notes data/                            
+<pre><code class="language-bash">cp -r notes data/
 ls data/
 </code></pre>
 <blockquote>
 <p><code>notes  raw</code></p>
 </blockquote>
 <p><span class="command-title">mv — move or rename</span></p>
-<pre><code class="language-bash"># move a file into a directory
-mv notes/hello_backup.txt data/       
-# rename a file
-mv notes/myfile.txt notes/myfile_renamed.txt  
+<p><code>mv</code> works for both moving a file to a new location and renaming it — it's the same operation:</p>
+<pre><code class="language-bash">mv notes/hello_backup.txt data/
+mv notes/myfile.txt notes/myfile_renamed.txt
 ls notes/
 </code></pre>
 <blockquote>
 <p><code>genes.txt  hello.txt  myfile_renamed.txt</code></p>
 </blockquote>
 <p><span class="command-title">rm — remove</span></p>
-<pre><code class="language-bash"># delete a file
-rm notes/myfile_renamed.txt                   
+<pre><code class="language-bash">rm notes/myfile_renamed.txt
 ls notes/
 </code></pre>
 <blockquote>
@@ -1034,11 +1027,10 @@ ls notes/
 <p>Deleted files are gone permanently. Always double-check before using <code>rm -r</code>.</p>
 </div>
 <h2 id="inputoutput-redirection">Input/Output Redirection</h2>
-<p>By default, commands print their output to the screen. You can redirect that output to a file instead:</p>
-<pre><code class="language-bash"># write output to a file (overwrites if it exists)
-ls -lh notes/ &gt; data/file_list.txt      
-# append output to a file
-ls -lh data/ &gt;&gt; data/file_list.txt           
+<p>By default, commands print their output to the screen. The <code>&gt;</code> operator redirects that output into a file instead, creating it if it doesn't exist and overwriting it if it does. The <code>&gt;&gt;</code> operator appends to a file rather than overwriting it:</p>
+<pre><code class="language-bash">ls -lh notes/ &gt; data/file_list.txt
+</code></pre>
+<pre><code class="language-bash">ls -lh data/ &gt;&gt; data/file_list.txt
 </code></pre>
 <p>Let's check what ended up in the file:</p>
 <pre><code class="language-bash">cat data/file_list.txt
@@ -1051,38 +1043,34 @@ ls -lh data/ &gt;&gt; data/file_list.txt
 <p>Saving output to a file is useful for keeping records of what a command produced, or for checking the output of long-running jobs later.</p>
 <h2 id="pipes">Pipes</h2>
 <p>Pipes (<code>|</code>) let you chain commands together, sending the output of one command as the input to the next:</p>
-<pre><code class="language-bash"># print just the first 2 lines
-cat notes/genes.txt | head -2                
+<pre><code class="language-bash">cat notes/genes.txt | head -2
 </code></pre>
 <blockquote>
 <p>TP53 is a tumor suppressor gene.<br />
 BRCA1 is associated with breast cancer risk.</p>
 </blockquote>
-<pre><code class="language-bash"># list only files with &quot;genes&quot; in the name
-ls -lh notes/ | grep &quot;genes&quot;                 
+<pre><code class="language-bash">ls -lh notes/ | grep &quot;genes&quot;
 </code></pre>
 <blockquote>
 <p><code>-rw-r--r-- 1 username group 142 Apr  8 10:00 genes.txt</code></p>
 </blockquote>
 <h2 id="searching-with-grep">Searching with grep</h2>
 <p><span class="command-title">grep — search for a pattern</span></p>
-<p><code>grep</code> searches for a pattern in a file or input:</p>
-<pre><code class="language-bash"># find all lines containing &quot;TP53&quot;
-grep &quot;TP53&quot; notes/genes.txt                  
+<p><code>grep</code> searches for a pattern in a file and prints every line that matches. The <code>-i</code> flag makes the search case-insensitive, and <code>-c</code> counts the number of matching lines instead of printing them:</p>
+<pre><code class="language-bash">grep &quot;TP53&quot; notes/genes.txt
 </code></pre>
 <blockquote>
 <p>TP53 is a tumor suppressor gene.<br />
 TP53 mutations are found in many cancer types.</p>
 </blockquote>
-<pre><code class="language-bash"># case-insensitive search
-grep -i &quot;brca&quot; notes/genes.txt   
-# count matching lines
-grep -c &quot;TP53&quot; notes/genes.txt              
+<pre><code class="language-bash">grep -i &quot;brca&quot; notes/genes.txt
+</code></pre>
+<pre><code class="language-bash">grep -c &quot;TP53&quot; notes/genes.txt
 </code></pre>
 <blockquote>
 <p><code>2</code></p>
 </blockquote>
-<p>Combined with pipes, <code>grep</code> is very powerful:</p>
+<p>Combined with pipes, <code>grep</code> is very powerful for filtering output:</p>
 <pre><code class="language-bash">cat notes/genes.txt | grep &quot;cancer&quot;
 </code></pre>
 <blockquote>
@@ -1091,15 +1079,11 @@ EGFR is a common target in lung cancer therapy.<br />
 TP53 mutations are found in many cancer types.</p>
 </blockquote>
 <h2 id="getting-help">Getting Help</h2>
-<p>Almost every command has a manual page you can access with <code>man</code>:</p>
+<p>Almost every command has a manual page you can access with <code>man</code>, and most also accept <code>--help</code> for a quick summary of options. When in doubt, these are your first resources before searching online:</p>
 <pre><code class="language-bash">man ls
-man grep
 </code></pre>
-<p>You can also usually get a quick summary of options with <code>--help</code>:</p>
 <pre><code class="language-bash">ls --help
-grep --help
 </code></pre>
-<p>When in doubt, these are your first resources before searching online.</p>
 <h2 id="cleaning-up">Cleaning Up</h2>
 <p>Once you're done practicing, you can remove the whole practice directory:</p>
 <pre><code class="language-bash">cd ~
