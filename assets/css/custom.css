@@ -5,3 +5,13 @@
 .md-tabs {
     background-color: #000000;
 }
+
+.command-title {
+  font-family: var(--md-code-font);
+  font-size: 1.1em;
+  font-weight: bold;
+  color: var(--md-primary-fg-color);
+  margin-top: 1.5em;
+  margin-bottom: 0.3em;
+  display: block;
+}
