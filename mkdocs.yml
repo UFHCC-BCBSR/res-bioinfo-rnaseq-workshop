@@ -10,8 +10,12 @@ theme:
   features:
     - navigation.sections
     - toc.integrate
+    - content.code.copy
+  
   font:
     text: Roboto
+markdown_extensions:
+  - admonition
 
 extra_css:
   - assets/css/custom.css
