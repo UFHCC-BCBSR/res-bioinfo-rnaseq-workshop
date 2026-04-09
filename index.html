@@ -19,7 +19,7 @@
       
       
       <link rel="icon" href="assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -812,17 +812,24 @@
 <p style="font-size: 0.9em; color: grey;">UF Health Cancer Institute Biostatistics and Computational Biology Shared Resource</p>
 
 <h1 id="bioinformatics-workshop-basics-of-bulk-rna-seq-analysis">Bioinformatics Workshop: Basics of Bulk RNA-Seq Analysis</h1>
-<p><strong>Audience:</strong> Trainees, staff, and faculty in the UF Health Cancer Institute community with a beginner to intermiedate experience with bioinformatics analysis.</p>
-<p><strong>Hosted by:</strong> <a href="https://cancer.ufl.edu/research/shared-resources/biostatistics-computational-biology-shared-resource/bioinformatics-unit/">UF Health Cancer Institute Biostatistics and Computational Biology Bioinformatics Unit</a>  </p>
-<p><strong>Status:</strong> 🚧 Under Construction Until April 9th, 2026</p>
+<p><strong>Audience:</strong> Trainees, staff, and faculty in the UF Health Cancer Institute community with beginner to intermediate experience with bioinformatics analysis.  </p>
+<p><strong>Hosted by:</strong> <a href="https://cancer.ufl.edu/research/shared-resources/biostatistics-computational-biology-shared-resource/bioinformatics-unit/">UF Health Cancer Institute Biostatistics and Computational Biology Bioinformatics Unit</a></p>
+<hr />
+<p>!!! danger "Do this now if you haven't already"</p>
+<pre><code>**Everyone:** [Create a GitHub account](https://github.com/signup) if you don't have one.
+
+**Windows users only:** [Install Git for Windows](https://gitforwindows.org/) to get a Linux-style terminal.
+</code></pre>
 <hr />
 <h2 id="overview">Overview</h2>
-<p>This workshop guides participants through a complete bulk RNA-seq analysis workflow, from raw sequencing reads to biological interpretation. As a worked example we use a published mouse melanoma dataset examining the transcriptional effects of PRMT7 knockdown in B16.F10 cells, with and without IFN-γ treatment. The methods covered apply to any bulk RNA-seq experiment regardless of organism or experimental design.</p>
+<p>This workshop guides participants through a complete bulk RNA-seq analysis workflow, from raw sequencing reads to biological interpretation. To facilitate this for all participants regardless of previous experience, we also include modules on basics of bash, Hipergator, and R.</p>
+<p>As a worked example we use a published mouse melanoma dataset examining the transcriptional effects of PRMT7 knockdown in B16.F10 cells, with and without IFN-γ treatment. The methods covered apply to any bulk RNA-seq experiment regardless of organism or experimental design.</p>
 <hr />
 <h2 id="workshop-modules">Workshop Modules</h2>
 <table>
 <thead>
 <tr>
+<th>Time</th>
 <th>#</th>
 <th>Module</th>
 <th>Description</th>
@@ -830,44 +837,70 @@
 </thead>
 <tbody>
 <tr>
+<td>10:15 AM</td>
 <td>1</td>
 <td><a href="01_command-line-basics/command-line-basics/">Command Line Basics</a></td>
 <td>Navigating the terminal, essential commands for bioinformatics</td>
 </tr>
 <tr>
+<td></td>
 <td>2</td>
 <td><a href="02_hipergator-basics/hipergator-basics/">HiPerGator Basics</a></td>
 <td>Logging in, storage, loading software, and submitting SLURM jobs</td>
 </tr>
 <tr>
+<td></td>
 <td>3</td>
 <td><a href="05_r-basics/r-basics/">R Basics</a></td>
 <td>RStudio on HiPerGator, reading and writing files, installing packages</td>
 </tr>
 <tr>
+<td></td>
 <td>4</td>
 <td><a href="06_ai-chatbot/ai-chatbot/">AI Chatbot Tips</a></td>
 <td>How to use AI tools effectively and responsibly for bioinformatics</td>
 </tr>
 <tr>
+<td>11:45 AM</td>
 <td>5</td>
 <td><a href="03_preprocessing/quantification-review.md">Preprocessing</a></td>
 <td>Expression quantification concepts and the nf-core/rnaseq workflow</td>
 </tr>
 <tr>
+<td>🍽️ 12:30 PM</td>
+<td>—</td>
+<td><strong>Lunch Break</strong></td>
+<td></td>
+</tr>
+<tr>
+<td>1:00 PM</td>
 <td>6</td>
 <td><a href="04_differential-expression/overview/">Differential Expression</a></td>
 <td>Statistical testing with limma-voom in R</td>
 </tr>
 <tr>
+<td></td>
 <td>7</td>
 <td><a href="04_differential-expression/visualization/">Visualization</a></td>
 <td>Volcano plots, heatmaps, and gene expression plots</td>
 </tr>
 <tr>
+<td></td>
 <td>8</td>
 <td><a href="04_differential-expression/pathway-analysis/">Pathway Analysis</a></td>
 <td>GO and KEGG enrichment analysis with clusterProfiler</td>
+</tr>
+<tr>
+<td>2:00 PM</td>
+<td>9</td>
+<td><a href="04_differential-expression/workshop_setup/">Demo Analysis</a></td>
+<td>Hands-on end-to-end differential expression analysis</td>
+</tr>
+<tr>
+<td>3:30 PM</td>
+<td>—</td>
+<td><strong>Wrap-up &amp; Questions</strong></td>
+<td></td>
 </tr>
 </tbody>
 </table>

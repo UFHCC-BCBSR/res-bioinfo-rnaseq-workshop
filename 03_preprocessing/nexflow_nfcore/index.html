@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="../../assets/logo.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.6">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.5">
     
     
       
@@ -816,17 +816,10 @@ Nextflow automatically parallelizes tasks where possible. For example, if you ha
 If a job fails halfway through (e.g., due to a memory limit), Nextflow can resume from where it left off using the <code>-resume</code> flag, without rerunning completed steps.</p>
 <hr />
 <p><strong>How Nextflow Works: A Conceptual Overview</strong></p>
-<p><Paste nf-core/rnaseq image></p>
 <p>Each box is a <strong>process</strong>. The arrows are <strong>channels</strong> carrying files. Nextflow figures out which processes can run simultaneously and submits them as independent jobs to SLURM.</p>
 <p>You, as the user, only need to provide the starting inputs and the pipeline takes care of the rest.</p>
 <h2 id="introduction-to-nf-core">Introduction to nf-core</h2>
 <p>nf-core is a community-driven, open-source project that provides a curated collection of high-quality, peer-reviewed Nextflow pipelines for bioinformatics.</p>
-<p>All nf-core pipelines follow strict community guidelines:</p>
-<p>Comprehensive documentation
-Automated CI/CD testing on every release
-Consistent parameter naming conventions
-MultiQC integration for QC reporting
-Container support (Docker and Singularity) for all tools</p>
 <p>Treasure of pipelines can be found here: https://nf-co.re/pipelines/</p>
 <hr />
 <p><strong>Running Nextflow: Basic Syntax</strong></p>
