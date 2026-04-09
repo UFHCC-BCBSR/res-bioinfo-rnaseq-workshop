@@ -39,9 +39,6 @@ If a job fails halfway through (e.g., due to a memory limit), Nextflow can resum
 **How Nextflow Works: A Conceptual Overview**
 
 
-<Paste nf-core/rnaseq image>
-
-
 Each box is a **process**. The arrows are **channels** carrying files. Nextflow figures out which processes can run simultaneously and submits them as independent jobs to SLURM.
 
 You, as the user, only need to provide the starting inputs and the pipeline takes care of the rest.
