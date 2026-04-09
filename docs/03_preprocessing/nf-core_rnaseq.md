@@ -1,7 +1,7 @@
 # Running the nf-core/rnaseq pipeline
 
-**Pipeline documentation**: https://nf-co.re/rnaseq  
-**Pipeline GitHub**: https://github.com/nf-core/rnaseq
+[Pipeline documentation](https://nf-co.re/rnaseq)  
+[Pipeline GitHub](https://github.com/nf-core/rnaseq)
 
 ---
 
@@ -296,9 +296,20 @@ tail -f rnaseq_12345678.err
 ```
 
 !!! info "What should I expect to see?"
-    With a 5-minute time limit, the job will start, validate your input files and configuration, begin pulling pipeline steps, and then hit the time limit and stop. This is intentional — if you see the pipeline start running steps without immediately erroring out, your setup is correct. If you see errors about missing files or incorrect paths, check your `samplesheet.csv` and `params.yaml`. The pre-prepared output from a complete run will be used for the rest of the workshop.
+    With a 5-minute time limit, the orchestrator job will start, validate your input files and configuration, and begin submitting pipeline steps as child SLURM jobs. It will then hit the time limit and stop. This is intentional — if you see the pipeline start running steps without immediately erroring out, your setup is correct. If you see errors about missing files or incorrect paths, check your `samplesheet.csv` and `params.yaml`. The pre-prepared output from a complete run will be used for the rest of the workshop.
 
----
+!!! warning "Clean up child jobs after the test run"
+    When the Nextflow orchestrator job hits its time limit and dies, any child jobs it already submitted to SLURM will keep running independently. You need to cancel these manually. You won't need this command in normal use — it's just a workshop cleanup step:
+
+    ```bash
+    squeue -u $USER --format="%i %j" | grep "nf-NFCOR" | awk '{print $1}' | xargs scancel
+    ```
+
+    Then verify they are gone:
+
+    ```bash
+    squeue -u $USER
+    ```
 
 ## Pipeline Outputs
 
