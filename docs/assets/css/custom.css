@@ -19,3 +19,27 @@
   margin-bottom: 0.5em;
   display: block;
 }
+
+.bash-block::before {
+  content: "HiPerGator Terminal";
+  display: block;
+  font-size: 0.75em;
+  font-weight: bold;
+  color: white;
+  background-color: #2e7d32;
+  padding: 0.2em 0.6em;
+  margin-bottom: -0.5em;
+  border-radius: 4px 4px 0 0;
+}
+
+.r-block::before {
+  content: "RStudio Console";
+  display: block;
+  font-size: 0.75em;
+  font-weight: bold;
+  color: white;
+  background-color: #1565c0;
+  padding: 0.2em 0.6em;
+  margin-bottom: -0.5em;
+  border-radius: 4px 4px 0 0;
+}
