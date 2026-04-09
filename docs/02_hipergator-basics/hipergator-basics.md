@@ -81,6 +81,8 @@ HiPerGator uses a module system to manage software. Software is not available by
 module spider nextflow
 ```
 
+type `q` to exit the documentation 
+
 <span class="command-title">module load — load a module</span>
 
 ```bash
@@ -115,7 +117,9 @@ echo "Today's date is: $(date)"
 echo "I am running on node: $(hostname)"
 ```
 
-You could run this directly on the login node with `bash hello.sh`. Now here is the exact same script as a SLURM job — the only difference is the `#SBATCH` header:
+You can run this directly on the login node by copying this text in a file that you create and name `hello.sh` and run with `bash hello.sh`. 
+
+Now here is the exact same script as a SLURM job — the only difference is the `#SBATCH` header:
 
 ```bash
 #!/bin/bash
@@ -155,25 +159,6 @@ Paste the script above into nano, save, and exit. Then verify the file was creat
 cat hello.sbatch
 ```
 
-Now submit it:
-
-```bash
-sbatch hello.sbatch
-```
-
-> `Submitted batch job 12345678`
-
-When the job completes, check the output log (replace `12345678` with your actual job ID):
-
-```bash
-cat hello_12345678.out
-```
-
-> Hello from HiPerGator!  
-> My username is: username  
-> Today's date is: Thu Apr  3 10:42:11 EDT 2026  
-> I am running on node: c0709a-s30
-
 The key `#SBATCH` flags are summarized here:
 
 | **Flag** | **Description** |
@@ -194,54 +179,57 @@ The key `#SBATCH` flags are summarized here:
 
     Burst jobs are lower priority and can be preempted (cancelled and requeued) if the resources are needed by higher-priority jobs, so it's best used for jobs that can be restarted or that you don't need to complete by a specific time.
 
-## Monitoring Jobs
+Now submit it:
 
-<span class="command-title">squeue — check job status</span>
+```bash
+sbatch hello.sbatch
+```
 
-The `ST` column shows job state: `PD` = pending, `R` = running, `CG` = completing:
+> `Submitted batch job 12345678`
+
+SLURM will give you a job ID — keep track of it. You can check the status of your job with `squeue`. The `ST` column shows job state: `PD` = pending, `R` = running, `CG` = completing:
 
 ```bash
 squeue -u $USER
 ```
 
-<span class="command-title">slurmInfo — see resource usage for your group</span>
-
-```bash
-slurmInfo
-```
-
-<span class="command-title">scancel — cancel a job</span>
+If you need to cancel the job:
 
 ```bash
 scancel 12345678
 ```
 
-<span class="command-title">sacct — see a summary of recent completed jobs</span>
-
-```bash
-sacct
-```
-
-## Checking Job Logs
-
-When you submit a job, SLURM writes output and error messages to log files named with the job ID, e.g. `hello_12345678.out` and `hello_12345678.err`. These are the first place to look if something goes wrong.
-
-To view the full output log:
+Once the job completes, check the output log (replace `12345678` with your actual job ID). SLURM writes output and errors to separate log files — these are the first place to look if something goes wrong:
 
 ```bash
 cat hello_12345678.out
 ```
 
-To follow the log in real time as the job runs (press `Ctrl+C` to stop):
+> Hello from HiPerGator!  
+> My username is: username  
+> Today's date is: Thu Apr  3 10:42:11 EDT 2026  
+> I am running on node: c0709a-s30
+
+If you want to follow the log in real time while a job is still running, use `tail -f` (press `Ctrl+C` to stop):
 
 ```bash
 tail -f hello_12345678.out
 ```
 
-To check the last few lines of the error log:
+To check the error log:
 
 ```bash
 tail hello_12345678.err
 ```
 
-`tail -f` is particularly useful for monitoring a running job — it will keep printing new lines as they are written to the log file.
+To see a summary of your recent completed jobs:
+
+```bash
+sacct
+```
+
+To see overall resource usage for your group:
+
+```bash
+slurmInfo
+```
