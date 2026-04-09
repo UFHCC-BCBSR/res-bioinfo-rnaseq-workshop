@@ -10,8 +10,12 @@
   font-family: var(--md-code-font);
   font-size: 1.1em;
   font-weight: bold;
-  color: var(--md-primary-fg-color);
+  background-color: var(--md-code-bg-color);
+  color: var(--md-typeset-a-color);
+  padding: 0.2em 0.6em;
+  border-radius: 4px;
+  border-left: 4px solid var(--md-typeset-a-color);
   margin-top: 1.5em;
-  margin-bottom: 0.3em;
+  margin-bottom: 0.5em;
   display: block;
 }
