@@ -11,7 +11,13 @@ This document explains the demo analysis setup.
 
 ---
 
-# Workshop File Layout
+# Demo Analysis File Layout
+
+## What is GitHub and Why Are We Using It?
+
+GitHub is a platform for hosting and sharing code. The workshop analysis scripts, configuration files, and directory structure are all stored in a **repository** (repo) — essentially a project folder that lives on GitHub. Rather than downloading files one by one, we use `git clone` to copy the entire repo to HiPerGator in one command. You won't need to know much more about Git for this workshop, but if you want to learn more, [GitHub's own guides](https://docs.github.com/en/get-started) are a good starting point.
+
+The files for the demo analysis will be created by cloning the [workshop's GitHub repository](https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop):
 
 ## What You'll Create (Your Working Space)
 
