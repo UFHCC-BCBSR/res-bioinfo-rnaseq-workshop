@@ -41,7 +41,14 @@ nav:
     - Visualization: 04_differential-expression/visualization.md
     - Pathway Analysis: 04_differential-expression/pathway-analysis.md
     - Demo Analysis Setup: 04_differential-expression/workshop_setup.md
-
+- Differential Expression:
+    - Overview & Background: 04_differential-expression/overview.md
+    - Visualization: 04_differential-expression/visualization.md
+    - Pathway Analysis: 04_differential-expression/pathway-analysis.md
+    - Demo Analysis Setup: 04_differential-expression/workshop_setup.md
+    - Demo QC & Normalization Results: 04_differential-expression/01_quality_control.html
+    - Demo Differential Expression Results: 04_differential-expression/02_differential_expression.html
+    - Demo Pathway Analysis Results: 04_differential-expression/03_pathway_analysis.html
 copyright: >
   © 2026 UF Health Cancer Institute Biostatistics and Computational Biology Shared Resource |
   Portions of this content are inspired by <a href="https://informatics.fas.harvard.edu">Harvard FAS Informatics</a>
