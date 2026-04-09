@@ -37,22 +37,34 @@ pwd
 ls
 ```
 
-A few useful variations:
+The `-l` flag gives you a long format with permissions, size, and date. Adding `h` makes file sizes human-readable (KB, MB, GB). Adding `a` includes hidden files that start with a dot:
 
 ```bash
-ls -l        # long format, shows permissions, size, and date
-ls -lh       # same but with human-readable file sizes (KB, MB, GB)
-ls -la       # includes hidden files (those starting with a dot)
+ls -l
+```
+
+```bash
+ls -lh
+```
+
+```bash
+ls -la
 ```
 
 <span class="command-title">cd — change directory</span>
 
-`cd` moves you into a different directory. A few useful shortcuts:
+`cd` moves you into a different directory. `cd ..` goes up one level, `cd ~` always takes you back to your home directory, and `cd -` takes you back to wherever you just were:
 
 ```bash
-cd ..        # go up one directory
-cd ~         # go to your home directory
-cd -         # go back to the previous directory
+cd ..
+```
+
+```bash
+cd ~
+```
+
+```bash
+cd -
 ```
 
 ## Setting Up a Practice Directory
@@ -69,11 +81,11 @@ pwd
 
 > Your path will look different, but you should see `command_line_practice` at the end.
 
-Now let's create some subdirectories:
+Now let's create some subdirectories. The `-p` flag lets you create nested directories all at once:
 
 ```bash
 mkdir notes
-mkdir -p data/raw    # create nested directories all at once
+mkdir -p data/raw
 ls
 ```
 
@@ -140,27 +152,35 @@ cat notes/hello.txt
 
 <span class="command-title">head and tail — print the beginning or end of a file</span>
 
+`head` prints the first 10 lines of a file by default, and `tail` prints the last 10. The `-n` flag lets you specify how many lines you want. `head` is particularly useful for quickly checking the format of large files without printing the whole thing:
+
 ```bash
-head notes/genes.txt        # first 10 lines (shows all 4 in our case)
-head -n 2 notes/genes.txt   # first 2 lines
-tail -n 2 notes/genes.txt   # last 2 lines
+head notes/genes.txt
 ```
 
-`head` is particularly useful for quickly checking the format of large files without printing the whole thing.
+```bash
+head -n 2 notes/genes.txt
+```
+
+```bash
+tail -n 2 notes/genes.txt
+```
 
 ## Managing Files and Directories
 
 <span class="command-title">cp — copy</span>
 
+To copy a file, give `cp` the source and the destination. The `-r` flag copies a whole directory and everything inside it:
+
 ```bash
-cp notes/hello.txt notes/hello_backup.txt     # copy a file
+cp notes/hello.txt notes/hello_backup.txt
 ls notes/
 ```
 
 > `genes.txt  hello.txt  hello_backup.txt  myfile.txt`
 
 ```bash
-cp -r notes data/                             # copy a directory and all its contents
+cp -r notes data/
 ls data/
 ```
 
@@ -168,9 +188,11 @@ ls data/
 
 <span class="command-title">mv — move or rename</span>
 
+`mv` works for both moving a file to a new location and renaming it — it's the same operation:
+
 ```bash
-mv notes/hello_backup.txt data/               # move a file into a directory
-mv notes/myfile.txt notes/myfile_renamed.txt  # rename a file
+mv notes/hello_backup.txt data/
+mv notes/myfile.txt notes/myfile_renamed.txt
 ls notes/
 ```
 
@@ -179,7 +201,7 @@ ls notes/
 <span class="command-title">rm — remove</span>
 
 ```bash
-rm notes/myfile_renamed.txt                   # delete a file
+rm notes/myfile_renamed.txt
 ls notes/
 ```
 
@@ -190,11 +212,14 @@ ls notes/
 
 ## Input/Output Redirection
 
-By default, commands print their output to the screen. You can redirect that output to a file instead:
+By default, commands print their output to the screen. The `>` operator redirects that output into a file instead, creating it if it doesn't exist and overwriting it if it does. The `>>` operator appends to a file rather than overwriting it:
 
 ```bash
-ls -lh notes/ > data/file_list.txt           # write output to a file (overwrites if it exists)
-ls -lh data/ >> data/file_list.txt           # append output to a file
+ls -lh notes/ > data/file_list.txt
+```
+
+```bash
+ls -lh data/ >> data/file_list.txt
 ```
 
 Let's check what ended up in the file:
@@ -214,14 +239,14 @@ Saving output to a file is useful for keeping records of what a command produced
 Pipes (`|`) let you chain commands together, sending the output of one command as the input to the next:
 
 ```bash
-cat notes/genes.txt | head -2                # print just the first 2 lines
+cat notes/genes.txt | head -2
 ```
 
 > TP53 is a tumor suppressor gene.  
 > BRCA1 is associated with breast cancer risk.
 
 ```bash
-ls -lh notes/ | grep "genes"                 # list only files with "genes" in the name
+ls -lh notes/ | grep "genes"
 ```
 
 > `-rw-r--r-- 1 username group 142 Apr  8 10:00 genes.txt`
@@ -230,23 +255,26 @@ ls -lh notes/ | grep "genes"                 # list only files with "genes" in t
 
 <span class="command-title">grep — search for a pattern</span>
 
-`grep` searches for a pattern in a file or input:
+`grep` searches for a pattern in a file and prints every line that matches. The `-i` flag makes the search case-insensitive, and `-c` counts the number of matching lines instead of printing them:
 
 ```bash
-grep "TP53" notes/genes.txt                  # find all lines containing "TP53"
+grep "TP53" notes/genes.txt
 ```
 
 > TP53 is a tumor suppressor gene.  
 > TP53 mutations are found in many cancer types.
 
 ```bash
-grep -i "brca" notes/genes.txt               # case-insensitive search
-grep -c "TP53" notes/genes.txt               # count matching lines
+grep -i "brca" notes/genes.txt
+```
+
+```bash
+grep -c "TP53" notes/genes.txt
 ```
 
 > `2`
 
-Combined with pipes, `grep` is very powerful:
+Combined with pipes, `grep` is very powerful for filtering output:
 
 ```bash
 cat notes/genes.txt | grep "cancer"
@@ -258,21 +286,15 @@ cat notes/genes.txt | grep "cancer"
 
 ## Getting Help
 
-Almost every command has a manual page you can access with `man`:
+Almost every command has a manual page you can access with `man`, and most also accept `--help` for a quick summary of options. When in doubt, these are your first resources before searching online:
 
 ```bash
 man ls
-man grep
 ```
-
-You can also usually get a quick summary of options with `--help`:
 
 ```bash
 ls --help
-grep --help
 ```
-
-When in doubt, these are your first resources before searching online.
 
 ## Cleaning Up
 
