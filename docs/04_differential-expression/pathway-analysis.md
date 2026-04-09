@@ -102,7 +102,7 @@ barplot(go_results, showCategory=20, title="Top 20 Enriched GO Terms (BP)")
 ggsave("figures/go_barplot.png", width=10, height=8)
 ```
 
-![Top 20 enriched GO biological process terms. Bar length represents gene count, color represents adjusted p-value.](../assets/go_barplot.png)
+![Top 20 enriched GO biological process terms. Bar length represents gene count, color represents adjusted p-value.](../assets/go_barplot.png){width=50%}
 
 A dot plot, which also shows gene ratio:
 
@@ -111,7 +111,7 @@ dotplot(go_results, showCategory=20, title="GO Enrichment (BP)")
 ggsave("figures/go_dotplot.png", width=10, height=8)
 ```
 
-![GO enrichment dot plot. Dot size represents gene count, color represents adjusted p-value, x-axis shows the ratio of DE genes in each term.](../assets/go_dotplot.png)
+![GO enrichment dot plot. Dot size represents gene count, color represents adjusted p-value, x-axis shows the ratio of DE genes in each term.](../assets/go_dotplot.png){width=50%}
 
 ## KEGG Pathway Analysis
 
@@ -130,7 +130,7 @@ dotplot(kegg_results, showCategory=20, title="Top KEGG Pathways")
 ggsave("figures/kegg_dotplot.png", width=10, height=8)
 ```
 
-![Top enriched KEGG pathways dot plot.](../assets/kegg_dotplot.png)
+![Top enriched KEGG pathways dot plot.](../assets/kegg_dotplot.png){width=50%}
 
 ## Gene Set Enrichment Analysis (GSEA)
 
@@ -171,14 +171,14 @@ dotplot(gsea_results, showCategory=20, split=".sign") +
 ggsave("figures/gsea_dotplot.png", width=12, height=8)
 ```
 
-![GSEA dot plot split by direction of enrichment (activated vs suppressed).](../assets/gsea_dotplot.png)
+![GSEA dot plot split by direction of enrichment (activated vs suppressed).](../assets/gsea_dotplot.png){width=50%}
 
 ```r
 gseaplot2(gsea_results, geneSetID=1, title=gsea_results$Description[1])
 ggsave("figures/gsea_enrichment_plot.png", width=10, height=6)
 ```
 
-![GSEA enrichment plot for the top enriched gene set. The running enrichment score is shown at the top, the ranked gene list position of genes in the set is shown as tick marks in the middle, and the ranked list signal is shown at the bottom.](../assets/gsea_enrichment_plot.png)
+![GSEA enrichment plot for the top enriched gene set. The running enrichment score is shown at the top, the ranked gene list position of genes in the set is shown as tick marks in the middle, and the ranked list signal is shown at the bottom.](../assets/gsea_enrichment_plot.png){width=50%}
 
 ## Interpreting Results
 

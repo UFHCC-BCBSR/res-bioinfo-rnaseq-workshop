@@ -50,7 +50,7 @@ print(volcano_plot)
 ggsave("figures/volcano_plot.png", width=8, height=6, dpi=300)
 ```
 
-![Volcano plot showing log2 fold change vs -log10 adjusted p-value. Red points are significantly upregulated genes (logFC > 1, FDR < 0.05), blue points are significantly downregulated (logFC < -1, FDR < 0.05), and grey points are not significant. Top genes are labeled.](../assets/volcano_plot.png)
+![Volcano plot showing log2 fold change vs -log10 adjusted p-value. Red points are significantly upregulated genes (logFC > 1, FDR < 0.05), blue points are significantly downregulated (logFC < -1, FDR < 0.05), and grey points are not significant. Top genes are labeled.](../assets/volcano_plot.png){width=50%}
 
 ## Heatmap
 
@@ -92,7 +92,7 @@ pheatmap(top50_scaled,
          height = 10)
 ```
 
-![Heatmap of the top 50 differentially expressed genes. Rows are genes, columns are samples. Color represents z-scored log-CPM expression. Samples are annotated by temperature treatment and population.](../assets/heatmap_top50.png)
+![Heatmap of the top 50 differentially expressed genes. Rows are genes, columns are samples. Color represents z-scored log-CPM expression. Samples are annotated by temperature treatment and population.](../assets/heatmap_top50.png){width=50%}
 
 ## Boxplots for Individual Genes
 
@@ -126,7 +126,7 @@ print(boxplot)
 ggsave(paste0("figures/boxplot_", gene_of_interest, ".png"), width=6, height=5, dpi=300)
 ```
 
-![Boxplot showing expression of a gene of interest across temperature treatments, split by population. Points show individual samples.](../assets/boxplot_example.png)
+![Boxplot showing expression of a gene of interest across temperature treatments, split by population. Points show individual samples.](../assets/boxplot_example.png){width=50%}
 
 ## Results Tables
 
