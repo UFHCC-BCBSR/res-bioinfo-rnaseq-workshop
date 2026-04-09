@@ -32,7 +32,7 @@ As a worked example we use a published mouse melanoma dataset examining the tran
 | | 2 | [HiPerGator Basics](02_hipergator-basics/hipergator-basics.md) | Logging in, storage, loading software, and submitting SLURM jobs |
 | | 3 | [R Basics](05_r-basics/r-basics.md) | RStudio on HiPerGator, reading and writing files, installing packages |
 | | 4 | [AI Chatbot Tips](06_ai-chatbot/ai-chatbot.md) | How to use AI tools effectively and responsibly for bioinformatics |
-| 11:45 AM | 5 | [Preprocessing](03_preprocessing/quantification-review.md) | Expression quantification concepts and the nf-core/rnaseq workflow |
+| 11:45 AM | 5 | [Preprocessing](03_preprocessing/quantification.md) | Expression quantification concepts and the nf-core/rnaseq workflow |
 | 🍽️ 12:30 PM | — | **Lunch Break** | |
 | 1:00 PM | 6 | [Differential Expression](04_differential-expression/overview.md) | Statistical testing with limma-voom in R |
 | | 7 | [Visualization](04_differential-expression/visualization.md) | Volcano plots, heatmaps, and gene expression plots |
