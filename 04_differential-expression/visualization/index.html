@@ -895,7 +895,7 @@
 <span class="nf">print</span><span class="p">(</span><span class="n">volcano_plot</span><span class="p">)</span>
 <span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/volcano_plot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">8</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">6</span><span class="p">,</span><span class="w"> </span><span class="n">dpi</span><span class="o">=</span><span class="m">300</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="Volcano plot showing log2 fold change vs -log10 adjusted p-value. Red points are significantly upregulated genes (logFC &gt; 1, FDR &lt; 0.05), blue points are significantly downregulated (logFC &lt; -1, FDR &lt; 0.05), and grey points are not significant. Top genes are labeled." src="../assets/volcano_plot.png" /></p>
+<p><img alt="Volcano plot showing log2 fold change vs -log10 adjusted p-value. Red points are significantly upregulated genes (logFC &gt; 1, FDR &lt; 0.05), blue points are significantly downregulated (logFC &lt; -1, FDR &lt; 0.05), and grey points are not significant. Top genes are labeled." src="../../assets/volcano_plot.png" /></p>
 <h2 id="heatmap">Heatmap</h2>
 <p>A heatmap shows expression levels across all samples for a set of genes of interest, typically the top differentially expressed genes. It is useful for visualizing patterns of co-expression and confirming that samples cluster as expected.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Get top 50 DE genes by adjusted p-value</span>
@@ -932,7 +932,7 @@
 <span class="w">         </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="p">,</span>
 <span class="w">         </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="Heatmap of the top 50 differentially expressed genes. Rows are genes, columns are samples. Color represents z-scored log-CPM expression. Samples are annotated by temperature treatment and population." src="../assets/heatmap_top50.png" /></p>
+<p><img alt="Heatmap of the top 50 differentially expressed genes. Rows are genes, columns are samples. Color represents z-scored log-CPM expression. Samples are annotated by temperature treatment and population." src="../../assets/heatmap_top50.png" /></p>
 <h2 id="boxplots-for-individual-genes">Boxplots for Individual Genes</h2>
 <p>After identifying genes of interest from your DE results, it is often useful to plot the expression of individual genes across samples to visualize the effect size and within-group variability.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Extract log-CPM for a gene of interest</span>
@@ -961,7 +961,7 @@
 <span class="nf">print</span><span class="p">(</span><span class="n">boxplot</span><span class="p">)</span>
 <span class="nf">ggsave</span><span class="p">(</span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;figures/boxplot_&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">gene_of_interest</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.png&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">6</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">5</span><span class="p">,</span><span class="w"> </span><span class="n">dpi</span><span class="o">=</span><span class="m">300</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="Boxplot showing expression of a gene of interest across temperature treatments, split by population. Points show individual samples." src="../assets/boxplot_example.png" /></p>
+<p><img alt="Boxplot showing expression of a gene of interest across temperature treatments, split by population. Points show individual samples." src="../../assets/boxplot_example.png" /></p>
 <h2 id="results-tables">Results Tables</h2>
 <h3 id="viewing-results-in-rstudio">Viewing Results in RStudio</h3>
 <p>The <code>topTable</code> function returns a data frame that can be viewed interactively in RStudio:</p>
