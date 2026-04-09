@@ -881,12 +881,9 @@
 <p>RStudio Server will change the permissions on your working directory to 777, which makes files visible to other users. Never run it from your <code>/home</code> directory or the top level of your <code>/blue</code> directory. Always run it from a directory well inside your personal storage, e.g. <code>/blue/bioinf_workshop/$USER/</code>.</p>
 </div>
 <p>First, navigate to your workshop directory and create the job script:</p>
-<div class="bash-block">
 <div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/blue/bioinf_workshop/<span class="nv">$USER</span>
 nano<span class="w"> </span>rserver.sbatch
 </code></pre></div>
-</div>
-
 <details class="tip">
 <summary>Need a nano refresher?</summary>
 <ul>
@@ -896,7 +893,6 @@ nano<span class="w"> </span>rserver.sbatch
 </ul>
 </details>
 <p>Paste the following into nano, save, and exit:</p>
-<div class="bash-block">
 <div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
 <span class="c1">#SBATCH --job-name=rserver</span>
 <span class="c1">#SBATCH --nodes=1</span>
@@ -913,29 +909,18 @@ nano<span class="w"> </span>rserver.sbatch
 module<span class="w"> </span>purge<span class="p">;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>R
 rserver
 </code></pre></div>
-</div>
-
 <p>Submit the job:</p>
-<div class="bash-block">
 <div class="highlight"><pre><span></span><code>sbatch<span class="w"> </span>rserver.sbatch
 </code></pre></div>
-</div>
-
 <blockquote>
 <p><code>Submitted batch job 12345678</code></p>
 </blockquote>
 <p>Check the status until it shows <code>R</code> (running):</p>
-<div class="bash-block">
 <div class="highlight"><pre><span></span><code>squeue<span class="w"> </span>-u<span class="w"> </span><span class="nv">$USER</span>
 </code></pre></div>
-</div>
-
 <p>Once running, check the log file for connection instructions (replace <code>12345678</code> with your job ID):</p>
-<div class="bash-block">
 <div class="highlight"><pre><span></span><code>cat<span class="w"> </span>rserver_12345678.log
 </code></pre></div>
-</div>
-
 <blockquote>
 <p>Starting rserver on port 37546 in the /blue/bioinf_workshop/username/ directory.<br />
 Create an SSH tunnel with:<br />
@@ -943,10 +928,6 @@ Create an SSH tunnel with:<br />
 Then, open in the local browser:<br />
 <code>http://localhost:8080</code></p>
 </blockquote>
-<div class="admonition info">
-<p class="admonition-title">What is all that other stuff in the log?</p>
-<p>You will see a lot of RStudio Server startup messages after the SSH tunnel instructions — including an <code>ERROR</code> line about a missing config file. This is normal and can be ignored. If RStudio loaded in your browser, everything is working correctly.</p>
-</div>
 <p>Open a <strong>new terminal on your local computer</strong> and run the <code>ssh</code> command from the log file. The terminal will appear to hang — this is normal, leave it running. Then open <a href="http://localhost:8080">http://localhost:8080</a> in your browser and you should see the RStudio interface.</p>
 <h2 id="the-rstudio-interface">The RStudio Interface</h2>
 <p>RStudio has four panels:</p>
@@ -961,137 +942,92 @@ Then, open in the local browser:<br />
 <h3 id="r-packages">R Packages</h3>
 <p>R packages extend the base language with additional functions. You only need to install a package once per library location, but you need to load it with <code>library()</code> every time you start a new R session — <code>library()</code> simply tells R to make that package's functions available in your current session.</p>
 <h3 id="where-do-packages-live">Where Do Packages Live?</h3>
-<p>Before installing anything, it's worth understanding what "installing a package" actually means. When you run <code>install.packages()</code>, R downloads the package and copies its files into a directory on your filesystem — this is your <strong>package library</strong>. You can see where R is currently looking for packages by running this in the RStudio console:</p>
-<div class="r-block">
+<p>Before installing anything, it's worth understanding what "installing a package" actually means. When you run <code>install.packages()</code>, R downloads the package and copies its files into a directory on your filesystem — this is your <strong>package library</strong>. You can see where R is currently looking for packages by running this in the <strong>console</strong> panel of Rstudio:</p>
 <div class="highlight"><pre><span></span><code><span class="nf">.libPaths</span><span class="p">()</span>
 </code></pre></div>
-</div>
-
 <blockquote>
 <p><code>[1] "/home/username/R/libs"</code><br />
 <code>[2] "/apps/R/4.3/library"</code></p>
 </blockquote>
 <p>R searches these paths in order — the first one is where new packages get installed by default. This matters a lot for reproducibility: if you install packages into a shared or system directory, other users or future sessions may get different versions, or your packages may be overwritten when R is updated on the cluster.</p>
-<p>For this workshop, we will create a dedicated library folder inside your workshop directory so your packages are isolated and you can see exactly where they live. Run this in your HiPerGator terminal:</p>
-<div class="bash-block">
+<p>For this workshop, we will create a dedicated library folder inside your workshop directory so your packages are isolated and you can see exactly where they live. Run this in your <strong>HiPerGator terminal</strong> (not the RStudio console — this is a bash command, not an R command):</p>
 <div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>-p<span class="w"> </span>/blue/bioinf_workshop/<span class="nv">$USER</span>/R_libs
 </code></pre></div>
-</div>
-
 <details class="tip">
 <summary>Where do I run bash vs. R commands?</summary>
-<p>Throughout this workshop you will see two types of code blocks — green <strong>HiPerGator Terminal</strong> blocks are bash commands that run in the terminal where you SSH into HiPerGator, and blue <strong>RStudio Console</strong> blocks are R commands that run in RStudio. If you are ever unsure, the colored label at the top of each block tells you exactly where to run it.</p>
+<p>Throughout this workshop you will see two types of code blocks — bash commands that run in your terminal (the black window where you SSH into HiPerGator), and R commands that run in the RStudio console. If a code block starts with things like <code>mkdir</code>, <code>cd</code>, <code>sbatch</code>, or <code>module load</code>, it's a bash command and belongs in your terminal. If it looks like R code (<code>&lt;-</code>, <code>library()</code>, <code>read.table()</code>), run it in RStudio.</p>
 </details>
-<p>Now tell R to use it by adding it to the front of your library path:</p>
-<div class="r-block">
+<p>Now tell R to use it by adding it to the front of your library path. Run this in the RStudio console:</p>
 <div class="highlight"><pre><span></span><code><span class="nf">.libPaths</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;/blue/bioinf_workshop/&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">Sys.getenv</span><span class="p">(</span><span class="s">&quot;USER&quot;</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;/R_libs&quot;</span><span class="p">),</span><span class="w"> </span><span class="nf">.libPaths</span><span class="p">()))</span>
 </code></pre></div>
-</div>
-
 <p>Verify it worked:</p>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">.libPaths</span><span class="p">()</span>
 </code></pre></div>
-</div>
-
 <blockquote>
 <p><code>[1] "/blue/bioinf_workshop/username/R_libs"</code><br />
 <code>[2] "/home/username/R/libs"</code><br />
 <code>[3] "/apps/R/4.3/library"</code></p>
 </blockquote>
-<p>Your workshop directory is now first, so any packages you install will go there.</p>
+<p>Your workshop directory is now first, so any packages you install will go there. </p>
 <details class="info">
 <summary>Making this permanent with .Rprofile</summary>
-<p>Running <code>.libPaths()</code> in the console only applies to your current session. To make it permanent, you can add it to your <code>~/.Rprofile</code> file, which R reads automatically at startup. Note that <code>$USER</code> does not expand in R — we use <code>Sys.getenv("USER")</code> instead:</p>
-<p><div class="bash-block">
-<div class="highlight"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;.libPaths(c(paste0(&quot;/blue/bioinf_workshop/&quot;, Sys.getenv(&quot;USER&quot;), &quot;/R_libs&quot;), .libPaths()))&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.Rprofile
+<p>Running <code>.libPaths()</code> in the console only applies to your current session. To make it permanent, you can add it to your <code>~/.Rprofile</code> file, which R reads automatically at startup:</p>
+<div class="highlight"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;.libPaths(c(&quot;/blue/bioinf_workshop/$USER/R_libs&quot;, .libPaths()))&#39;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>~/.Rprofile
 </code></pre></div>
-</div></p>
 <p>Be cautious with this on a shared cluster — if you later work on a different project you may want a different library path.</p>
 </details>
 <h3 id="installing-and-loading-packages">Installing and Loading Packages</h3>
 <p>To install and load a CRAN package:</p>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;tidyverse&quot;</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
 <p>To install Bioconductor packages:</p>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nf">require</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">quietly</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">))</span>
 <span class="w">    </span><span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">)</span>
 <span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;limma&quot;</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">library</span><span class="p">(</span><span class="n">limma</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
-<p>If it asks <code>Update all/some/none? [a/s/n]:</code> you can type <code>n</code> and press Enter.</p>
-<p>After installing, you can verify the packages are in your workshop library by checking in your HiPerGator terminal:</p>
-<div class="bash-block">
+<p>If it asks <code>Update all/some/none? [a/s/n]:</code> you can type <code>n</code> and press enter.</p>
+<p>After installing a package you can literally go look at it by typing his in your hipergator terminal:</p>
 <div class="highlight"><pre><span></span><code>ls<span class="w"> </span>/blue/bioinf_workshop/<span class="nv">$USER</span>/R_libs
 </code></pre></div>
-</div>
-
 <details class="tip">
 <summary>Do I need to reinstall packages every session?</summary>
 <p>No — <code>install.packages()</code> only needs to be run once per library location. The package files stay on disk and <code>library()</code> just loads them into memory for that session.</p>
 <p>However, if your <code>.libPaths()</code> changes between sessions — for example if you start R from a different directory, use a different job script, or your <code>.Rprofile</code> isn't set up — R may not find your previously installed packages. This is one of the most common sources of "it worked last time" confusion on HPC systems. If you get an error like <code>there is no package called 'tidyverse'</code>, the first thing to check is <code>.libPaths()</code> and whether your workshop library path is listed.</p>
 </details>
 <h3 id="objects-and-assignment">Objects and Assignment</h3>
-<p>In R, you store data in objects using the assignment operator <code>&lt;-</code>. Let's create a few to practice:</p>
-<div class="r-block">
+<p>In R, you store data in objects using the assignment operator <code>&lt;-</code>. Let's create a few to practice. Paste this in your R console and press enter:</p>
 <div class="highlight"><pre><span></span><code><span class="n">x</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">42</span>
 <span class="n">name</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">&quot;HiPerGator&quot;</span>
 <span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">100</span><span class="p">,</span><span class="w"> </span><span class="m">200</span><span class="p">,</span><span class="w"> </span><span class="m">300</span><span class="p">,</span><span class="w"> </span><span class="m">400</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
 <p>You can see all objects in your current session in the Environment panel, or list them with:</p>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">ls</span><span class="p">()</span>
 </code></pre></div>
-</div>
-
 <blockquote>
 <p><code>[1] "counts" "name"   "x"</code></p>
 </blockquote>
 <p>To check the value of an object, just type its name:</p>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="n">x</span>
 </code></pre></div>
-</div>
-
 <blockquote>
 <p><code>[1] 42</code></p>
 </blockquote>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="n">counts</span>
 </code></pre></div>
-</div>
-
 <blockquote>
 <p><code>[1] 100 200 300 400</code></p>
 </blockquote>
 <h3 id="r-versions">R Versions</h3>
 <p>Different R versions can have different package compatibility. You can check your R version with:</p>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="n">R.version</span>
 </code></pre></div>
-</div>
-
 <p>For this workshop we use the version loaded by <code>module load R</code> on HiPerGator. If you install R on your own computer, we recommend using the same major version to avoid compatibility issues.</p>
 <h3 id="reading-files">Reading Files</h3>
-<p>Let's create a small practice file to read in. Run this in your HiPerGator terminal:</p>
-<div class="bash-block">
+<p>Let's create a small practice file to read in. Run this in the <strong>HiPerGator terminal</strong>:</p>
 <div class="highlight"><pre><span></span><code>cat<span class="w"> </span>&gt;<span class="w"> </span>/blue/bioinf_workshop/<span class="nv">$USER</span>/practice_samples.tsv<span class="w"> </span><span class="s">&lt;&lt; &#39;EOF&#39;</span>
 <span class="s">sample_id   condition   batch</span>
 <span class="s">sample1 control 1</span>
@@ -1100,81 +1036,40 @@ Then, open in the local browser:<br />
 <span class="s">sample4 treatment   2</span>
 <span class="s">EOF</span>
 </code></pre></div>
-</div>
-
-<p>Now read it into R. We can use <code>Sys.getenv("USER")</code> to avoid hardcoding your username:</p>
-<div class="r-block">
-<div class="highlight"><pre><span></span><code><span class="n">sample_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.table</span><span class="p">(</span>
-<span class="w">    </span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;/blue/bioinf_workshop/&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">Sys.getenv</span><span class="p">(</span><span class="s">&quot;USER&quot;</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;/practice_samples.tsv&quot;</span><span class="p">),</span>
-<span class="w">    </span><span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="o">=</span><span class="s">&quot;\t&quot;</span>
-<span class="p">)</span>
+<p>Now read it into R by pasting this in the R console (replace <username> with your username):</p>
+<div class="highlight"><pre><span></span><code><span class="n">sample_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.table</span><span class="p">(</span><span class="s">&quot;/blue/bioinf_workshop/&lt;username&gt;/practice_samples.tsv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="o">=</span><span class="s">&quot;\t&quot;</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
 <p>Or with tidyverse:</p>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span>
-<span class="n">sample_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read_tsv</span><span class="p">(</span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;/blue/bioinf_workshop/&quot;</span><span class="p">,</span><span class="w"> </span><span class="nf">Sys.getenv</span><span class="p">(</span><span class="s">&quot;USER&quot;</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;/practice_samples.tsv&quot;</span><span class="p">))</span>
+<span class="n">sample_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read_tsv</span><span class="p">(</span><span class="s">&quot;/blue/bioinf_workshop/&lt;username&gt;/practice_samples.tsv&quot;</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
 <p>To quickly check what a file looks like after reading it in:</p>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">head</span><span class="p">(</span><span class="n">sample_info</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">dim</span><span class="p">(</span><span class="n">sample_info</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">colnames</span><span class="p">(</span><span class="n">sample_info</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">str</span><span class="p">(</span><span class="n">sample_info</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
 <h3 id="saving-objects-to-files">Saving Objects to Files</h3>
 <p>To save a data frame to a file:</p>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">write.table</span><span class="p">(</span><span class="n">sample_info</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;sample_info_out.tsv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="o">=</span><span class="s">&quot;\t&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">quote</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">write.csv</span><span class="p">(</span><span class="n">sample_info</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;sample_info_out.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
 <p>To save an R object so you can reload it later without rerunning your analysis:</p>
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="nf">saveRDS</span><span class="p">(</span><span class="n">sample_info</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;sample_info.rds&quot;</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
-<div class="r-block">
 <div class="highlight"><pre><span></span><code><span class="n">sample_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">readRDS</span><span class="p">(</span><span class="s">&quot;sample_info.rds&quot;</span><span class="p">)</span>
 </code></pre></div>
-</div>
-
-<p>You can verify the files were created in your HiPerGator terminal:</p>
-<div class="bash-block">
+<p>You can see the files you have created in your cwd or where you wrote them to if you used an explicit filepath:</p>
 <div class="highlight"><pre><span></span><code>ls<span class="w"> </span>/blue/bioinf_workshop/<span class="nv">$USER</span>/
 </code></pre></div>
-</div>
-
 <h2 id="getting-help">Getting Help</h2>
-<p>To get help on any function in R, use <code>?</code>:</p>
-<div class="r-block">
+<p>To get help on any function in R, use <code>?</code> or <code>help()</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="o">?</span><span class="n">read.table</span>
 </code></pre></div>
-</div>
-
 <p>The Help panel in RStudio will display the documentation. You can also search for functions directly in the Help panel search box.</p>
 
 
