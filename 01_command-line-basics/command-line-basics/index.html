@@ -906,7 +906,8 @@ pwd
 <h2 id="setting-up-a-practice-directory">Setting Up a Practice Directory</h2>
 <p>Before we go further, let's create a dedicated space to practice in so we don't clutter your home directory.</p>
 <p><span class="command-title">mkdir — make directory</span></p>
-<pre><code class="language-bash">mkdir command_line_practice
+<pre><code class="language-bash">cd ~
+mkdir command_line_practice
 cd command_line_practice
 pwd
 </code></pre>
@@ -923,21 +924,24 @@ ls
 </blockquote>
 <h2 id="creating-files">Creating Files</h2>
 <p><span class="command-title">cat with redirection — quick file creation</span></p>
-<p>The quickest way to create a small file is to use <code>cat</code> with the <code>&gt;</code> redirect operator. Type the command, press <code>Enter</code>, type your content, then press <code>Ctrl+D</code> to save:</p>
-<pre><code class="language-bash">cat &gt; notes/hello.txt
+<p>The quickest way to create a small file is to use a heredoc — the <code>&lt;&lt; 'EOF'</code> syntax tells the shell to treat everything that follows as file content until it sees <code>EOF</code> on a line by itself, making it safe to copy and paste:</p>
+<pre><code class="language-bash">cat &gt; notes/hello.txt &lt;&lt; 'EOF'
 Hello world, this is my first file.
 I am learning the command line.
 This is line three.
+EOF
 </code></pre>
-<p><em>(press <code>Ctrl+D</code> to save)</em></p>
 <p>Let's create a second file:</p>
-<pre><code class="language-bash">cat &gt; notes/genes.txt
+<pre><code class="language-bash">cat &gt; notes/genes.txt  &lt;&lt; 'EOF'
 TP53 is a tumor suppressor gene.
 BRCA1 is associated with breast cancer risk.
 EGFR is a common target in lung cancer therapy.
 TP53 mutations are found in many cancer types.
+EOF
 </code></pre>
-<p><em>(press <code>Ctrl+D</code> to save)</em></p>
+<p>See the files you created:</p>
+<pre><code class="language-bash">ls notes
+</code></pre>
 <p><span class="command-title">nano — interactive text editor</span></p>
 <p><code>nano</code> is a simple text editor that runs in the terminal and is better for longer files. To open or create a file:</p>
 <pre><code class="language-bash">nano notes/myfile.txt
@@ -952,12 +956,8 @@ TP53 mutations are found in many cancer types.
 </thead>
 <tbody>
 <tr>
-<td>Save</td>
-<td><code>Ctrl+O</code>, then <code>Enter</code></td>
-</tr>
-<tr>
-<td>Exit</td>
-<td><code>Ctrl+X</code></td>
+<td>Exit and Save</td>
+<td><code>Ctrl+X</code>  then <code>Y</code></td>
 </tr>
 <tr>
 <td>Cut a line</td>
@@ -1082,17 +1082,16 @@ TP53 mutations are found in many cancer types.</p>
 <p>Almost every command has a manual page you can access with <code>man</code>, and most also accept <code>--help</code> for a quick summary of options. When in doubt, these are your first resources before searching online:</p>
 <pre><code class="language-bash">man ls
 </code></pre>
-<pre><code class="language-bash">ls --help
-</code></pre>
+<p>type <code>q</code> to get out of the manual</p>
 <h2 id="cleaning-up">Cleaning Up</h2>
-<p>Once you're done practicing, you can remove the whole practice directory:</p>
-<pre><code class="language-bash">cd ~
-rm -r command_line_practice
-</code></pre>
+<p>Once you're done practicing, you can remove the whole practice directory.</p>
 <div class="admonition warning">
 <p class="admonition-title">Reminder</p>
 <p><code>rm -r</code> permanently deletes everything inside. Make sure you are in your home directory (<code>cd ~</code>) and are removing the right directory before running this.</p>
 </div>
+<pre><code class="language-bash">cd ~
+rm -r command_line_practice
+</code></pre>
 
 
 

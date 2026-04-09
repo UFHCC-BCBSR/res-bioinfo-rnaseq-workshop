@@ -374,23 +374,6 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Writing and Submitting SLURM Jobs">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#key-slurm-resource-flags" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Key SLURM Resource Flags
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
 </li>
       
         <li class="md-nav__item">
@@ -843,15 +826,16 @@
 <p>HiPerGator is the University of Florida's high-performance computing (HPC) cluster, managed by UF Research Computing. It gives you access to far more computational power than a personal computer, which is essential for steps like running the nf-core/rnaseq pipeline. This section covers everything you need to know to get started on HiPerGator for this workshop.</p>
 <p>For more comprehensive documentation, see the <a href="https://docs.rc.ufl.edu/">UF Research Computing docs</a>.</p>
 <h2 id="logging-in">Logging In</h2>
-<p>You connect to HiPerGator via SSH from your terminal. If you haven't set up your terminal yet, see the <a href="../../01_command-line-basics/command-line-basics/">Command Line Basics</a> section.</p>
-<pre><code>$ ssh username@hpg.rc.ufl.edu
+<p>You connect to HiPerGator via SSH from your terminal. If you haven't set up your terminal yet, see the <a href="../../01_command-line-basics/command-line-basics/">Command Line Basics</a> section. Replace <code>username</code> with your GatorLink username:</p>
+<pre><code class="language-bash">ssh username@hpg.rc.ufl.edu
 </code></pre>
-<p>Replace <code>username</code> with your GatorLink username. You will be prompted for your password and then a Duo two-factor authentication push. After authenticating you will land on a <strong>login node</strong>, which looks like this:</p>
+<p>You will be prompted for your password and then a Duo two-factor authentication push. After authenticating you will land on a <strong>login node</strong>, which looks like this:</p>
 <pre><code>[username@login1 ~]$
 </code></pre>
-<blockquote>
-<p><strong>Important:</strong> Login nodes are shared resources for everyone on the cluster. Do not run computationally intensive work on login nodes — this is against HiPerGator policy and can result in account suspension. All real work should be submitted as SLURM jobs.</p>
-</blockquote>
+<div class="admonition warning">
+<p class="admonition-title">Do not run work on login nodes</p>
+<p>Login nodes are shared resources for everyone on the cluster. All real work must be submitted as SLURM jobs. Running computationally intensive work on login nodes is against HiPerGator policy and can result in account suspension.</p>
+</div>
 <h2 id="the-hipergator-filesystem">The HiPerGator Filesystem</h2>
 <p>HiPerGator has three main storage locations, each with a different purpose:</p>
 <table>
@@ -884,53 +868,54 @@
 </tr>
 </tbody>
 </table>
-<blockquote>
-<p><strong>Always run your analyses from <code>/blue</code></strong>. It is a high-performance storage system designed to handle the input/output demands of HPC workloads. <code>/home</code> and <code>/orange</code> are not suitable for running analyses.</p>
-</blockquote>
+<p>Always run your analyses from <code>/blue</code> — it is a high-performance storage system designed to handle the input/output demands of HPC workloads. <code>/home</code> and <code>/orange</code> are not suitable for running analyses.</p>
+<div class="admonition danger">
+<p class="admonition-title">Already have a HiPerGator account?</p>
+<p>If you already have an active HiPerGator account, do not use your personal <code>/blue</code> directory for this workshop. Instead, create and use a personal folder inside the shared workshop directory:</p>
+<p><code>bash
+mkdir /blue/bioinf_workshop/$USER
+cd /blue/bioinf_workshop/$USER</code></p>
+</div>
 <p>For this workshop, your working directory will be:</p>
-<pre><code>/blue/[training-group]/username
+<pre><code>/blue/bioinf_workshop/username
 </code></pre>
 <p>To navigate there:</p>
-<pre><code>$ cd /blue/[training-group]/username
+<pre><code class="language-bash">cd /blue/bioinf_workshop/username
 </code></pre>
 <p>You can check your storage quotas with:</p>
-<pre><code>$ home_quota
-$ blue_quota
-$ orange_quota
+<pre><code class="language-bash">home_quota
+</code></pre>
+<pre><code class="language-bash">blue_quota
+</code></pre>
+<pre><code class="language-bash">orange_quota
 </code></pre>
 <h2 id="open-ondemand">Open OnDemand</h2>
-<p>Open OnDemand (OOD) is a web interface for HiPerGator available at <a href="https://ood.rc.ufl.edu">https://ood.rc.ufl.edu</a>. It provides:</p>
-<ul>
-<li><strong>Files</strong>: A graphical file browser for navigating, uploading, downloading, and editing files on HiPerGator</li>
-<li><strong>Jobs</strong>: A dashboard for monitoring your running, pending, and recently completed jobs</li>
-<li><strong>Clusters</strong>: A terminal window in your browser if you prefer not to use SSH</li>
-</ul>
-<p>For this workshop, OOD is particularly useful for uploading input files and downloading results to your local computer without needing to use <code>scp</code> on the command line.</p>
+<p>Open OnDemand (OOD) is a web interface for HiPerGator available at <a href="https://ood.rc.ufl.edu">https://ood.rc.ufl.edu</a>. It provides a graphical file browser for navigating, uploading, downloading, and editing files, a dashboard for monitoring your jobs, and a browser-based terminal if you prefer not to use SSH. For this workshop, OOD is particularly useful for uploading input files and downloading results without needing to use <code>scp</code> on the command line.</p>
 <h2 id="loading-software-with-modules">Loading Software with Modules</h2>
-<p>HiPerGator uses a module system to manage software. Software is not available by default — you need to load it first. To search for available software:</p>
-<pre><code>$ module spider nextflow
+<p>HiPerGator uses a module system to manage software. Software is not available by default — you need to load it first.</p>
+<p><span class="command-title">module spider — search for available software</span></p>
+<pre><code class="language-bash">module spider nextflow
 </code></pre>
-<p>To load a module:</p>
-<pre><code>$ module load nextflow
+<p><span class="command-title">module load — load a module</span></p>
+<pre><code class="language-bash">module load nextflow
 </code></pre>
-<p>To see what modules you currently have loaded:</p>
-<pre><code>$ module list
+<p><span class="command-title">module list — see what you have loaded</span></p>
+<pre><code class="language-bash">module list
 </code></pre>
-<p>To unload a module:</p>
-<pre><code>$ module unload nextflow
+<p><span class="command-title">module unload — unload a module</span></p>
+<pre><code class="language-bash">module unload nextflow
 </code></pre>
 <p>Some software requires loading a prerequisite module first. <code>module spider</code> will tell you if this is the case and what to load.</p>
 <h2 id="writing-and-submitting-slurm-jobs">Writing and Submitting SLURM Jobs</h2>
-<p>HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly on the login node, you write a job script that specifies the resources you need and the commands to run, and submit it to the scheduler with <code>sbatch</code>.</p>
-<p>The key insight is that a SLURM script is just a regular bash script with a block of <code>#SBATCH</code> directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script:</p>
+<p>HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly on the login node, you write a job script that specifies the resources you need and the commands to run, then submit it to the scheduler with <code>sbatch</code>.</p>
+<p>A SLURM script is just a regular bash script with a block of <code>#SBATCH</code> directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script:</p>
 <pre><code class="language-bash">#!/bin/bash
-
 echo &quot;Hello from HiPerGator!&quot;
 echo &quot;My username is: $(whoami)&quot;
 echo &quot;Today's date is: $(date)&quot;
 echo &quot;I am running on node: $(hostname)&quot;
 </code></pre>
-<p>You could run this directly on the login node with <code>bash hello.sh</code>. Now here is the exact same script as an SLURM job:</p>
+<p>You could run this directly on the login node with <code>bash hello.sh</code>. Now here is the exact same script as a SLURM job — the only difference is the <code>#SBATCH</code> header:</p>
 <pre><code class="language-bash">#!/bin/bash
 #SBATCH --job-name=hello
 #SBATCH --nodes=1
@@ -939,8 +924,8 @@ echo &quot;I am running on node: $(hostname)&quot;
 #SBATCH --mem=1gb
 #SBATCH --time=00:05:00
 #SBATCH --partition=[training-partition]
-#SBATCH --account=[training-group]
-#SBATCH --qos=[training-group]
+#SBATCH --account=bioinf_workshop
+#SBATCH --qos=bioinf_workshop
 #SBATCH --output=hello_%j.out
 #SBATCH --error=hello_%j.err
 #SBATCH --mail-type=END,FAIL
@@ -951,18 +936,22 @@ echo &quot;My username is: $(whoami)&quot;
 echo &quot;Today's date is: $(date)&quot;
 echo &quot;I am running on node: $(hostname)&quot;
 </code></pre>
-<p>The only difference is the <code>#SBATCH</code> header. Save this as <code>hello.sh</code> and submit it:</p>
-<pre><code>$ sbatch hello.sh
-Submitted batch job 12345678
+<p>Save this as <code>hello.sbatch</code> and submit it:</p>
+<pre><code class="language-bash">sbatch hello.sbatch
 </code></pre>
-<p>When the job completes, check the output log:</p>
-<pre><code>$ cat hello_12345678.out
-Hello from HiPerGator!
-My username is: username
-Today's date is: Thu Apr  3 10:42:11 EDT 2026
-I am running on node: c0709a-s30
+<blockquote>
+<p><code>Submitted batch job 12345678</code></p>
+</blockquote>
+<p>When the job completes, check the output log (replace <code>12345678</code> with your actual job ID):</p>
+<pre><code class="language-bash">cat hello_12345678.out
 </code></pre>
-<h3 id="key-slurm-resource-flags">Key SLURM Resource Flags</h3>
+<blockquote>
+<p>Hello from HiPerGator!<br />
+My username is: username<br />
+Today's date is: Thu Apr  3 10:42:11 EDT 2026<br />
+I am running on node: c0709a-s30</p>
+</blockquote>
+<p>The key <code>#SBATCH</code> flags are summarized here:</p>
 <table>
 <thead>
 <tr>
@@ -989,31 +978,36 @@ I am running on node: c0709a-s30
 </tr>
 <tr>
 <td><code>--account</code> and <code>--qos</code></td>
-<td>Must match your group. Use <code>[training-group]</code> for this workshop.</td>
+<td>Must match your group. Use <code>bioinf_workshop</code> for this workshop.</td>
 </tr>
 </tbody>
 </table>
 <h2 id="monitoring-jobs">Monitoring Jobs</h2>
-<p>To check the status of your jobs:</p>
-<pre><code>$ squeue -u username
+<p><span class="command-title">squeue — check job status</span></p>
+<p>Replace <code>username</code> with your GatorLink username. The <code>ST</code> column shows job state: <code>PD</code> = pending, <code>R</code> = running, <code>CG</code> = completing:</p>
+<pre><code class="language-bash">squeue -u username
 </code></pre>
-<p>The <code>ST</code> column shows job state: <code>PD</code> = pending, <code>R</code> = running, <code>CG</code> = completing.</p>
-<p>To see resource usage for your group:</p>
-<pre><code>$ slurmInfo
+<p><span class="command-title">slurmInfo — see resource usage for your group</span></p>
+<pre><code class="language-bash">slurmInfo
 </code></pre>
-<p>To cancel a job:</p>
-<pre><code>$ scancel 12345678
+<p><span class="command-title">scancel — cancel a job</span></p>
+<pre><code class="language-bash">scancel 12345678
 </code></pre>
-<p>To see a summary of recent completed jobs:</p>
-<pre><code>$ sacct
+<p><span class="command-title">sacct — see a summary of recent completed jobs</span></p>
+<pre><code class="language-bash">sacct
 </code></pre>
 <h2 id="checking-job-logs">Checking Job Logs</h2>
-<p>When you submit a job, SLURM writes output and error messages to log files (named by job ID by default, e.g. <code>12345678.out</code> and <code>12345678.err</code>). These are the first place to look if something goes wrong.</p>
-<pre><code>$ cat 12345678.out          # view full output log
-$ tail -f 12345678.out      # follow the log in real time as the job runs
-$ tail 12345678.err         # check the last few lines of the error log
+<p>When you submit a job, SLURM writes output and error messages to log files named with the job ID, e.g. <code>hello_12345678.out</code> and <code>hello_12345678.err</code>. These are the first place to look if something goes wrong.</p>
+<p>To view the full output log:</p>
+<pre><code class="language-bash">cat hello_12345678.out
 </code></pre>
-<p><code>tail -f</code> is particularly useful for monitoring a running job — it will keep printing new lines as they are written to the log file. Press <code>Ctrl+C</code> to stop following.</p>
+<p>To follow the log in real time as the job runs (press <code>Ctrl+C</code> to stop):</p>
+<pre><code class="language-bash">tail -f hello_12345678.out
+</code></pre>
+<p>To check the last few lines of the error log:</p>
+<pre><code class="language-bash">tail hello_12345678.err
+</code></pre>
+<p><code>tail -f</code> is particularly useful for monitoring a running job — it will keep printing new lines as they are written to the log file.</p>
 
 
 
