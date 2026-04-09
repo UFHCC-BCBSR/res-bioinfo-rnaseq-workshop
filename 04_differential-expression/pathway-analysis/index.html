@@ -958,12 +958,12 @@
 <div class="highlight"><pre><span></span><code><span class="nf">barplot</span><span class="p">(</span><span class="n">go_results</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="o">=</span><span class="m">20</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Top 20 Enriched GO Terms (BP)&quot;</span><span class="p">)</span>
 <span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/go_barplot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">8</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="Top 20 enriched GO biological process terms. Bar length represents gene count, color represents adjusted p-value." src="../../assets/go_barplot.png" /></p>
+<p><img alt="Top 20 enriched GO biological process terms. Bar length represents gene count, color represents adjusted p-value." src="../../assets/go_barplot.png" />{width=50%}</p>
 <p>A dot plot, which also shows gene ratio:</p>
 <div class="highlight"><pre><span></span><code><span class="nf">dotplot</span><span class="p">(</span><span class="n">go_results</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="o">=</span><span class="m">20</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="o">=</span><span class="s">&quot;GO Enrichment (BP)&quot;</span><span class="p">)</span>
 <span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/go_dotplot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">8</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="GO enrichment dot plot. Dot size represents gene count, color represents adjusted p-value, x-axis shows the ratio of DE genes in each term." src="../../assets/go_dotplot.png" /></p>
+<p><img alt="GO enrichment dot plot. Dot size represents gene count, color represents adjusted p-value, x-axis shows the ratio of DE genes in each term." src="../../assets/go_dotplot.png" />{width=50%}</p>
 <h2 id="kegg-pathway-analysis">KEGG Pathway Analysis</h2>
 <p>KEGG (Kyoto Encyclopedia of Genes and Genomes) pathway analysis tests against curated biological pathways rather than GO terms.</p>
 <div class="highlight"><pre><span></span><code><span class="n">kegg_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">enrichKEGG</span><span class="p">(</span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sig_entrez</span><span class="o">$</span><span class="n">ENTREZID</span><span class="p">,</span>
@@ -977,7 +977,7 @@
 <span class="nf">dotplot</span><span class="p">(</span><span class="n">kegg_results</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="o">=</span><span class="m">20</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Top KEGG Pathways&quot;</span><span class="p">)</span>
 <span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/kegg_dotplot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">8</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="Top enriched KEGG pathways dot plot." src="../../assets/kegg_dotplot.png" /></p>
+<p><img alt="Top enriched KEGG pathways dot plot." src="../../assets/kegg_dotplot.png" />{width=50%}</p>
 <h2 id="gene-set-enrichment-analysis-gsea">Gene Set Enrichment Analysis (GSEA)</h2>
 <p>Unlike GO and KEGG enrichment which require a hard threshold for DE genes, GSEA uses the full ranked list of genes. Genes are ranked by a metric — here we use log fold change — and the method tests whether genes in a set tend to cluster at the top or bottom of the ranked list.</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Create a named ranked gene list (all genes, not just significant ones)</span>
@@ -1010,11 +1010,11 @@
 <span class="w">    </span><span class="nf">ggtitle</span><span class="p">(</span><span class="s">&quot;GSEA Results (BP)&quot;</span><span class="p">)</span>
 <span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/gsea_dotplot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">12</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">8</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="GSEA dot plot split by direction of enrichment (activated vs suppressed)." src="../../assets/gsea_dotplot.png" /></p>
+<p><img alt="GSEA dot plot split by direction of enrichment (activated vs suppressed)." src="../../assets/gsea_dotplot.png" />{width=50%}</p>
 <div class="highlight"><pre><span></span><code><span class="nf">gseaplot2</span><span class="p">(</span><span class="n">gsea_results</span><span class="p">,</span><span class="w"> </span><span class="n">geneSetID</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="o">=</span><span class="n">gsea_results</span><span class="o">$</span><span class="n">Description</span><span class="p">[</span><span class="m">1</span><span class="p">])</span>
 <span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/gsea_enrichment_plot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">6</span><span class="p">)</span>
 </code></pre></div>
-<p><img alt="GSEA enrichment plot for the top enriched gene set. The running enrichment score is shown at the top, the ranked gene list position of genes in the set is shown as tick marks in the middle, and the ranked list signal is shown at the bottom." src="../../assets/gsea_enrichment_plot.png" /></p>
+<p><img alt="GSEA enrichment plot for the top enriched gene set. The running enrichment score is shown at the top, the ranked gene list position of genes in the set is shown as tick marks in the middle, and the ranked list signal is shown at the bottom." src="../../assets/gsea_enrichment_plot.png" />{width=50%}</p>
 <h2 id="interpreting-results">Interpreting Results</h2>
 <ul>
 <li><strong>GO terms are hierarchical and redundant</strong> — many highly significant terms may be testing overlapping sets of genes. The <code>simplify()</code> function in clusterProfiler can help reduce redundancy.</li>
