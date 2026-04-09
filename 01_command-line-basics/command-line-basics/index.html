@@ -992,64 +992,67 @@
 <h2 id="navigating-the-filesystem">Navigating the Filesystem</h2>
 <h3 id="pwd-print-working-directory"><code>pwd</code> — print working directory</h3>
 <p>At any point you can find out exactly where you are in the filesystem with <code>pwd</code>:</p>
-<pre><code>$ pwd
-/home/username
+<pre><code class="language-bash">pwd
+</code></pre>
+<pre><code>/home/username
 </code></pre>
 <h3 id="ls-list-files"><code>ls</code> — list files</h3>
 <p><code>ls</code> lists the files and directories in your current directory:</p>
-<pre><code>$ ls
-data  results  scripts
+<pre><code class="language-bash">ls
+</code></pre>
+<pre><code>data  results  scripts
 </code></pre>
 <p>A few useful variations:</p>
-<pre><code>$ ls -l        # long format, shows permissions, size, and date
-$ ls -lh       # same but with human-readable file sizes (KB, MB, GB)
-$ ls -la       # includes hidden files (those starting with a dot)
+<pre><code class="language-bash">ls -l        # long format, shows permissions, size, and date
+ls -lh       # same but with human-readable file sizes (KB, MB, GB)
+ls -la       # includes hidden files (those starting with a dot)
 </code></pre>
 <h3 id="cd-change-directory"><code>cd</code> — change directory</h3>
 <p><code>cd</code> moves you into a different directory:</p>
-<pre><code>$ cd scripts
-$ pwd
-/home/username/scripts
+<pre><code class="language-bash">cd scripts
+pwd
+</code></pre>
+<pre><code>/home/username/scripts
 </code></pre>
 <p>A few useful shortcuts:</p>
-<pre><code>$ cd ..        # go up one directory
-$ cd ~         # go to your home directory
-$ cd -         # go back to the previous directory
+<pre><code class="language-bash">cd ..        # go up one directory
+cd ~         # go to your home directory
+cd -         # go back to the previous directory
 </code></pre>
 <h2 id="managing-files-and-directories">Managing Files and Directories</h2>
 <h3 id="mkdir-make-directory"><code>mkdir</code> — make directory</h3>
-<pre><code>$ mkdir results
-$ mkdir -p results/counts/raw    # create nested directories all at once
+<pre><code class="language-bash">mkdir results
+mkdir -p results/counts/raw    # create nested directories all at once
 </code></pre>
 <h3 id="cp-copy"><code>cp</code> — copy</h3>
-<pre><code>$ cp file1.txt file2.txt              # copy a file
-$ cp -r dir1 dir2                     # copy a directory and all its contents
+<pre><code class="language-bash">cp file1.txt file2.txt              # copy a file
+cp -r dir1 dir2                     # copy a directory and all its contents
 </code></pre>
 <h3 id="mv-move-or-rename"><code>mv</code> — move or rename</h3>
-<pre><code>$ mv file1.txt results/               # move a file into a directory
-$ mv old_name.txt new_name.txt        # rename a file
+<pre><code class="language-bash">mv file1.txt results/               # move a file into a directory
+mv old_name.txt new_name.txt        # rename a file
 </code></pre>
 <h3 id="rm-remove"><code>rm</code> — remove</h3>
-<pre><code>$ rm file1.txt                        # delete a file
-$ rm -r results/                      # delete a directory and all its contents
+<pre><code class="language-bash">rm file1.txt                        # delete a file
+rm -r results/                      # delete a directory and all its contents
 </code></pre>
 <blockquote>
 <p><strong>Warning:</strong> There is no trash bin on the command line. Deleted files are gone permanently. Be careful with <code>rm -r</code>.</p>
 </blockquote>
 <h2 id="viewing-file-contents">Viewing File Contents</h2>
 <h3 id="cat-print-entire-file"><code>cat</code> — print entire file</h3>
-<pre><code>$ cat sample_sheet.csv
+<pre><code class="language-bash">cat sample_sheet.csv
 </code></pre>
 <h3 id="head-and-tail-print-the-beginning-or-end-of-a-file"><code>head</code> and <code>tail</code> — print the beginning or end of a file</h3>
-<pre><code>$ head sample_sheet.csv          # first 10 lines
-$ head -n 20 sample_sheet.csv   # first 20 lines
-$ tail sample_sheet.csv          # last 10 lines
-$ tail -n 20 sample_sheet.csv   # last 20 lines
+<pre><code class="language-bash">head sample_sheet.csv          # first 10 lines
+head -n 20 sample_sheet.csv    # first 20 lines
+tail sample_sheet.csv          # last 10 lines
+tail -n 20 sample_sheet.csv    # last 20 lines
 </code></pre>
 <p><code>head</code> is particularly useful for quickly checking the format of large files without printing the whole thing.</p>
 <h2 id="editing-files-with-nano">Editing Files with nano</h2>
 <p><code>nano</code> is a simple text editor that runs in the terminal. To open or create a file:</p>
-<pre><code>$ nano myscript.sh
+<pre><code class="language-bash">nano myscript.sh
 </code></pre>
 <p>Key commands inside nano:</p>
 <table>
@@ -1085,33 +1088,33 @@ $ tail -n 20 sample_sheet.csv   # last 20 lines
 <p>The bottom of the nano screen always shows available commands, so you don't need to memorize them.</p>
 <h2 id="inputoutput-redirection">Input/Output Redirection</h2>
 <p>By default, commands print their output to the screen. You can redirect that output to a file instead:</p>
-<pre><code>$ ls -lh &gt; file_list.txt          # write output to a file (overwrites if it exists)
-$ ls -lh &gt;&gt; file_list.txt         # append output to a file
-$ my_command &amp;&gt; output.log        # redirect both output and errors to a file
+<pre><code class="language-bash">ls -lh &gt; file_list.txt          # write output to a file (overwrites if it exists)
+ls -lh &gt;&gt; file_list.txt         # append output to a file
+my_command &amp;&gt; output.log        # redirect both output and errors to a file
 </code></pre>
 <p>Saving output to a file is useful for keeping records of what a command produced, or for checking the output of long-running jobs later.</p>
 <h2 id="pipes">Pipes</h2>
 <p>Pipes (<code>|</code>) let you chain commands together, sending the output of one command as the input to the next:</p>
-<pre><code>$ cat sample_sheet.csv | head -5       # print just the first 5 lines of a file
-$ ls -lh | grep &quot;.fastq&quot;               # list only files with .fastq in the name
+<pre><code class="language-bash">cat sample_sheet.csv | head -5       # print just the first 5 lines of a file
+ls -lh | grep &quot;.fastq&quot;               # list only files with .fastq in the name
 </code></pre>
 <h2 id="searching-with-grep">Searching with grep</h2>
 <p><code>grep</code> searches for a pattern in a file or input:</p>
-<pre><code>$ grep &quot;panama&quot; sample_sheet.csv              # find all lines containing &quot;panama&quot;
-$ grep -i &quot;panama&quot; sample_sheet.csv           # case-insensitive search
-$ grep -c &quot;panama&quot; sample_sheet.csv           # count matching lines
+<pre><code class="language-bash">grep &quot;panama&quot; sample_sheet.csv              # find all lines containing &quot;panama&quot;
+grep -i &quot;panama&quot; sample_sheet.csv           # case-insensitive search
+grep -c &quot;panama&quot; sample_sheet.csv           # count matching lines
 </code></pre>
 <p>Combined with pipes, <code>grep</code> is very powerful:</p>
-<pre><code>$ cat sample_sheet.csv | grep &quot;high&quot;          # filter lines containing &quot;high&quot;
+<pre><code class="language-bash">cat sample_sheet.csv | grep &quot;high&quot;          # filter lines containing &quot;high&quot;
 </code></pre>
 <h2 id="getting-help">Getting Help</h2>
 <p>Almost every command has a manual page you can access with <code>man</code>:</p>
-<pre><code>$ man ls
-$ man grep
+<pre><code class="language-bash">man ls
+man grep
 </code></pre>
 <p>You can also usually get a quick summary of options with <code>--help</code>:</p>
-<pre><code>$ ls --help
-$ grep --help
+<pre><code class="language-bash">ls --help
+grep --help
 </code></pre>
 <p>When in doubt, these are your first resources before searching online.</p>
 
@@ -1163,7 +1166,7 @@ $ grep --help
     
       
       
-      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "toc.integrate"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "toc.integrate", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
       <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
