@@ -16,13 +16,12 @@ This document explains the demo analysis setup.
 ## What You'll Create (Your Working Space)
 
 ```
-/blue/bioinf_workshop/your_username/
+/blue/bioinf_workshop/$USER/
 └── rnaseq_workshop/
     ├── .gitignore
     ├── mkdocs.yml
     ├── README.md
     ├── docs/
-    ├── logs/
     └── demo-analysis/
         ├── data/
         │   ├── metadata/
@@ -59,8 +58,7 @@ This document explains the demo analysis setup.
 └── trimgalore/
 ```
 
-> **Note:** This directory is read-only. Your scripts will read from here
-> but write output to your own working directory.
+> **Note:** This directory is read-only. Your scripts will read from here but write output to your own working directory.
 
 ---
 
@@ -68,29 +66,35 @@ This document explains the demo analysis setup.
 
 ## Create Your Working Directory and Clone the Repo
 
-If you are not already logged in to HiPerGator, open a terminal and SSH in
-(replace `your_username` with your actual username):
+If you are not already logged in to HiPerGator, open a terminal and SSH in:
 
 ```bash
-ssh your_username@hpg.rc.ufl.edu
+ssh $USER@hpg.rc.ufl.edu
 ```
 
 Then navigate to your workshop directory and clone the repo:
 
 ```bash
-cd /blue/bioinf_workshop/your_username/
-
+cd /blue/bioinf_workshop/$USER
 git clone https://github.com/UFHCC-BCBSR/res-bioinfo-rnaseq-workshop.git rnaseq_workshop
-
 cd rnaseq_workshop
-
 ls -la
-# You should see: demo-analysis/, docs/, .gitignore, .Renviron, mkdocs.yml, README.md
 ```
+
+> You should see: `demo-analysis/`, `docs/`, `.gitignore`, `.Renviron`, `mkdocs.yml`, `README.md`
 
 ## Launch RStudio Server
 
-Create and submit a SLURM job to launch RStudio Server by copying and pasting this in the command prompt:
+!!! warning "Make sure you are in the cloned repo directory before submitting"
+    RStudio Server sources .Renviron from the directory where it is launched from. You must be inside `rnaseq_workshop/` before running `sbatch` to ensure this is sourced.
+
+    ```bash
+    pwd
+    ```
+
+    > You should see `/blue/bioinf_workshop/$USER/rnaseq_workshop` — if not, run `cd /blue/bioinf_workshop/$USER/rnaseq_workshop` first.
+
+Create and submit a SLURM job to launch RStudio Server:
 
 ```bash
 cat > rstudio.sbatch << 'EOF'
@@ -100,13 +104,13 @@ cat > rstudio.sbatch << 'EOF'
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=2
 #SBATCH --mem=28gb
-#SBATCH --time=12:00:00
-#SBATCH --output=logs/rserver_%j.log
-#SBATCH --error=logs/rserver_%j.error
+#SBATCH --time=05:00:00
+#SBATCH --output=rserver_%j.log
+#SBATCH --error=rserver_%j.err
 #SBATCH --account=bioinf_workshop
 #SBATCH --qos=bioinf_workshop
 
-module purge; module load R/4.5 # Load a specific version of R for reproducubility between sessions
+module purge; module load R/4.5
 rserver
 EOF
 sbatch rstudio.sbatch
@@ -115,67 +119,89 @@ sbatch rstudio.sbatch
 Check that the job is running:
 
 ```bash
-ml bcbsr_tools
-sjobs
+squeue -u $USER
 ```
 
-Once running, check the log for your connection details (replace `<JOBID>`
-with your actual job ID):
+Once running, check the log for your connection details (replace `12345678` with your actual job ID):
 
 ```bash
-cat logs/rserver_<JOBID>.log
+cat rserver_12345678.log
 ```
 
 You will see output like:
 
-```
-Starting rserver on port 45261 in the /blue/bioinf_workshop/your_username/rnaseq_workshop directory.
-Create an SSH tunnel with:
-ssh -N -L 8080:c0710a-s29.ufhpc:45261 your_username@hpg.rc.ufl.edu
-Then, open in the local browser:
-http://localhost:8080
-```
+> Starting rserver on port 45261 in the /blue/bioinf_workshop/username/rnaseq_workshop directory.  
+> Create an SSH tunnel with:  
+> `ssh -N -L 8080:c0710a-s29.ufhpc:45261 username@hpg.rc.ufl.edu`  
+> Then, open in the local browser:  
+> `http://localhost:8080`
+
+!!! info "What is all that other output in the log?"
+    You will see RStudio Server startup messages after the SSH tunnel instructions, including what looks like an ERROR about a missing config file. This is normal and can be ignored. If RStudio loaded in your browser, everything is working correctly.
 
 **To connect to RStudio:**
 
-1. Open a **new terminal window or tab on your local machine** (not on
-   HiPerGator) and run the `ssh -N -L ...` command shown in your log.
-   The working directory on your local machine doesn't matter.
-2. Open any browser and paste `http://localhost:8080` into the address bar.
+1. Open a **new terminal window on your local machine** (not on HiPerGator) and run the `ssh -N -L ...` command shown in your log. The terminal will appear to hang — this is normal, leave it running.
+2. Open any browser and go to `http://localhost:8080`.
 
-## Set Your Working Directory in RStudio
+## Verify Your Setup in RStudio
 
-Once RStudio opens, set your working directory in the **Console**
-(replace `your_username` with your actual username):
+Once RStudio opens, verify your working directory and package library path in the **Console**.
+
+First check your working directory — it should already be set to the repo root if you submitted the job from the right place:
 
 ```r
-setwd("/blue/bioinf_workshop/your_username/rnaseq_workshop")
+getwd()
 ```
 
-Then in the **Files panel** (bottom-right), click the **gear icon ⚙** and
-select **Go To Working Directory** to confirm you are in the right place.
+> `/blue/bioinf_workshop/username/rnaseq_workshop`
 
-> All scripts use the `here` package to build file paths relative to the
-> repository root, so they work for everyone without needing to change
-> any paths in the code.
+If it is not correct, set it manually (replace `username` with your GatorLink username):
+
+```r
+setwd("/blue/bioinf_workshop/username/rnaseq_workshop")
+```
+
+Then use the **gear icon ⚙** in the Files panel → **Go To Working Directory** to confirm.
+
+Next, verify your package library path is correct:
+
+```r
+.libPaths()
+```
+
+> `[1] "/blue/bioinf_workshop/share/R_libs"`  
+> `[2] "/usr/local/lib/R/site-library"`  
+> `[3] "/usr/lib/R/site-library"`  
+> `[4] "/usr/lib/R/library"`
+
+!!! warning "If your .libPaths() looks different"
+    The shared library at `/blue/bioinf_workshop/share/R_libs` must be first in the list — this is where all the workshop packages are pre-installed. If it is not listed or not first, the scripts will fail with "package not found" errors. Check that your `.Renviron` file is present in the repo root:
+
+    ```r
+    file.exists(".Renviron")
+    ```
+
+    If it returns `FALSE`, let an instructor know.
+
+> All scripts use the `here` package to build file paths relative to the repository root, so they work for everyone without needing to change any paths in the code.
+
+---
 
 # Running the Differential Expression Analysis
 
-With your working directory set, open and run the three numbered scripts in
-order — each picks up where the previous one left off.
+With your working directory set, open and run the three numbered scripts in order — each picks up where the previous one left off.
 
 ---
 
 ### 01 — Quality Control
+
 **File:** `demo-analysis/scripts/01_quality_control.Rmd`  
 **Run as:** Chunk by chunk in RStudio
 
-Loads the nf-core/rnaseq count matrix directly from the shared directory,
-converts Ensembl IDs to gene symbols, assesses sample quality, filters lowly
-expressed genes, and applies TMM normalization.
+Loads the nf-core/rnaseq count matrix directly from the shared directory, converts Ensembl IDs to gene symbols, assesses sample quality, filters lowly expressed genes, and applies TMM normalization.
 
-Before running, confirm your metadata looks correct by opening
-`demo-analysis/data/metadata/sample_metadata.csv` in the Files panel.
+Before running, confirm your metadata looks correct by opening `demo-analysis/data/metadata/sample_metadata.csv` in the Files panel.
 
 **Outputs** → `output/differential-expression/`:
 
@@ -189,12 +215,12 @@ Before running, confirm your metadata looks correct by opening
 ---
 
 ### 02 — Differential Expression
+
 **File:** `demo-analysis/scripts/02_differential_expression.Rmd`  
 **Run as:** Chunk by chunk in RStudio  
 **Requires:** Script 01 to have been run
 
-Identifies differentially expressed genes between PRMT7 knockdown and wildtype
-using limma-voom.
+Identifies differentially expressed genes between PRMT7 knockdown and wildtype using limma-voom.
 
 **Outputs** → `output/differential-expression/`:
 
@@ -210,12 +236,12 @@ using limma-voom.
 ---
 
 ### 03 — Pathway Analysis
+
 **File:** `demo-analysis/scripts/03_pathway_analysis.Rmd`  
 **Run as:** Chunk by chunk in RStudio  
 **Requires:** Script 02 to have been run
 
-Identifies enriched biological processes and pathways among differentially
-expressed genes using GO and KEGG over-representation analysis.
+Identifies enriched biological processes and pathways among differentially expressed genes using GO and KEGG over-representation analysis.
 
 **Outputs** → `output/differential-expression/`:
 
@@ -244,10 +270,7 @@ expressed genes using GO and KEGG over-representation analysis.
 **File:** `scripts/optional/opt_01_prepare_nfcore_data.R`  
 **Run as:** Source in RStudio
 
-Reads the raw nf-core/rnaseq pipeline output, converts Ensembl IDs to gene
-symbols, and generates QC and summary files. The core workshop scripts read
-the count matrix directly, so this script is not required — but it is useful
-if you want to explore the data preparation steps in more detail.
+Reads the raw nf-core/rnaseq pipeline output, converts Ensembl IDs to gene symbols, and generates QC and summary files. The core workshop scripts read the count matrix directly, so this script is not required — but it is useful if you want to explore the data preparation steps in more detail.
 
 **Outputs** → `output/optional/`:
 
@@ -269,9 +292,7 @@ if you want to explore the data preparation steps in more detail.
 **Run as:** Chunk by chunk in RStudio  
 **Requires:** Script 02 to have been run
 
-Reproduces a GREIN-style edgeR exact test analysis and compares results to
-limma-voom. Demonstrates reproducibility challenges when methods documentation
-is incomplete.
+Reproduces a GREIN-style edgeR exact test analysis and compares results to limma-voom. Demonstrates reproducibility challenges when methods documentation is incomplete.
 
 **Outputs** → `output/differential-expression/`:
 
@@ -291,9 +312,7 @@ is incomplete.
 **Run as:** Chunk by chunk in RStudio  
 **Requires:** Nothing — standalone script
 
-Demonstrates limma-voom with a two-factor experimental design using a
-published Drosophila temperature adaptation dataset. Covers interaction
-models, contrast matrices, and parallel vs. divergent response patterns.
+Demonstrates limma-voom with a two-factor experimental design using a published Drosophila temperature adaptation dataset. Covers interaction models, contrast matrices, and parallel vs. divergent response patterns.
 
 **Outputs** → `output/differential-expression/`:
 
@@ -317,13 +336,12 @@ models, contrast matrices, and parallel vs. divergent response patterns.
 
 ```r
 getwd()
-# Should return: /blue/bioinf_workshop/your_username/rnaseq_workshop
 ```
 
-If it doesn't, run:
+If it doesn't return `/blue/bioinf_workshop/username/rnaseq_workshop`, run:
 
 ```r
-setwd("/blue/bioinf_workshop/your_username/rnaseq_workshop")
+setwd("/blue/bioinf_workshop/username/rnaseq_workshop")
 ```
 
 Then use the **gear icon ⚙** in the Files panel → **Go To Working Directory**.
@@ -331,27 +349,17 @@ Then use the **gear icon ⚙** in the Files panel → **Go To Working Directory*
 ## "Cannot find file" errors
 
 ```r
-# Check what files exist in the output directory
-list.files("demo-analysis/output/01-prepared-data")
-
-# If empty, you need to run 01_prepare_nfcore_data.R first
+list.files("demo-analysis/output/differential-expression")
 ```
 
-## Data prep script can't find nf-core output
-
-Check this line in `01_prepare_nfcore_data.R`:
-
-```r
-nfcore_results_dir <- "/blue/bioinf_workshop/share/nfcore_rnaseq_output/"
-```
-
-Ask an instructor if the path looks different.
+If empty, you need to run the preceding script first.
 
 ## Package not installed
 
+If `.libPaths()` is correct and you still get package errors, let an instructor know — all required packages should be pre-installed in the shared library. If you need to install a package yourself:
+
 ```r
 install.packages(c("tidyverse", "ggrepel", "pheatmap", "RColorBrewer", "here"))
-
 if (!require("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
 BiocManager::install(c("limma", "edgeR"))
