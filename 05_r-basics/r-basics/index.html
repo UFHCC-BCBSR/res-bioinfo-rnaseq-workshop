@@ -876,33 +876,33 @@
 <p><strong>Warning:</strong> RStudio Server will change the permissions on your working directory to 777, which makes files visible to other users. Never run it from your <code>/home</code> directory or the top level of your <code>/blue</code> directory. Always run it from a directory well inside your personal storage, e.g. <code>/blue/[training-group]/username/rnaseq-workshop/</code>.</p>
 </blockquote>
 <p>First, create a job script. Save the following as <code>rserver.sh</code> in your working directory:</p>
-<pre><code class="language-bash">#!/bin/bash
-#SBATCH --job-name=rserver
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=4
-#SBATCH --mem=8gb
-#SBATCH --time=48:00:00
-#SBATCH --output=rserver_%j.log
-#SBATCH --partition=[training-partition]
-#SBATCH --account=[training-group]
-#SBATCH --qos=[training-group]
+<div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+<span class="c1">#SBATCH --job-name=rserver</span>
+<span class="c1">#SBATCH --nodes=1</span>
+<span class="c1">#SBATCH --ntasks=1</span>
+<span class="c1">#SBATCH --cpus-per-task=4</span>
+<span class="c1">#SBATCH --mem=8gb</span>
+<span class="c1">#SBATCH --time=48:00:00</span>
+<span class="c1">#SBATCH --output=rserver_%j.log</span>
+<span class="c1">#SBATCH --partition=[training-partition]</span>
+<span class="c1">#SBATCH --account=[training-group]</span>
+<span class="c1">#SBATCH --qos=[training-group]</span>
 
-module purge; module load R
+module<span class="w"> </span>purge<span class="p">;</span><span class="w"> </span>module<span class="w"> </span>load<span class="w"> </span>R
 rserver
-</code></pre>
+</code></pre></div>
 <p>Submit the job:</p>
-<pre><code>$ sbatch rserver.sh
+<div class="highlight"><pre><span></span><code>$ sbatch rserver.sh
 Submitted batch job 12345678
-</code></pre>
+</code></pre></div>
 <p>Once the job starts, check the log file for connection instructions:</p>
-<pre><code>$ cat rserver_12345678.log
+<div class="highlight"><pre><span></span><code>$ cat rserver_12345678.log
 Starting rserver on port 37546 in the /blue/training-group/username/rnaseq-workshop directory.
 Create an SSH tunnel with:
 ssh -N -L 8080:c12345a-s42.ufhpc:37546 username@hpg.rc.ufl.edu
 Then, open in the local browser:
 http://localhost:8080
-</code></pre>
+</code></pre></div>
 <p>Open a new terminal on your local computer and run the <code>ssh</code> command from the log file. The terminal will appear to hang — this is normal, leave it running.</p>
 <p>Then open <a href="http://localhost:8080">http://localhost:8080</a> in your browser. You should see the RStudio interface.</p>
 <h2 id="the-rstudio-interface">The RStudio Interface</h2>
@@ -917,74 +917,74 @@ http://localhost:8080
 <h2 id="r-basics_1">R Basics</h2>
 <h3 id="installing-and-loading-packages">Installing and Loading Packages</h3>
 <p>R packages extend the base language with additional functions. You only need to install a package once, but you need to load it every time you start a new R session:</p>
-<pre><code class="language-r"># Install a package (only do this once)
-install.packages(&quot;tidyverse&quot;)
+<div class="highlight"><pre><span></span><code><span class="c1"># Install a package (only do this once)</span>
+<span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;tidyverse&quot;</span><span class="p">)</span>
 
-# Install Bioconductor packages
-if (!require(&quot;BiocManager&quot;, quietly = TRUE))
-    install.packages(&quot;BiocManager&quot;)
-BiocManager::install(&quot;limma&quot;)
+<span class="c1"># Install Bioconductor packages</span>
+<span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nf">require</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">quietly</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">))</span>
+<span class="w">    </span><span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">)</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="s">&quot;limma&quot;</span><span class="p">)</span>
 
-# Load a package (do this every session)
-library(tidyverse)
-library(limma)
-</code></pre>
+<span class="c1"># Load a package (do this every session)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">limma</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="r-versions">R Versions</h3>
 <p>Different R versions can have different package compatibility. On HiPerGator you can check your R version with:</p>
-<pre><code class="language-r">R.version
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">R.version</span>
+</code></pre></div>
 <p>For this workshop we use the version loaded by <code>module load R</code>. If you install R on your own computer, we recommend using the same major version to avoid compatibility issues.</p>
 <h3 id="objects-and-assignment">Objects and Assignment</h3>
 <p>In R, you store data in objects using the assignment operator <code>&lt;-</code>:</p>
-<pre><code class="language-r">x &lt;- 42
-name &lt;- &quot;HiPerGator&quot;
-counts &lt;- c(100, 200, 300, 400)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="n">x</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="m">42</span>
+<span class="n">name</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">&quot;HiPerGator&quot;</span>
+<span class="n">counts</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">c</span><span class="p">(</span><span class="m">100</span><span class="p">,</span><span class="w"> </span><span class="m">200</span><span class="p">,</span><span class="w"> </span><span class="m">300</span><span class="p">,</span><span class="w"> </span><span class="m">400</span><span class="p">)</span>
+</code></pre></div>
 <p>You can see all objects in your current session in the Environment panel, or with:</p>
-<pre><code class="language-r">ls()
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nf">ls</span><span class="p">()</span>
+</code></pre></div>
 <h3 id="reading-files">Reading Files</h3>
 <p>The most common file types you will encounter in this workshop:</p>
-<pre><code class="language-r"># Tab-separated files (.tsv)
-sample_info &lt;- read.table(&quot;dme_elev_samples.tsv&quot;, header=TRUE, sep=&quot;\t&quot;)
+<div class="highlight"><pre><span></span><code><span class="c1"># Tab-separated files (.tsv)</span>
+<span class="n">sample_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.table</span><span class="p">(</span><span class="s">&quot;dme_elev_samples.tsv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="o">=</span><span class="s">&quot;\t&quot;</span><span class="p">)</span>
 
-# Comma-separated files (.csv)
-sample_info &lt;- read.csv(&quot;sample_info.csv&quot;, header=TRUE)
+<span class="c1"># Comma-separated files (.csv)</span>
+<span class="n">sample_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read.csv</span><span class="p">(</span><span class="s">&quot;sample_info.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">header</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
 
-# Both of the above can also be read with tidyverse
-library(tidyverse)
-sample_info &lt;- read_tsv(&quot;dme_elev_samples.tsv&quot;)
-sample_info &lt;- read_csv(&quot;sample_info.csv&quot;)
-</code></pre>
+<span class="c1"># Both of the above can also be read with tidyverse</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span>
+<span class="n">sample_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read_tsv</span><span class="p">(</span><span class="s">&quot;dme_elev_samples.tsv&quot;</span><span class="p">)</span>
+<span class="n">sample_info</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">read_csv</span><span class="p">(</span><span class="s">&quot;sample_info.csv&quot;</span><span class="p">)</span>
+</code></pre></div>
 <p>To quickly check what a file looks like after reading it in:</p>
-<pre><code class="language-r">head(sample_info)       # first 6 rows
-dim(sample_info)        # number of rows and columns
-colnames(sample_info)   # column names
-str(sample_info)        # structure and data types
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nf">head</span><span class="p">(</span><span class="n">sample_info</span><span class="p">)</span><span class="w">       </span><span class="c1"># first 6 rows</span>
+<span class="nf">dim</span><span class="p">(</span><span class="n">sample_info</span><span class="p">)</span><span class="w">        </span><span class="c1"># number of rows and columns</span>
+<span class="nf">colnames</span><span class="p">(</span><span class="n">sample_info</span><span class="p">)</span><span class="w">   </span><span class="c1"># column names</span>
+<span class="nf">str</span><span class="p">(</span><span class="n">sample_info</span><span class="p">)</span><span class="w">        </span><span class="c1"># structure and data types</span>
+</code></pre></div>
 <h3 id="saving-objects-to-files">Saving Objects to Files</h3>
 <p>To save a data frame or results table to a file:</p>
-<pre><code class="language-r"># Save as tab-separated
-write.table(results, file=&quot;de_results.tsv&quot;, sep=&quot;\t&quot;, row.names=TRUE, quote=FALSE)
+<div class="highlight"><pre><span></span><code><span class="c1"># Save as tab-separated</span>
+<span class="nf">write.table</span><span class="p">(</span><span class="n">results</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;de_results.tsv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sep</span><span class="o">=</span><span class="s">&quot;\t&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">,</span><span class="w"> </span><span class="n">quote</span><span class="o">=</span><span class="kc">FALSE</span><span class="p">)</span>
 
-# Save as CSV
-write.csv(results, file=&quot;de_results.csv&quot;, row.names=TRUE)
+<span class="c1"># Save as CSV</span>
+<span class="nf">write.csv</span><span class="p">(</span><span class="n">results</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;de_results.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
 
-# Save as tidyverse TSV
-write_tsv(results, file=&quot;de_results.tsv&quot;)
-</code></pre>
+<span class="c1"># Save as tidyverse TSV</span>
+<span class="nf">write_tsv</span><span class="p">(</span><span class="n">results</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;de_results.tsv&quot;</span><span class="p">)</span>
+</code></pre></div>
 <p>To save an R object so you can reload it later without rerunning your analysis:</p>
-<pre><code class="language-r"># Save
-saveRDS(DGE, file=&quot;dge_object.rds&quot;)
+<div class="highlight"><pre><span></span><code><span class="c1"># Save</span>
+<span class="nf">saveRDS</span><span class="p">(</span><span class="n">DGE</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;dge_object.rds&quot;</span><span class="p">)</span>
 
-# Reload
-DGE &lt;- readRDS(&quot;dge_object.rds&quot;)
-</code></pre>
+<span class="c1"># Reload</span>
+<span class="n">DGE</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">readRDS</span><span class="p">(</span><span class="s">&quot;dge_object.rds&quot;</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="getting-help">Getting Help</h2>
 <p>To get help on any function in R:</p>
-<pre><code class="language-r">?read.table
-help(lmFit)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="o">?</span><span class="n">read.table</span>
+<span class="nf">help</span><span class="p">(</span><span class="n">lmFit</span><span class="p">)</span>
+</code></pre></div>
 <p>The Help panel in RStudio will display the documentation. You can also search for functions in the Help panel search box.</p>
 
 

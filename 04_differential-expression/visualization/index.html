@@ -855,149 +855,149 @@
 <h1 id="visualization">Visualization</h1>
 <p>This page covers the most common visualizations used to explore and present RNA-seq differential expression results. For the full worked analysis using our demo dataset, see the workshop notebook in <code>demo-analysis/rnaseq_workshop_session2.qmd</code>.</p>
 <h2 id="required-packages">Required Packages</h2>
-<pre><code class="language-r">library(tidyverse)
-library(ggplot2)
-library(ggrepel)
-library(pheatmap)
-library(RColorBrewer)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nf">library</span><span class="p">(</span><span class="n">tidyverse</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">ggplot2</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">ggrepel</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">pheatmap</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">RColorBrewer</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="volcano-plot">Volcano Plot</h2>
 <p>A volcano plot shows log fold change on the x-axis and statistical significance (-log10 adjusted p-value) on the y-axis, allowing you to quickly identify genes that are both statistically significant and biologically meaningful in terms of effect size.</p>
-<pre><code class="language-r"># Starting from your full results table (all genes, output of topTable)
-# Add a significance category column
-all_genes$significance &lt;- case_when(
-    all_genes$adj.P.Val &lt; 0.05 &amp; all_genes$logFC &gt; 1  ~ &quot;Up&quot;,
-    all_genes$adj.P.Val &lt; 0.05 &amp; all_genes$logFC &lt; -1 ~ &quot;Down&quot;,
-    all_genes$adj.P.Val &lt; 0.05                         ~ &quot;Significant&quot;,
-    TRUE                                                ~ &quot;Not Significant&quot;
-)
+<div class="highlight"><pre><span></span><code><span class="c1"># Starting from your full results table (all genes, output of topTable)</span>
+<span class="c1"># Add a significance category column</span>
+<span class="n">all_genes</span><span class="o">$</span><span class="n">significance</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">case_when</span><span class="p">(</span>
+<span class="w">    </span><span class="n">all_genes</span><span class="o">$</span><span class="n">adj.P.Val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">all_genes</span><span class="o">$</span><span class="n">logFC</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">1</span><span class="w">  </span><span class="o">~</span><span class="w"> </span><span class="s">&quot;Up&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">all_genes</span><span class="o">$</span><span class="n">adj.P.Val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">all_genes</span><span class="o">$</span><span class="n">logFC</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">-1</span><span class="w"> </span><span class="o">~</span><span class="w"> </span><span class="s">&quot;Down&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="n">all_genes</span><span class="o">$</span><span class="n">adj.P.Val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="w">                         </span><span class="o">~</span><span class="w"> </span><span class="s">&quot;Significant&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="kc">TRUE</span><span class="w">                                                </span><span class="o">~</span><span class="w"> </span><span class="s">&quot;Not Significant&quot;</span>
+<span class="p">)</span>
 
-# Add gene names for labeling top genes
-all_genes$gene &lt;- rownames(all_genes)
+<span class="c1"># Add gene names for labeling top genes</span>
+<span class="n">all_genes</span><span class="o">$</span><span class="n">gene</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">all_genes</span><span class="p">)</span>
 
-# Plot
-volcano_plot &lt;- ggplot(all_genes, aes(x=logFC, y=-log10(adj.P.Val), color=significance)) +
-    geom_point(alpha=0.5, size=1) +
-    scale_color_manual(values=c(&quot;Up&quot;=&quot;red&quot;,
-                                &quot;Down&quot;=&quot;blue&quot;,
-                                &quot;Significant&quot;=&quot;orange&quot;,
-                                &quot;Not Significant&quot;=&quot;grey&quot;)) +
-    geom_vline(xintercept=c(-1, 1), linetype=&quot;dashed&quot;, alpha=0.5) +
-    geom_hline(yintercept=-log10(0.05), linetype=&quot;dashed&quot;, alpha=0.5) +
-    geom_text_repel(data=subset(all_genes, adj.P.Val &lt; 0.001 &amp; abs(logFC) &gt; 2),
-                    aes(label=gene), size=3, max.overlaps=20) +
-    labs(title=&quot;Volcano Plot&quot;,
-         x=&quot;Log2 Fold Change&quot;,
-         y=&quot;-Log10 Adjusted P-value&quot;,
-         color=&quot;Significance&quot;) +
-    theme_minimal()
+<span class="c1"># Plot</span>
+<span class="n">volcano_plot</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">ggplot</span><span class="p">(</span><span class="n">all_genes</span><span class="p">,</span><span class="w"> </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">logFC</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="o">=-</span><span class="nf">log10</span><span class="p">(</span><span class="n">adj.P.Val</span><span class="p">),</span><span class="w"> </span><span class="n">color</span><span class="o">=</span><span class="n">significance</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">geom_point</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="m">0.5</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="o">=</span><span class="m">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">scale_color_manual</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;Up&quot;</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">,</span>
+<span class="w">                                </span><span class="s">&quot;Down&quot;</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">,</span>
+<span class="w">                                </span><span class="s">&quot;Significant&quot;</span><span class="o">=</span><span class="s">&quot;orange&quot;</span><span class="p">,</span>
+<span class="w">                                </span><span class="s">&quot;Not Significant&quot;</span><span class="o">=</span><span class="s">&quot;grey&quot;</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">geom_vline</span><span class="p">(</span><span class="n">xintercept</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="m">-1</span><span class="p">,</span><span class="w"> </span><span class="m">1</span><span class="p">),</span><span class="w"> </span><span class="n">linetype</span><span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">alpha</span><span class="o">=</span><span class="m">0.5</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">geom_hline</span><span class="p">(</span><span class="n">yintercept</span><span class="o">=-</span><span class="nf">log10</span><span class="p">(</span><span class="m">0.05</span><span class="p">),</span><span class="w"> </span><span class="n">linetype</span><span class="o">=</span><span class="s">&quot;dashed&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">alpha</span><span class="o">=</span><span class="m">0.5</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">geom_text_repel</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="nf">subset</span><span class="p">(</span><span class="n">all_genes</span><span class="p">,</span><span class="w"> </span><span class="n">adj.P.Val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.001</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="nf">abs</span><span class="p">(</span><span class="n">logFC</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">2</span><span class="p">),</span>
+<span class="w">                    </span><span class="nf">aes</span><span class="p">(</span><span class="n">label</span><span class="o">=</span><span class="n">gene</span><span class="p">),</span><span class="w"> </span><span class="n">size</span><span class="o">=</span><span class="m">3</span><span class="p">,</span><span class="w"> </span><span class="n">max.overlaps</span><span class="o">=</span><span class="m">20</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Volcano Plot&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;Log2 Fold Change&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;-Log10 Adjusted P-value&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">color</span><span class="o">=</span><span class="s">&quot;Significance&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">theme_minimal</span><span class="p">()</span>
 
-print(volcano_plot)
-ggsave(&quot;figures/volcano_plot.png&quot;, width=8, height=6, dpi=300)
-</code></pre>
+<span class="nf">print</span><span class="p">(</span><span class="n">volcano_plot</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/volcano_plot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">8</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">6</span><span class="p">,</span><span class="w"> </span><span class="n">dpi</span><span class="o">=</span><span class="m">300</span><span class="p">)</span>
+</code></pre></div>
 <p><img alt="Volcano plot showing log2 fold change vs -log10 adjusted p-value. Red points are significantly upregulated genes (logFC &gt; 1, FDR &lt; 0.05), blue points are significantly downregulated (logFC &lt; -1, FDR &lt; 0.05), and grey points are not significant. Top genes are labeled." src="../assets/volcano_plot.png" /></p>
 <h2 id="heatmap">Heatmap</h2>
 <p>A heatmap shows expression levels across all samples for a set of genes of interest, typically the top differentially expressed genes. It is useful for visualizing patterns of co-expression and confirming that samples cluster as expected.</p>
-<pre><code class="language-r"># Get top 50 DE genes by adjusted p-value
-top50_genes &lt;- rownames(topTable(fit, coef=&quot;temperaturelow&quot;,
-                                  adjust=&quot;BH&quot;, number=50, sort.by=&quot;P&quot;))
+<div class="highlight"><pre><span></span><code><span class="c1"># Get top 50 DE genes by adjusted p-value</span>
+<span class="n">top50_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="nf">topTable</span><span class="p">(</span><span class="n">fit</span><span class="p">,</span><span class="w"> </span><span class="n">coef</span><span class="o">=</span><span class="s">&quot;temperaturelow&quot;</span><span class="p">,</span>
+<span class="w">                                  </span><span class="n">adjust</span><span class="o">=</span><span class="s">&quot;BH&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">number</span><span class="o">=</span><span class="m">50</span><span class="p">,</span><span class="w"> </span><span class="n">sort.by</span><span class="o">=</span><span class="s">&quot;P&quot;</span><span class="p">))</span>
 
-# Extract log-CPM values for these genes
-logcpm &lt;- cpm(DGE, log=TRUE)
-top50_logcpm &lt;- logcpm[top50_genes,]
+<span class="c1"># Extract log-CPM values for these genes</span>
+<span class="n">logcpm</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">cpm</span><span class="p">(</span><span class="n">DGE</span><span class="p">,</span><span class="w"> </span><span class="n">log</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+<span class="n">top50_logcpm</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">logcpm</span><span class="p">[</span><span class="n">top50_genes</span><span class="p">,]</span>
 
-# Z-score normalize rows for better visualization
-top50_scaled &lt;- t(scale(t(top50_logcpm)))
+<span class="c1"># Z-score normalize rows for better visualization</span>
+<span class="n">top50_scaled</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">t</span><span class="p">(</span><span class="nf">scale</span><span class="p">(</span><span class="nf">t</span><span class="p">(</span><span class="n">top50_logcpm</span><span class="p">)))</span>
 
-# Create sample annotation
-annotation_col &lt;- data.frame(
-    Temperature = sample_info$temp,
-    Population = sample_info$population,
-    row.names = sample_info$sample
-)
+<span class="c1"># Create sample annotation</span>
+<span class="n">annotation_col</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">data.frame</span><span class="p">(</span>
+<span class="w">    </span><span class="n">Temperature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_info</span><span class="o">$</span><span class="n">temp</span><span class="p">,</span>
+<span class="w">    </span><span class="n">Population</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_info</span><span class="o">$</span><span class="n">population</span><span class="p">,</span>
+<span class="w">    </span><span class="n">row.names</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_info</span><span class="o">$</span><span class="n">sample</span>
+<span class="p">)</span>
 
-# Plot
-pheatmap(top50_scaled,
-         annotation_col = annotation_col,
-         scale = &quot;none&quot;,
-         cluster_rows = TRUE,
-         cluster_cols = TRUE,
-         show_rownames = TRUE,
-         show_colnames = TRUE,
-         main = &quot;Top 50 DE Genes&quot;,
-         fontsize_row = 6,
-         fontsize_col = 8,
-         color = colorRampPalette(c(&quot;blue&quot;, &quot;white&quot;, &quot;red&quot;))(100),
-         filename = &quot;figures/heatmap_top50.png&quot;,
-         width = 8,
-         height = 10)
-</code></pre>
+<span class="c1"># Plot</span>
+<span class="nf">pheatmap</span><span class="p">(</span><span class="n">top50_scaled</span><span class="p">,</span>
+<span class="w">         </span><span class="n">annotation_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">annotation_col</span><span class="p">,</span>
+<span class="w">         </span><span class="n">scale</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;none&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">cluster_rows</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<span class="w">         </span><span class="n">cluster_cols</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<span class="w">         </span><span class="n">show_rownames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<span class="w">         </span><span class="n">show_colnames</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">,</span>
+<span class="w">         </span><span class="n">main</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;Top 50 DE Genes&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">fontsize_row</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">6</span><span class="p">,</span>
+<span class="w">         </span><span class="n">fontsize_col</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="p">,</span>
+<span class="w">         </span><span class="n">color</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">colorRampPalette</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;blue&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;white&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;red&quot;</span><span class="p">))(</span><span class="m">100</span><span class="p">),</span>
+<span class="w">         </span><span class="n">filename</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;figures/heatmap_top50.png&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">width</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">8</span><span class="p">,</span>
+<span class="w">         </span><span class="n">height</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">10</span><span class="p">)</span>
+</code></pre></div>
 <p><img alt="Heatmap of the top 50 differentially expressed genes. Rows are genes, columns are samples. Color represents z-scored log-CPM expression. Samples are annotated by temperature treatment and population." src="../assets/heatmap_top50.png" /></p>
 <h2 id="boxplots-for-individual-genes">Boxplots for Individual Genes</h2>
 <p>After identifying genes of interest from your DE results, it is often useful to plot the expression of individual genes across samples to visualize the effect size and within-group variability.</p>
-<pre><code class="language-r"># Extract log-CPM for a gene of interest
-gene_of_interest &lt;- &quot;your_gene_name&quot;
+<div class="highlight"><pre><span></span><code><span class="c1"># Extract log-CPM for a gene of interest</span>
+<span class="n">gene_of_interest</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="s">&quot;your_gene_name&quot;</span>
 
-gene_expr &lt;- data.frame(
-    expression = as.numeric(logcpm[gene_of_interest,]),
-    temperature = sample_info$temp,
-    population = sample_info$population,
-    sample = sample_info$sample
-)
+<span class="n">gene_expr</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">data.frame</span><span class="p">(</span>
+<span class="w">    </span><span class="n">expression</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nf">as.numeric</span><span class="p">(</span><span class="n">logcpm</span><span class="p">[</span><span class="n">gene_of_interest</span><span class="p">,]),</span>
+<span class="w">    </span><span class="n">temperature</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_info</span><span class="o">$</span><span class="n">temp</span><span class="p">,</span>
+<span class="w">    </span><span class="n">population</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_info</span><span class="o">$</span><span class="n">population</span><span class="p">,</span>
+<span class="w">    </span><span class="n">sample</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sample_info</span><span class="o">$</span><span class="n">sample</span>
+<span class="p">)</span>
 
-# Boxplot colored by temperature, faceted by population
-boxplot &lt;- ggplot(gene_expr, aes(x=temperature, y=expression, fill=temperature)) +
-    geom_boxplot(outlier.shape=NA) +
-    geom_jitter(width=0.1, size=2, alpha=0.7) +
-    facet_wrap(~population) +
-    scale_fill_manual(values=c(&quot;high&quot;=&quot;tomato&quot;, &quot;low&quot;=&quot;steelblue&quot;)) +
-    labs(title=paste(&quot;Expression of&quot;, gene_of_interest),
-         x=&quot;Temperature&quot;,
-         y=&quot;Log2 CPM&quot;,
-         fill=&quot;Temperature&quot;) +
-    theme_minimal() +
-    theme(legend.position=&quot;none&quot;)
+<span class="c1"># Boxplot colored by temperature, faceted by population</span>
+<span class="n">boxplot</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">ggplot</span><span class="p">(</span><span class="n">gene_expr</span><span class="p">,</span><span class="w"> </span><span class="nf">aes</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="n">temperature</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="o">=</span><span class="n">expression</span><span class="p">,</span><span class="w"> </span><span class="n">fill</span><span class="o">=</span><span class="n">temperature</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">geom_boxplot</span><span class="p">(</span><span class="n">outlier.shape</span><span class="o">=</span><span class="kc">NA</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">geom_jitter</span><span class="p">(</span><span class="n">width</span><span class="o">=</span><span class="m">0.1</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="o">=</span><span class="m">2</span><span class="p">,</span><span class="w"> </span><span class="n">alpha</span><span class="o">=</span><span class="m">0.7</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">facet_wrap</span><span class="p">(</span><span class="o">~</span><span class="n">population</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">scale_fill_manual</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;high&quot;</span><span class="o">=</span><span class="s">&quot;tomato&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;low&quot;</span><span class="o">=</span><span class="s">&quot;steelblue&quot;</span><span class="p">))</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">labs</span><span class="p">(</span><span class="n">title</span><span class="o">=</span><span class="nf">paste</span><span class="p">(</span><span class="s">&quot;Expression of&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">gene_of_interest</span><span class="p">),</span>
+<span class="w">         </span><span class="n">x</span><span class="o">=</span><span class="s">&quot;Temperature&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">y</span><span class="o">=</span><span class="s">&quot;Log2 CPM&quot;</span><span class="p">,</span>
+<span class="w">         </span><span class="n">fill</span><span class="o">=</span><span class="s">&quot;Temperature&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">theme_minimal</span><span class="p">()</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">theme</span><span class="p">(</span><span class="n">legend.position</span><span class="o">=</span><span class="s">&quot;none&quot;</span><span class="p">)</span>
 
-print(boxplot)
-ggsave(paste0(&quot;figures/boxplot_&quot;, gene_of_interest, &quot;.png&quot;), width=6, height=5, dpi=300)
-</code></pre>
+<span class="nf">print</span><span class="p">(</span><span class="n">boxplot</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="nf">paste0</span><span class="p">(</span><span class="s">&quot;figures/boxplot_&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">gene_of_interest</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;.png&quot;</span><span class="p">),</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">6</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">5</span><span class="p">,</span><span class="w"> </span><span class="n">dpi</span><span class="o">=</span><span class="m">300</span><span class="p">)</span>
+</code></pre></div>
 <p><img alt="Boxplot showing expression of a gene of interest across temperature treatments, split by population. Points show individual samples." src="../assets/boxplot_example.png" /></p>
 <h2 id="results-tables">Results Tables</h2>
 <h3 id="viewing-results-in-rstudio">Viewing Results in RStudio</h3>
 <p>The <code>topTable</code> function returns a data frame that can be viewed interactively in RStudio:</p>
-<pre><code class="language-r"># View top 20 DE genes sorted by p-value
-top20 &lt;- topTable(fit, coef=&quot;temperaturelow&quot;,
-                  adjust=&quot;BH&quot;, number=20, sort.by=&quot;P&quot;)
-View(top20)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="c1"># View top 20 DE genes sorted by p-value</span>
+<span class="n">top20</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">topTable</span><span class="p">(</span><span class="n">fit</span><span class="p">,</span><span class="w"> </span><span class="n">coef</span><span class="o">=</span><span class="s">&quot;temperaturelow&quot;</span><span class="p">,</span>
+<span class="w">                  </span><span class="n">adjust</span><span class="o">=</span><span class="s">&quot;BH&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">number</span><span class="o">=</span><span class="m">20</span><span class="p">,</span><span class="w"> </span><span class="n">sort.by</span><span class="o">=</span><span class="s">&quot;P&quot;</span><span class="p">)</span>
+<span class="nf">View</span><span class="p">(</span><span class="n">top20</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="exporting-results-to-file">Exporting Results to File</h3>
-<pre><code class="language-r"># Create output directory
-if (!dir.exists(&quot;results&quot;)) dir.create(&quot;results&quot;)
+<div class="highlight"><pre><span></span><code><span class="c1"># Create output directory</span>
+<span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nf">dir.exists</span><span class="p">(</span><span class="s">&quot;results&quot;</span><span class="p">))</span><span class="w"> </span><span class="nf">dir.create</span><span class="p">(</span><span class="s">&quot;results&quot;</span><span class="p">)</span>
 
-# Export all genes
-all_genes &lt;- topTable(fit, coef=&quot;temperaturelow&quot;,
-                      adjust=&quot;BH&quot;, number=Inf, sort.by=&quot;P&quot;)
-write.csv(all_genes, file=&quot;results/de_results_all_genes.csv&quot;, row.names=TRUE)
+<span class="c1"># Export all genes</span>
+<span class="n">all_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">topTable</span><span class="p">(</span><span class="n">fit</span><span class="p">,</span><span class="w"> </span><span class="n">coef</span><span class="o">=</span><span class="s">&quot;temperaturelow&quot;</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">adjust</span><span class="o">=</span><span class="s">&quot;BH&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">number</span><span class="o">=</span><span class="kc">Inf</span><span class="p">,</span><span class="w"> </span><span class="n">sort.by</span><span class="o">=</span><span class="s">&quot;P&quot;</span><span class="p">)</span>
+<span class="nf">write.csv</span><span class="p">(</span><span class="n">all_genes</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;results/de_results_all_genes.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
 
-# Export only significant genes
-sig_genes &lt;- all_genes[all_genes$adj.P.Val &lt; 0.05,]
-write.csv(sig_genes, file=&quot;results/de_results_significant.csv&quot;, row.names=TRUE)
-</code></pre>
+<span class="c1"># Export only significant genes</span>
+<span class="n">sig_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">all_genes</span><span class="p">[</span><span class="n">all_genes</span><span class="o">$</span><span class="n">adj.P.Val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="p">,]</span>
+<span class="nf">write.csv</span><span class="p">(</span><span class="n">sig_genes</span><span class="p">,</span><span class="w"> </span><span class="n">file</span><span class="o">=</span><span class="s">&quot;results/de_results_significant.csv&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">row.names</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
+</code></pre></div>
 <h3 id="filtering-and-summarizing-results">Filtering and Summarizing Results</h3>
-<pre><code class="language-r"># How many genes are significant at FDR &lt; 0.05?
-sum(all_genes$adj.P.Val &lt; 0.05)
+<div class="highlight"><pre><span></span><code><span class="c1"># How many genes are significant at FDR &lt; 0.05?</span>
+<span class="nf">sum</span><span class="p">(</span><span class="n">all_genes</span><span class="o">$</span><span class="n">adj.P.Val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="p">)</span>
 
-# How many are up vs down regulated?
-table(all_genes$adj.P.Val &lt; 0.05, all_genes$logFC &gt; 0)
+<span class="c1"># How many are up vs down regulated?</span>
+<span class="nf">table</span><span class="p">(</span><span class="n">all_genes</span><span class="o">$</span><span class="n">adj.P.Val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span><span class="w"> </span><span class="n">all_genes</span><span class="o">$</span><span class="n">logFC</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">0</span><span class="p">)</span>
 
-# Filter to genes with large effect size and high significance
-strong_de &lt;- all_genes %&gt;%
-    filter(adj.P.Val &lt; 0.05) %&gt;%
-    filter(abs(logFC) &gt; 2) %&gt;%
-    arrange(adj.P.Val)
+<span class="c1"># Filter to genes with large effect size and high significance</span>
+<span class="n">strong_de</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">all_genes</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">    </span><span class="nf">filter</span><span class="p">(</span><span class="n">adj.P.Val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">    </span><span class="nf">filter</span><span class="p">(</span><span class="nf">abs</span><span class="p">(</span><span class="n">logFC</span><span class="p">)</span><span class="w"> </span><span class="o">&gt;</span><span class="w"> </span><span class="m">2</span><span class="p">)</span><span class="w"> </span><span class="o">%&gt;%</span>
+<span class="w">    </span><span class="nf">arrange</span><span class="p">(</span><span class="n">adj.P.Val</span><span class="p">)</span>
 
-head(strong_de)
-</code></pre>
+<span class="nf">head</span><span class="p">(</span><span class="n">strong_de</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="further-reading">Further Reading</h2>
 <ul>
 <li><a href="https://ggplot2.tidyverse.org/">ggplot2 documentation</a></li>

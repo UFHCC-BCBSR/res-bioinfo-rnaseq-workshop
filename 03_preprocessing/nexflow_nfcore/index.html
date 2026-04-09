@@ -823,31 +823,31 @@ If a job fails halfway through (e.g., due to a memory limit), Nextflow can resum
 <p>Treasure of pipelines can be found here: https://nf-co.re/pipelines/</p>
 <hr />
 <p><strong>Running Nextflow: Basic Syntax</strong></p>
-<pre><code class="language-bash">nextflow run &lt;pipeline&gt; \
-    --input &lt;samplesheet&gt; \
-    --outdir &lt;output_directory&gt; \
-    -profile &lt;profile&gt; \
-    -c &lt;config_file&gt; \
-    -resume
-</code></pre>
+<div class="highlight"><pre><span></span><code>nextflow<span class="w"> </span>run<span class="w"> </span>&lt;pipeline&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--input<span class="w"> </span>&lt;samplesheet&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>--outdir<span class="w"> </span>&lt;output_directory&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-profile<span class="w"> </span>&lt;profile&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-c<span class="w"> </span>&lt;config_file&gt;<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-resume
+</code></pre></div>
 <p>Parameters starting with -- (double dash) are pipeline-specific parameters defined by the pipeline developer (e.g., --input, --outdir).
 Parameters starting with - (single dash) are Nextflow engine parameters (e.g., -profile, -resume, -c).</p>
 <h2 id="common-pipeline-errors">Common Pipeline Errors</h2>
 <p><strong>1. Memory or Time Limit Exceeded (Exit status 137 or 140 or similar)</strong>
 Jobs fail with exit code 137 (killed by OOM), 140 (time exceeded), or similar.</p>
 <p>Fix: Increase the memory/time limits in your config file:</p>
-<pre><code>process {
-    withName : 'NFCORE_RNASEQ:RNASEQ:DUPRADAR' 
+<div class="highlight"><pre><span></span><code>process {
+    withName : &#39;NFCORE_RNASEQ:RNASEQ:DUPRADAR&#39; 
     memory = 12.GB 
     time   = 8.h
     maxRetries = 3
 }
-</code></pre>
+</code></pre></div>
 <p><strong>2. Missing input files</strong></p>
 <p>A file path in your sample sheet or parameters does not exist. It could be a typo in the file path of relative paths are incorrect.</p>
 <p>Fix: Always verify the paths before running a pipeline.</p>
-<pre><code class="language-bash">ls -lh /path/to/your/fastq/sample1_R1.fastq.gz
-</code></pre>
+<div class="highlight"><pre><span></span><code>ls<span class="w"> </span>-lh<span class="w"> </span>/path/to/your/fastq/sample1_R1.fastq.gz
+</code></pre></div>
 <p><strong>3. Invalid input files</strong></p>
 <p>Another common error is providing input files in invalid format. A simple extra tab or a comma, missing column, misspelled column header can cause validation failures. The genome files such as the .gtf or the fasta files are recommended to be in a certain format as available from the sources.</p>
 <p>Fix: Use templates from the websites, refrain from manually tampering the input files. </p>

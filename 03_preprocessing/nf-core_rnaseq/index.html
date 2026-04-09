@@ -991,10 +991,9 @@ sample sheet, a genome fasta, and either a gtf or a gff annotation file.</p>
 <p><img alt="nf-core rnaseq metro map" src="../../assets/nf-core-rnaseq_metro_map_grey_animated.svg" /></p>
 <p>On UF's HiPerGator, nf-core is available as a pre-installed software module along with Nextflow. 
 Both the modules can be loaded using the following commands on HiPerGator:</p>
-<pre><code class="language-bash">module load nf-core
-module load nextflow/25.10.4
-
-</code></pre>
+<div class="highlight"><pre><span></span><code>module<span class="w"> </span>load<span class="w"> </span>nf-core
+module<span class="w"> </span>load<span class="w"> </span>nextflow/25.10.4
+</code></pre></div>
 <hr />
 <h2 id="pipeline-components-and-tools">Pipeline Components and Tools</h2>
 <table>
@@ -1121,15 +1120,14 @@ RSEM's probabilistic model to handle multi-mapping reads more accurately. </p>
 <h2 id="step-1-prepare-the-sample-sheet">Step 1: Prepare the Sample Sheet</h2>
 <p>The sample sheet is a comma-separated file that tells the pipeline where 
 your FASTQ files are</p>
-<pre><code class="language-csv">sample,fastq_1,fastq_2,strandedness,seq_platform
+<div class="highlight"><pre><span></span><code>sample,fastq_1,fastq_2,strandedness,seq_platform
 SRR12546980,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546980.fastq,,auto,ILLUMINA
 SRR12546982,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546982.fastq,,auto,ILLUMINA
 SRR12546984,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546984.fastq,,auto,ILLUMINA
 SRR12546986,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546986.fastq,,auto,ILLUMINA
 SRR12546988,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546988.fastq,,auto,ILLUMINA
 SRR12546990,/blue/bioinf_workshop/share/nfcore_rnaseq_files/inputs/fastq/SRR12546990.fastq,,auto,ILLUMINA
-
-</code></pre>
+</code></pre></div>
 <h3 id="column-descriptions">Column Descriptions</h3>
 <table>
 <thead>
@@ -1185,8 +1183,8 @@ without strand specificity.</p>
 <li>NCBI GTF files can be used but may cause the following error due to missing gene_id attributes:</li>
 </ul>
 <p>The genome and the gtf files need to be from the same source. </p>
-<pre><code>ERROR: failed to find the gene identifier attribute in the 9th column of the provided GTF file.
-</code></pre>
+<div class="highlight"><pre><span></span><code>ERROR: failed to find the gene identifier attribute in the 9th column of the provided GTF file.
+</code></pre></div>
 <p>The nf-core ecosystem was built to work optimally with annotation files from 
 Ensembl. In most cases, it will work with NCBI annotation files. 
 However, for both Ensembl and NCBI, the gtf versions of the annotation files are preferred.</p>
@@ -1207,7 +1205,7 @@ the process block indicating the executor, and an additional line below with
 partition names to use.</p>
 <p>This configuration file offers flexibility beyond available parameters 
 to tweak the intermediate tools used. Save this file as <code>nextflow_rnaseq.config</code>.</p>
-<pre><code>/*
+<div class="highlight"><pre><span></span><code>/*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Nextflow config file for RNA-Seq analysis
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -1226,15 +1224,15 @@ process {
 
 
 process {
-  withName: 'NFCORE_RNASEQ:RNASEQ:DUPRADAR' {
+  withName: &#39;NFCORE_RNASEQ:RNASEQ:DUPRADAR&#39; {
     time = 80.h
     memory = 48.GB
     cpus = 6
   }
 }
 process {
-  withName: 'NFCORE_RNASEQ:RNASEQ:DUPRADAR' {
-    errorStrategy = 'ignore'
+  withName: &#39;NFCORE_RNASEQ:RNASEQ:DUPRADAR&#39; {
+    errorStrategy = &#39;ignore&#39;
   }
 }
 
@@ -1244,13 +1242,13 @@ process {
         }
 }
 
-params.igenomes_base = '/orange/cancercenter-dept/GENOMES/iGenomes'
-</code></pre>
+params.igenomes_base = &#39;/orange/cancercenter-dept/GENOMES/iGenomes&#39;
+</code></pre></div>
 <h2 id="step-4-write-the-parameters-yaml-file">Step 4: Write the Parameters YAML File</h2>
 <p>Rather than putting all parameters in the SLURM script command, storing them in
 a YAML file makes your runs more readable, reproducible, and easy to version-control.
 Save this file as <code>params.yaml</code>.</p>
-<pre><code>---
+<div class="highlight"><pre><span></span><code>---
 # General Parameters
 input: &quot;samplesheet.csv&quot;                             # Path to the sample sheet, keep as is if running from same directory
 outdir: &quot;/blue/bioinf_workshop/share/nfcore_rnaseq_files/outputs&quot;                                     # Output directory for results
@@ -1270,13 +1268,12 @@ igenomes_ignore: true                                # Ignore default iGenomes s
 
 # PRocess skipping
 skip_preseq: false
-
-</code></pre>
+</code></pre></div>
 <h2 id="step-5-write-the-slurm-submission-script">Step 5: Write the SLURM Submission Script</h2>
 <p>This script submits the Nextflow pipeline manager itself as a SLURM job. 
 Nextflow then submits each pipeline step as its own SLURM job internally. Save this file
 as 'rnaseq.sh`.</p>
-<pre><code>#!/bin/bash
+<div class="highlight"><pre><span></span><code>#!/bin/bash
 #SBATCH --job-name=nfcorernaseq
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
@@ -1307,7 +1304,7 @@ nextflow run nf-core/rnaseq -r 3.23.0 \
 
 # save_reference is optional argument
 # Add -resume to resume the same workflow
-</code></pre>
+</code></pre></div>
 <p>⚠️ Always pin the pipeline version with -r (e.g., -r 3.23.0). 
 This ensures your results are reproducible and not affected by future pipeline updates. 
 Check available versions at https://github.com/nf-core/rnaseq/releases</p>
@@ -1317,20 +1314,20 @@ can be initiated using the following command.</p>
 <p>⚠️ Do not run this from your home directory. You should have created a separate folder
 in your shared directory for the run. </p>
 <h3 id="submit-the-job">Submit the job</h3>
-<pre><code>sbatch rnaseq.sh
-</code></pre>
+<div class="highlight"><pre><span></span><code>sbatch rnaseq.sh
+</code></pre></div>
 <h3 id="check-job-status">Check job status</h3>
-<pre><code>squeue -u your_username
-</code></pre>
+<div class="highlight"><pre><span></span><code>squeue -u your_username
+</code></pre></div>
 <h3 id="monitor-progress-in-real-time">Monitor progress in real time</h3>
-<pre><code>tail -f LOG/rnaseq.out
-</code></pre>
+<div class="highlight"><pre><span></span><code>tail -f LOG/rnaseq.out
+</code></pre></div>
 <h3 id="check-for-errors">Check for errors</h3>
-<pre><code>tail -f logs/rnaseq.err
-</code></pre>
+<div class="highlight"><pre><span></span><code>tail -f logs/rnaseq.err
+</code></pre></div>
 <h2 id="pipeline-outputs">Pipeline Outputs</h2>
 <p>Once complete, your output directory will look like:</p>
-<pre><code>outputs/star_rsem/
+<div class="highlight"><pre><span></span><code>outputs/star_rsem/
 ├── fastqc/                         # Raw read QC (FastQC)
 │  ├── raw
 │  └── trim
@@ -1354,7 +1351,7 @@ in your shared directory for the run. </p>
 │   └── star_rsem/
 │       └── multiqc_report.html     ← ✅ Start here for QC review
 └── pipeline_info/                  # Nextflow execution reports
-</code></pre>
+</code></pre></div>
 <p>✅ The key output for differential expression analysis is r
 sem.merged.gene_counts.tsv — a matrix of raw estimated counts with genes as 
 rows and samples as columns.</p>

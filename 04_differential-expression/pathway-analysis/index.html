@@ -885,41 +885,41 @@
 <p>This page covers two complementary approaches: <strong>Gene Ontology (GO) enrichment analysis</strong> and <strong>Gene Set Enrichment Analysis (GSEA)</strong>. Both are implemented in the <code>clusterProfiler</code> R package.</p>
 <p>For the full worked analysis using our demo dataset, see the workshop notebook in <code>demo-analysis/rnaseq_workshop_session2.qmd</code>.</p>
 <h2 id="required-packages">Required Packages</h2>
-<pre><code class="language-r">if (!require(&quot;BiocManager&quot;, quietly = TRUE))
-    install.packages(&quot;BiocManager&quot;)
-BiocManager::install(c(&quot;clusterProfiler&quot;, &quot;org.Hs.eg.db&quot;, &quot;enrichplot&quot;, &quot;ggplot2&quot;))
-</code></pre>
-<pre><code class="language-r">library(clusterProfiler)
-library(org.Hs.eg.db)
-library(enrichplot)
-library(ggplot2)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="kr">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="nf">require</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">quietly</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">))</span>
+<span class="w">    </span><span class="nf">install.packages</span><span class="p">(</span><span class="s">&quot;BiocManager&quot;</span><span class="p">)</span>
+<span class="n">BiocManager</span><span class="o">::</span><span class="nf">install</span><span class="p">(</span><span class="nf">c</span><span class="p">(</span><span class="s">&quot;clusterProfiler&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;org.Hs.eg.db&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;enrichplot&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;ggplot2&quot;</span><span class="p">))</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="nf">library</span><span class="p">(</span><span class="n">clusterProfiler</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">org.Hs.eg.db</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">enrichplot</span><span class="p">)</span>
+<span class="nf">library</span><span class="p">(</span><span class="n">ggplot2</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="preparing-your-gene-list">Preparing Your Gene List</h2>
 <p>Both methods require a list of genes in a specific format. <code>clusterProfiler</code> works best with Entrez gene IDs, so we first need to convert gene symbols to Entrez IDs.</p>
-<pre><code class="language-r"># Starting from your DE results table (e.g. output of topTable)
-# Assuming gene symbols are the row names
-gene_symbols &lt;- rownames(all_genes)
+<div class="highlight"><pre><span></span><code><span class="c1"># Starting from your DE results table (e.g. output of topTable)</span>
+<span class="c1"># Assuming gene symbols are the row names</span>
+<span class="n">gene_symbols</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">all_genes</span><span class="p">)</span>
 
-# Convert gene symbols to Entrez IDs
-entrez_ids &lt;- bitr(gene_symbols,
-                   fromType = &quot;SYMBOL&quot;,
-                   toType = &quot;ENTREZID&quot;,
-                   OrgDb = org.Hs.eg.db)
+<span class="c1"># Convert gene symbols to Entrez IDs</span>
+<span class="n">entrez_ids</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">bitr</span><span class="p">(</span><span class="n">gene_symbols</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">fromType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SYMBOL&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">toType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENTREZID&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">org.Hs.eg.db</span><span class="p">)</span>
 
-head(entrez_ids)
-</code></pre>
+<span class="nf">head</span><span class="p">(</span><span class="n">entrez_ids</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="the-universe-argument">The Universe Argument</h2>
 <p>A critical concept in GO and KEGG enrichment analysis is the <strong>universe</strong> — the background set of genes against which enrichment is tested. The universe should be all genes that were tested for differential expression, i.e. all genes remaining after <code>filterByExpr</code>, not just the significant ones.</p>
 <p>By default, if you do not specify a universe, <code>clusterProfiler</code> will use all genes in the annotation database as the background. This is almost always wrong for RNA-seq data — your experiment only measured a subset of all annotated genes, and using the full genome as background will inflate your enrichment statistics and produce misleading results.</p>
-<pre><code class="language-r"># The universe is ALL genes that were tested for DE
-all_tested_genes &lt;- rownames(all_genes)
+<div class="highlight"><pre><span></span><code><span class="c1"># The universe is ALL genes that were tested for DE</span>
+<span class="n">all_tested_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">all_genes</span><span class="p">)</span>
 
-# Convert universe to Entrez IDs
-universe_entrez &lt;- bitr(all_tested_genes,
-                        fromType = &quot;SYMBOL&quot;,
-                        toType = &quot;ENTREZID&quot;,
-                        OrgDb = org.Hs.eg.db)
-</code></pre>
+<span class="c1"># Convert universe to Entrez IDs</span>
+<span class="n">universe_entrez</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">bitr</span><span class="p">(</span><span class="n">all_tested_genes</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">fromType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SYMBOL&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">toType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENTREZID&quot;</span><span class="p">,</span>
+<span class="w">                        </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">org.Hs.eg.db</span><span class="p">)</span>
+</code></pre></div>
 <p>Always pass <code>universe = universe_entrez$ENTREZID</code> to your enrichment functions, as shown in the examples below.</p>
 <blockquote>
 <p><strong>Note:</strong> GSEA does not require a universe argument because it uses the full ranked list of all tested genes rather than a threshold-based significant/not-significant split.</p>
@@ -932,88 +932,88 @@ universe_entrez &lt;- bitr(all_tested_genes,
 <li><strong>CC</strong> (Cellular Component): where gene products are active</li>
 </ul>
 <h3 id="running-go-enrichment">Running GO Enrichment</h3>
-<pre><code class="language-r"># Get significantly DE genes (FDR &lt; 0.05)
-sig_genes &lt;- rownames(all_genes[all_genes$adj.P.Val &lt; 0.05,])
+<div class="highlight"><pre><span></span><code><span class="c1"># Get significantly DE genes (FDR &lt; 0.05)</span>
+<span class="n">sig_genes</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">all_genes</span><span class="p">[</span><span class="n">all_genes</span><span class="o">$</span><span class="n">adj.P.Val</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="m">0.05</span><span class="p">,])</span>
 
-# Convert to Entrez IDs
-sig_entrez &lt;- bitr(sig_genes,
-                   fromType = &quot;SYMBOL&quot;,
-                   toType = &quot;ENTREZID&quot;,
-                   OrgDb = org.Hs.eg.db)
+<span class="c1"># Convert to Entrez IDs</span>
+<span class="n">sig_entrez</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">bitr</span><span class="p">(</span><span class="n">sig_genes</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">fromType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;SYMBOL&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">toType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;ENTREZID&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">org.Hs.eg.db</span><span class="p">)</span>
 
-# Run GO enrichment for Biological Process
-go_results &lt;- enrichGO(gene = sig_entrez$ENTREZID,
-                       universe = universe_entrez$ENTREZID,
-                       OrgDb = org.Hs.eg.db,
-                       ont = &quot;BP&quot;,
-                       pAdjustMethod = &quot;BH&quot;,
-                       pvalueCutoff = 0.05,
-                       qvalueCutoff = 0.05,
-                       readable = TRUE)
+<span class="c1"># Run GO enrichment for Biological Process</span>
+<span class="n">go_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">enrichGO</span><span class="p">(</span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sig_entrez</span><span class="o">$</span><span class="n">ENTREZID</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">universe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">universe_entrez</span><span class="o">$</span><span class="n">ENTREZID</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">org.Hs.eg.db</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">ont</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BP&quot;</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">pAdjustMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BH&quot;</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">qvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">,</span>
+<span class="w">                       </span><span class="n">readable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">TRUE</span><span class="p">)</span>
 
-head(as.data.frame(go_results))
-</code></pre>
+<span class="nf">head</span><span class="p">(</span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">go_results</span><span class="p">))</span>
+</code></pre></div>
 <h3 id="visualizing-go-results">Visualizing GO Results</h3>
 <p>A bar plot of the top enriched GO terms:</p>
-<pre><code class="language-r">barplot(go_results, showCategory=20, title=&quot;Top 20 Enriched GO Terms (BP)&quot;)
-ggsave(&quot;figures/go_barplot.png&quot;, width=10, height=8)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nf">barplot</span><span class="p">(</span><span class="n">go_results</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="o">=</span><span class="m">20</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Top 20 Enriched GO Terms (BP)&quot;</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/go_barplot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">8</span><span class="p">)</span>
+</code></pre></div>
 <p><img alt="Top 20 enriched GO biological process terms. Bar length represents gene count, color represents adjusted p-value." src="../assets/go_barplot.png" /></p>
 <p>A dot plot, which also shows gene ratio:</p>
-<pre><code class="language-r">dotplot(go_results, showCategory=20, title=&quot;GO Enrichment (BP)&quot;)
-ggsave(&quot;figures/go_dotplot.png&quot;, width=10, height=8)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nf">dotplot</span><span class="p">(</span><span class="n">go_results</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="o">=</span><span class="m">20</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="o">=</span><span class="s">&quot;GO Enrichment (BP)&quot;</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/go_dotplot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">8</span><span class="p">)</span>
+</code></pre></div>
 <p><img alt="GO enrichment dot plot. Dot size represents gene count, color represents adjusted p-value, x-axis shows the ratio of DE genes in each term." src="../assets/go_dotplot.png" /></p>
 <h2 id="kegg-pathway-analysis">KEGG Pathway Analysis</h2>
 <p>KEGG (Kyoto Encyclopedia of Genes and Genomes) pathway analysis tests against curated biological pathways rather than GO terms.</p>
-<pre><code class="language-r">kegg_results &lt;- enrichKEGG(gene = sig_entrez$ENTREZID,
-                            universe = universe_entrez$ENTREZID,
-                            organism = &quot;hsa&quot;,
-                            pAdjustMethod = &quot;BH&quot;,
-                            pvalueCutoff = 0.05)
+<div class="highlight"><pre><span></span><code><span class="n">kegg_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">enrichKEGG</span><span class="p">(</span><span class="n">gene</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sig_entrez</span><span class="o">$</span><span class="n">ENTREZID</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">universe</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">universe_entrez</span><span class="o">$</span><span class="n">ENTREZID</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">organism</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;hsa&quot;</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">pAdjustMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BH&quot;</span><span class="p">,</span>
+<span class="w">                            </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">)</span>
 
-head(as.data.frame(kegg_results))
+<span class="nf">head</span><span class="p">(</span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">kegg_results</span><span class="p">))</span>
 
-dotplot(kegg_results, showCategory=20, title=&quot;Top KEGG Pathways&quot;)
-ggsave(&quot;figures/kegg_dotplot.png&quot;, width=10, height=8)
-</code></pre>
+<span class="nf">dotplot</span><span class="p">(</span><span class="n">kegg_results</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="o">=</span><span class="m">20</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="o">=</span><span class="s">&quot;Top KEGG Pathways&quot;</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/kegg_dotplot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">8</span><span class="p">)</span>
+</code></pre></div>
 <p><img alt="Top enriched KEGG pathways dot plot." src="../assets/kegg_dotplot.png" /></p>
 <h2 id="gene-set-enrichment-analysis-gsea">Gene Set Enrichment Analysis (GSEA)</h2>
 <p>Unlike GO and KEGG enrichment which require a hard threshold for DE genes, GSEA uses the full ranked list of genes. Genes are ranked by a metric — here we use log fold change — and the method tests whether genes in a set tend to cluster at the top or bottom of the ranked list.</p>
-<pre><code class="language-r"># Create a named ranked gene list (all genes, not just significant ones)
-gene_list &lt;- all_genes$logFC
-names(gene_list) &lt;- rownames(all_genes)
-gene_list &lt;- sort(gene_list, decreasing=TRUE)
+<div class="highlight"><pre><span></span><code><span class="c1"># Create a named ranked gene list (all genes, not just significant ones)</span>
+<span class="n">gene_list</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">all_genes</span><span class="o">$</span><span class="n">logFC</span>
+<span class="nf">names</span><span class="p">(</span><span class="n">gene_list</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">rownames</span><span class="p">(</span><span class="n">all_genes</span><span class="p">)</span>
+<span class="n">gene_list</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">sort</span><span class="p">(</span><span class="n">gene_list</span><span class="p">,</span><span class="w"> </span><span class="n">decreasing</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
 
-# Convert names to Entrez IDs
-entrez_map &lt;- bitr(names(gene_list),
-                   fromType=&quot;SYMBOL&quot;,
-                   toType=&quot;ENTREZID&quot;,
-                   OrgDb=org.Hs.eg.db)
+<span class="c1"># Convert names to Entrez IDs</span>
+<span class="n">entrez_map</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">bitr</span><span class="p">(</span><span class="nf">names</span><span class="p">(</span><span class="n">gene_list</span><span class="p">),</span>
+<span class="w">                   </span><span class="n">fromType</span><span class="o">=</span><span class="s">&quot;SYMBOL&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">toType</span><span class="o">=</span><span class="s">&quot;ENTREZID&quot;</span><span class="p">,</span>
+<span class="w">                   </span><span class="n">OrgDb</span><span class="o">=</span><span class="n">org.Hs.eg.db</span><span class="p">)</span>
 
-gene_list_entrez &lt;- gene_list[entrez_map$SYMBOL]
-names(gene_list_entrez) &lt;- entrez_map$ENTREZID
-gene_list_entrez &lt;- sort(gene_list_entrez, decreasing=TRUE)
+<span class="n">gene_list_entrez</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">gene_list</span><span class="p">[</span><span class="n">entrez_map</span><span class="o">$</span><span class="n">SYMBOL</span><span class="p">]</span>
+<span class="nf">names</span><span class="p">(</span><span class="n">gene_list_entrez</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="n">entrez_map</span><span class="o">$</span><span class="n">ENTREZID</span>
+<span class="n">gene_list_entrez</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">sort</span><span class="p">(</span><span class="n">gene_list_entrez</span><span class="p">,</span><span class="w"> </span><span class="n">decreasing</span><span class="o">=</span><span class="kc">TRUE</span><span class="p">)</span>
 
-# Run GSEA with GO terms
-gsea_results &lt;- gseGO(geneList = gene_list_entrez,
-                      OrgDb = org.Hs.eg.db,
-                      ont = &quot;BP&quot;,
-                      pAdjustMethod = &quot;BH&quot;,
-                      pvalueCutoff = 0.05)
+<span class="c1"># Run GSEA with GO terms</span>
+<span class="n">gsea_results</span><span class="w"> </span><span class="o">&lt;-</span><span class="w"> </span><span class="nf">gseGO</span><span class="p">(</span><span class="n">geneList</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">gene_list_entrez</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">OrgDb</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">org.Hs.eg.db</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">ont</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BP&quot;</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">pAdjustMethod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;BH&quot;</span><span class="p">,</span>
+<span class="w">                      </span><span class="n">pvalueCutoff</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">0.05</span><span class="p">)</span>
 
-head(as.data.frame(gsea_results))
-</code></pre>
+<span class="nf">head</span><span class="p">(</span><span class="nf">as.data.frame</span><span class="p">(</span><span class="n">gsea_results</span><span class="p">))</span>
+</code></pre></div>
 <h3 id="visualizing-gsea-results">Visualizing GSEA Results</h3>
-<pre><code class="language-r">dotplot(gsea_results, showCategory=20, split=&quot;.sign&quot;) +
-    facet_grid(.~.sign) +
-    ggtitle(&quot;GSEA Results (BP)&quot;)
-ggsave(&quot;figures/gsea_dotplot.png&quot;, width=12, height=8)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nf">dotplot</span><span class="p">(</span><span class="n">gsea_results</span><span class="p">,</span><span class="w"> </span><span class="n">showCategory</span><span class="o">=</span><span class="m">20</span><span class="p">,</span><span class="w"> </span><span class="n">split</span><span class="o">=</span><span class="s">&quot;.sign&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">facet_grid</span><span class="p">(</span><span class="n">.</span><span class="o">~</span><span class="n">.sign</span><span class="p">)</span><span class="w"> </span><span class="o">+</span>
+<span class="w">    </span><span class="nf">ggtitle</span><span class="p">(</span><span class="s">&quot;GSEA Results (BP)&quot;</span><span class="p">)</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/gsea_dotplot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">12</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">8</span><span class="p">)</span>
+</code></pre></div>
 <p><img alt="GSEA dot plot split by direction of enrichment (activated vs suppressed)." src="../assets/gsea_dotplot.png" /></p>
-<pre><code class="language-r">gseaplot2(gsea_results, geneSetID=1, title=gsea_results$Description[1])
-ggsave(&quot;figures/gsea_enrichment_plot.png&quot;, width=10, height=6)
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nf">gseaplot2</span><span class="p">(</span><span class="n">gsea_results</span><span class="p">,</span><span class="w"> </span><span class="n">geneSetID</span><span class="o">=</span><span class="m">1</span><span class="p">,</span><span class="w"> </span><span class="n">title</span><span class="o">=</span><span class="n">gsea_results</span><span class="o">$</span><span class="n">Description</span><span class="p">[</span><span class="m">1</span><span class="p">])</span>
+<span class="nf">ggsave</span><span class="p">(</span><span class="s">&quot;figures/gsea_enrichment_plot.png&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">width</span><span class="o">=</span><span class="m">10</span><span class="p">,</span><span class="w"> </span><span class="n">height</span><span class="o">=</span><span class="m">6</span><span class="p">)</span>
+</code></pre></div>
 <p><img alt="GSEA enrichment plot for the top enriched gene set. The running enrichment score is shown at the top, the ranked gene list position of genes in the set is shown as tick marks in the middle, and the ranked list signal is shown at the bottom." src="../assets/gsea_enrichment_plot.png" /></p>
 <h2 id="interpreting-results">Interpreting Results</h2>
 <ul>

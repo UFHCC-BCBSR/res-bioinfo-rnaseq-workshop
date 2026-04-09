@@ -825,13 +825,13 @@
 <h2 id="the-multiqc-report-key-points">The MultiQC Report: Key Points</h2>
 <p><a href="https://multiqc.info/"><strong>MultiQC</strong></a> aggregates the output of all QC tools across all samples into a single, interactive HTML report.</p>
 <p>Download the html file from the output folder. You will find the report at the following location:</p>
-<pre><code>/blue/bioinf_workshop/share/nfcore_rnaseq_files/outputs/multiqc/star_rsem
-</code></pre>
+<div class="highlight"><pre><span></span><code>/blue/bioinf_workshop/share/nfcore_rnaseq_files/outputs/multiqc/star_rsem
+</code></pre></div>
 <p>To use scp to download the report:</p>
-<pre><code class="language-bash"># Copy to your local machine and open in a browser
-scp username@hpg.rc.ufl.edu:/OUTPUT/star_rsem/multiqc/star_rsem/multiqc_report.html ./
-open multiqc_report.html   # macOs
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="c1"># Copy to your local machine and open in a browser</span>
+scp<span class="w"> </span>username@hpg.rc.ufl.edu:/OUTPUT/star_rsem/multiqc/star_rsem/multiqc_report.html<span class="w"> </span>./
+open<span class="w"> </span>multiqc_report.html<span class="w">   </span><span class="c1"># macOs</span>
+</code></pre></div>
 <p>To download it using <a href="https://ondemand.rc.ufl.edu/pun/sys/dashboard/">OnDemand</a>, log in and navigate to the same location and click 'Download' after selecting the html report.</p>
 <p>The report includes sections for every tool that ran — FastQC, Trim Galore, STAR, Picard, RSeQC, Qualimap, Preseq, and RSEM. Each section shows per-sample metrics and highlights any samples that fall outside expected ranges.</p>
 <hr />

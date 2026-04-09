@@ -827,11 +827,11 @@
 <p>For more comprehensive documentation, see the <a href="https://docs.rc.ufl.edu/">UF Research Computing docs</a>.</p>
 <h2 id="logging-in">Logging In</h2>
 <p>You connect to HiPerGator via SSH from your terminal. If you haven't set up your terminal yet, see the <a href="../../01_command-line-basics/command-line-basics/">Command Line Basics</a> section. Replace <code>username</code> with your GatorLink username:</p>
-<pre><code class="language-bash">ssh username@hpg.rc.ufl.edu
-</code></pre>
+<div class="highlight"><pre><span></span><code>ssh<span class="w"> </span>username@hpg.rc.ufl.edu
+</code></pre></div>
 <p>You will be prompted for your password and then a Duo two-factor authentication push. After authenticating you will land on a <strong>login node</strong>, which looks like this:</p>
-<pre><code>[username@login1 ~]$
-</code></pre>
+<div class="highlight"><pre><span></span><code>[username@login1 ~]$
+</code></pre></div>
 <div class="admonition warning">
 <p class="admonition-title">Do not run work on login nodes</p>
 <p>Login nodes are shared resources for everyone on the cluster. All real work must be submitted as SLURM jobs. Running computationally intensive work on login nodes is against HiPerGator policy and can result in account suspension.</p>
@@ -872,88 +872,92 @@
 <div class="admonition danger">
 <p class="admonition-title">Already have a HiPerGator account?</p>
 <p>If you already have an active HiPerGator account, do not use your personal <code>/blue</code> directory for this workshop. Instead, create and use a personal folder inside the shared workshop directory:</p>
-<p><code>bash
-mkdir /blue/bioinf_workshop/$USER
-cd /blue/bioinf_workshop/$USER</code></p>
+<div class="highlight"><pre><span></span><code>mkdir<span class="w"> </span>/blue/bioinf_workshop/<span class="nv">$USER</span>
+<span class="nb">cd</span><span class="w"> </span>/blue/bioinf_workshop/<span class="nv">$USER</span>
+</code></pre></div>
 </div>
 <p>For this workshop, your working directory will be:</p>
-<pre><code>/blue/bioinf_workshop/username
-</code></pre>
+<div class="highlight"><pre><span></span><code>/blue/bioinf_workshop/username
+</code></pre></div>
 <p>To navigate there:</p>
-<pre><code class="language-bash">cd /blue/bioinf_workshop/$USER
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="nb">cd</span><span class="w"> </span>/blue/bioinf_workshop/<span class="nv">$USER</span>
+</code></pre></div>
 <p>You can check your storage quotas with:</p>
-<pre><code class="language-bash">home_quota
-</code></pre>
-<pre><code class="language-bash">blue_quota
-</code></pre>
-<pre><code class="language-bash">orange_quota
-</code></pre>
+<div class="highlight"><pre><span></span><code>home_quota
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>blue_quota
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>orange_quota
+</code></pre></div>
 <h2 id="open-ondemand">Open OnDemand</h2>
 <p>Open OnDemand (OOD) is a web interface for HiPerGator available at <a href="https://ood.rc.ufl.edu">https://ood.rc.ufl.edu</a>. It provides a graphical file browser for navigating, uploading, downloading, and editing files, a dashboard for monitoring your jobs, and a browser-based terminal if you prefer not to use SSH. For this workshop, OOD is particularly useful for uploading input files and downloading results without needing to use <code>scp</code> on the command line.</p>
 <h2 id="loading-software-with-modules">Loading Software with Modules</h2>
 <p>HiPerGator uses a module system to manage software. Software is not available by default — you need to load it first.</p>
 <p><span class="command-title">module spider — search for available software</span></p>
-<pre><code class="language-bash">module spider nextflow
-</code></pre>
+<div class="highlight"><pre><span></span><code>module<span class="w"> </span>spider<span class="w"> </span>nextflow
+</code></pre></div>
 <p><span class="command-title">module load — load a module</span></p>
-<pre><code class="language-bash">module load nextflow
-</code></pre>
+<div class="highlight"><pre><span></span><code>module<span class="w"> </span>load<span class="w"> </span>nextflow
+</code></pre></div>
 <p><span class="command-title">module list — see what you have loaded</span></p>
-<pre><code class="language-bash">module list
-</code></pre>
+<div class="highlight"><pre><span></span><code>module<span class="w"> </span>list
+</code></pre></div>
 <p><span class="command-title">module unload — unload a module</span></p>
-<pre><code class="language-bash">module unload nextflow
-</code></pre>
+<div class="highlight"><pre><span></span><code>module<span class="w"> </span>unload<span class="w"> </span>nextflow
+</code></pre></div>
 <p>Some software requires loading a prerequisite module first. <code>module spider</code> will tell you if this is the case and what to load.</p>
 <h2 id="writing-and-submitting-slurm-jobs">Writing and Submitting SLURM Jobs</h2>
 <p>HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly on the login node, you write a job script that specifies the resources you need and the commands to run, then submit it to the scheduler with <code>sbatch</code>.</p>
 <p>A SLURM script is just a regular bash script with a block of <code>#SBATCH</code> directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script — each <code>echo</code> command just prints a line of text to the screen:</p>
-<pre><code class="language-bash">#!/bin/bash
-echo &quot;Hello from HiPerGator!&quot;
-echo &quot;My username is: $(whoami)&quot;
-echo &quot;Today's date is: $(date)&quot;
-echo &quot;I am running on node: $(hostname)&quot;
-</code></pre>
+<div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Hello from HiPerGator!&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;My username is: </span><span class="k">$(</span>whoami<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Today&#39;s date is: </span><span class="k">$(</span>date<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;I am running on node: </span><span class="k">$(</span>hostname<span class="k">)</span><span class="s2">&quot;</span>
+</code></pre></div>
 <p>You could run this directly on the login node with <code>bash hello.sh</code>. Now here is the exact same script as a SLURM job — the only difference is the <code>#SBATCH</code> header:</p>
-<pre><code class="language-bash">#!/bin/bash
-#SBATCH --job-name=hello
-#SBATCH --nodes=1
-#SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
-#SBATCH --mem=1gb
-#SBATCH --time=00:05:00
-#SBATCH --account=bioinf_workshop
-#SBATCH --qos=bioinf_workshop
-#SBATCH --output=hello_%j.out
-#SBATCH --error=hello_%j.err
-#SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=$USER@ufl.edu
+<div class="highlight"><pre><span></span><code><span class="ch">#!/bin/bash</span>
+<span class="c1">#SBATCH --job-name=hello</span>
+<span class="c1">#SBATCH --nodes=1</span>
+<span class="c1">#SBATCH --ntasks=1</span>
+<span class="c1">#SBATCH --cpus-per-task=1</span>
+<span class="c1">#SBATCH --mem=1gb</span>
+<span class="c1">#SBATCH --time=00:05:00</span>
+<span class="c1">#SBATCH --account=bioinf_workshop</span>
+<span class="c1">#SBATCH --qos=bioinf_workshop</span>
+<span class="c1">#SBATCH --output=hello_%j.out</span>
+<span class="c1">#SBATCH --error=hello_%j.err</span>
+<span class="c1">#SBATCH --mail-type=END,FAIL</span>
+<span class="c1">#SBATCH --mail-user=$USER@ufl.edu</span>
 
-echo &quot;Hello from HiPerGator!&quot;
-echo &quot;My username is: $(whoami)&quot;
-echo &quot;Today's date is: $(date)&quot;
-echo &quot;I am running on node: $(hostname)&quot;
-</code></pre>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Hello from HiPerGator!&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;My username is: </span><span class="k">$(</span>whoami<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Today&#39;s date is: </span><span class="k">$(</span>date<span class="k">)</span><span class="s2">&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;I am running on node: </span><span class="k">$(</span>hostname<span class="k">)</span><span class="s2">&quot;</span>
+</code></pre></div>
 <p>Now create this file on HiPerGator. Open a new file with nano:</p>
-<pre><code class="language-bash">nano hello.sbatch
-</code></pre>
-<p>??? tip "Need a nano refresher?"
-    - Type or paste your content
-    - <code>Ctrl+O</code> then <code>Enter</code> to save
-    - <code>Ctrl+X</code> to exit</p>
+<div class="highlight"><pre><span></span><code>nano<span class="w"> </span>hello.sbatch
+</code></pre></div>
+<details class="tip">
+<summary>Need a nano refresher?</summary>
+<ul>
+<li>Type or paste your content</li>
+<li><code>Ctrl+O</code> then <code>Enter</code> to save</li>
+<li><code>Ctrl+X</code> to exit</li>
+</ul>
+</details>
 <p>Paste the script above into nano, save, and exit. Then verify the file was created:</p>
-<pre><code class="language-bash">cat hello.sbatch
-</code></pre>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>hello.sbatch
+</code></pre></div>
 <p>Now submit it:</p>
-<pre><code class="language-bash">sbatch hello.sbatch
-</code></pre>
+<div class="highlight"><pre><span></span><code>sbatch<span class="w"> </span>hello.sbatch
+</code></pre></div>
 <blockquote>
 <p><code>Submitted batch job 12345678</code></p>
 </blockquote>
 <p>When the job completes, check the output log (replace <code>12345678</code> with your actual job ID):</p>
-<pre><code class="language-bash">cat hello_12345678.out
-</code></pre>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>hello_12345678.out
+</code></pre></div>
 <blockquote>
 <p>Hello from HiPerGator!<br />
 My username is: username<br />
@@ -991,40 +995,39 @@ I am running on node: c0709a-s30</p>
 </tr>
 </tbody>
 </table>
-<p>??? info "Using burst QOS for your own group"
-    Most HiPerGator groups have access to a burst QOS that allows you to temporarily use more resources than your group's allocation. To use it, append <code>-b</code> to your group name for the <code>--qos</code> flag:</p>
-<pre><code>```bash
-#SBATCH --account=mygroup
-#SBATCH --qos=mygroup-b
-```
-
-Burst jobs are lower priority and can be preempted (cancelled and requeued) if the resources are needed by higher-priority jobs, so it's best used for jobs that can be restarted or that you don't need to complete by a specific time.
-</code></pre>
+<details class="info">
+<summary>Using burst QOS for your own group</summary>
+<p>Most HiPerGator groups have access to a burst QOS that allows you to temporarily use more resources than your group's allocation. To use it, append <code>-b</code> to your group name for the <code>--qos</code> flag:</p>
+<div class="highlight"><pre><span></span><code><span class="c1">#SBATCH --account=mygroup</span>
+<span class="c1">#SBATCH --qos=mygroup-b</span>
+</code></pre></div>
+<p>Burst jobs are lower priority and can be preempted (cancelled and requeued) if the resources are needed by higher-priority jobs, so it's best used for jobs that can be restarted or that you don't need to complete by a specific time.</p>
+</details>
 <h2 id="monitoring-jobs">Monitoring Jobs</h2>
 <p><span class="command-title">squeue — check job status</span></p>
 <p>The <code>ST</code> column shows job state: <code>PD</code> = pending, <code>R</code> = running, <code>CG</code> = completing:</p>
-<pre><code class="language-bash">squeue -u $USER
-</code></pre>
+<div class="highlight"><pre><span></span><code>squeue<span class="w"> </span>-u<span class="w"> </span><span class="nv">$USER</span>
+</code></pre></div>
 <p><span class="command-title">slurmInfo — see resource usage for your group</span></p>
-<pre><code class="language-bash">slurmInfo
-</code></pre>
+<div class="highlight"><pre><span></span><code>slurmInfo
+</code></pre></div>
 <p><span class="command-title">scancel — cancel a job</span></p>
-<pre><code class="language-bash">scancel 12345678
-</code></pre>
+<div class="highlight"><pre><span></span><code>scancel<span class="w"> </span><span class="m">12345678</span>
+</code></pre></div>
 <p><span class="command-title">sacct — see a summary of recent completed jobs</span></p>
-<pre><code class="language-bash">sacct
-</code></pre>
+<div class="highlight"><pre><span></span><code>sacct
+</code></pre></div>
 <h2 id="checking-job-logs">Checking Job Logs</h2>
 <p>When you submit a job, SLURM writes output and error messages to log files named with the job ID, e.g. <code>hello_12345678.out</code> and <code>hello_12345678.err</code>. These are the first place to look if something goes wrong.</p>
 <p>To view the full output log:</p>
-<pre><code class="language-bash">cat hello_12345678.out
-</code></pre>
+<div class="highlight"><pre><span></span><code>cat<span class="w"> </span>hello_12345678.out
+</code></pre></div>
 <p>To follow the log in real time as the job runs (press <code>Ctrl+C</code> to stop):</p>
-<pre><code class="language-bash">tail -f hello_12345678.out
-</code></pre>
+<div class="highlight"><pre><span></span><code>tail<span class="w"> </span>-f<span class="w"> </span>hello_12345678.out
+</code></pre></div>
 <p>To check the last few lines of the error log:</p>
-<pre><code class="language-bash">tail hello_12345678.err
-</code></pre>
+<div class="highlight"><pre><span></span><code>tail<span class="w"> </span>hello_12345678.err
+</code></pre></div>
 <p><code>tail -f</code> is particularly useful for monitoring a running job — it will keep printing new lines as they are written to the log file.</p>
 
 
