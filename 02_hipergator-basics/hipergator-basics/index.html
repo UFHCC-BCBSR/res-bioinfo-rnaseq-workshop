@@ -880,7 +880,7 @@ cd /blue/bioinf_workshop/$USER</code></p>
 <pre><code>/blue/bioinf_workshop/username
 </code></pre>
 <p>To navigate there:</p>
-<pre><code class="language-bash">cd /blue/bioinf_workshop/username
+<pre><code class="language-bash">cd /blue/bioinf_workshop/$USER
 </code></pre>
 <p>You can check your storage quotas with:</p>
 <pre><code class="language-bash">home_quota
@@ -908,7 +908,7 @@ cd /blue/bioinf_workshop/$USER</code></p>
 <p>Some software requires loading a prerequisite module first. <code>module spider</code> will tell you if this is the case and what to load.</p>
 <h2 id="writing-and-submitting-slurm-jobs">Writing and Submitting SLURM Jobs</h2>
 <p>HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly on the login node, you write a job script that specifies the resources you need and the commands to run, then submit it to the scheduler with <code>sbatch</code>.</p>
-<p>A SLURM script is just a regular bash script with a block of <code>#SBATCH</code> directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script:</p>
+<p>A SLURM script is just a regular bash script with a block of <code>#SBATCH</code> directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script — each <code>echo</code> command just prints a line of text to the screen:</p>
 <pre><code class="language-bash">#!/bin/bash
 echo &quot;Hello from HiPerGator!&quot;
 echo &quot;My username is: $(whoami)&quot;
@@ -923,20 +923,29 @@ echo &quot;I am running on node: $(hostname)&quot;
 #SBATCH --cpus-per-task=1
 #SBATCH --mem=1gb
 #SBATCH --time=00:05:00
-#SBATCH --partition=[training-partition]
 #SBATCH --account=bioinf_workshop
 #SBATCH --qos=bioinf_workshop
 #SBATCH --output=hello_%j.out
 #SBATCH --error=hello_%j.err
 #SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=username@ufl.edu
+#SBATCH --mail-user=$USER@ufl.edu
 
 echo &quot;Hello from HiPerGator!&quot;
 echo &quot;My username is: $(whoami)&quot;
 echo &quot;Today's date is: $(date)&quot;
 echo &quot;I am running on node: $(hostname)&quot;
 </code></pre>
-<p>Save this as <code>hello.sbatch</code> and submit it:</p>
+<p>Now create this file on HiPerGator. Open a new file with nano:</p>
+<pre><code class="language-bash">nano hello.sbatch
+</code></pre>
+<p>??? tip "Need a nano refresher?"
+    - Type or paste your content
+    - <code>Ctrl+O</code> then <code>Enter</code> to save
+    - <code>Ctrl+X</code> to exit</p>
+<p>Paste the script above into nano, save, and exit. Then verify the file was created:</p>
+<pre><code class="language-bash">cat hello.sbatch
+</code></pre>
+<p>Now submit it:</p>
 <pre><code class="language-bash">sbatch hello.sbatch
 </code></pre>
 <blockquote>
@@ -982,10 +991,19 @@ I am running on node: c0709a-s30</p>
 </tr>
 </tbody>
 </table>
+<p>??? info "Using burst QOS for your own group"
+    Most HiPerGator groups have access to a burst QOS that allows you to temporarily use more resources than your group's allocation. To use it, append <code>-b</code> to your group name for the <code>--qos</code> flag:</p>
+<pre><code>```bash
+#SBATCH --account=mygroup
+#SBATCH --qos=mygroup-b
+```
+
+Burst jobs are lower priority and can be preempted (cancelled and requeued) if the resources are needed by higher-priority jobs, so it's best used for jobs that can be restarted or that you don't need to complete by a specific time.
+</code></pre>
 <h2 id="monitoring-jobs">Monitoring Jobs</h2>
 <p><span class="command-title">squeue — check job status</span></p>
-<p>Replace <code>username</code> with your GatorLink username. The <code>ST</code> column shows job state: <code>PD</code> = pending, <code>R</code> = running, <code>CG</code> = completing:</p>
-<pre><code class="language-bash">squeue -u username
+<p>The <code>ST</code> column shows job state: <code>PD</code> = pending, <code>R</code> = running, <code>CG</code> = completing:</p>
+<pre><code class="language-bash">squeue -u $USER
 </code></pre>
 <p><span class="command-title">slurmInfo — see resource usage for your group</span></p>
 <pre><code class="language-bash">slurmInfo
