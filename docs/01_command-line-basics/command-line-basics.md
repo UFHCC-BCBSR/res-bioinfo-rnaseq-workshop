@@ -74,6 +74,7 @@ Before we go further, let's create a dedicated space to practice in so we don't 
 <span class="command-title">mkdir — make directory</span>
 
 ```bash
+cd ~
 mkdir command_line_practice
 cd command_line_practice
 pwd
@@ -95,28 +96,32 @@ ls
 
 <span class="command-title">cat with redirection — quick file creation</span>
 
-The quickest way to create a small file is to use `cat` with the `>` redirect operator. Type the command, press `Enter`, type your content, then press `Ctrl+D` to save:
+The quickest way to create a small file is to use a heredoc — the `<< 'EOF'` syntax tells the shell to treat everything that follows as file content until it sees `EOF` on a line by itself, making it safe to copy and paste:
 
 ```bash
-cat > notes/hello.txt
+cat > notes/hello.txt << 'EOF'
 Hello world, this is my first file.
 I am learning the command line.
 This is line three.
+EOF
 ```
-
-*(press `Ctrl+D` to save)*
 
 Let's create a second file:
 
 ```bash
-cat > notes/genes.txt
+cat > notes/genes.txt  << 'EOF'
 TP53 is a tumor suppressor gene.
 BRCA1 is associated with breast cancer risk.
 EGFR is a common target in lung cancer therapy.
 TP53 mutations are found in many cancer types.
+EOF
 ```
 
-*(press `Ctrl+D` to save)*
+See the files you created:
+
+```bash
+ls notes
+```
 
 <span class="command-title">nano — interactive text editor</span>
 
@@ -130,8 +135,7 @@ Type whatever you like, then use these commands to save and exit:
 
 | **Action** | **Keys** |
 |---|---|
-| Save | `Ctrl+O`, then `Enter` |
-| Exit | `Ctrl+X` |
+| Exit and Save | `Ctrl+X`  then `Y`|
 | Cut a line | `Ctrl+K` |
 | Paste | `Ctrl+U` |
 | Search | `Ctrl+W` |
@@ -292,18 +296,18 @@ Almost every command has a manual page you can access with `man`, and most also 
 man ls
 ```
 
-```bash
-ls --help
-```
+type `q` to get out of the manual
+
 
 ## Cleaning Up
 
-Once you're done practicing, you can remove the whole practice directory:
+Once you're done practicing, you can remove the whole practice directory.
+
+!!! warning "Reminder"
+    `rm -r` permanently deletes everything inside. Make sure you are in your home directory (`cd ~`) and are removing the right directory before running this.
 
 ```bash
 cd ~
 rm -r command_line_practice
 ```
 
-!!! warning "Reminder"
-    `rm -r` permanently deletes everything inside. Make sure you are in your home directory (`cd ~`) and are removing the right directory before running this.
