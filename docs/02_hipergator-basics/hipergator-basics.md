@@ -6,19 +6,20 @@ For more comprehensive documentation, see the [UF Research Computing docs](https
 
 ## Logging In
 
-You connect to HiPerGator via SSH from your terminal. If you haven't set up your terminal yet, see the [Command Line Basics](../01_command-line-basics/command-line-basics.md) section.
+You connect to HiPerGator via SSH from your terminal. If you haven't set up your terminal yet, see the [Command Line Basics](../01_command-line-basics/command-line-basics.md) section. Replace `username` with your GatorLink username:
 
-```
-$ ssh username@hpg.rc.ufl.edu
+```bash
+ssh username@hpg.rc.ufl.edu
 ```
 
-Replace `username` with your GatorLink username. You will be prompted for your password and then a Duo two-factor authentication push. After authenticating you will land on a **login node**, which looks like this:
+You will be prompted for your password and then a Duo two-factor authentication push. After authenticating you will land on a **login node**, which looks like this:
 
 ```
 [username@login1 ~]$
 ```
 
-> **Important:** Login nodes are shared resources for everyone on the cluster. Do not run computationally intensive work on login nodes — this is against HiPerGator policy and can result in account suspension. All real work should be submitted as SLURM jobs.
+!!! warning "Do not run work on login nodes"
+    Login nodes are shared resources for everyone on the cluster. All real work must be submitted as SLURM jobs. Running computationally intensive work on login nodes is against HiPerGator policy and can result in account suspension.
 
 ## The HiPerGator Filesystem
 
@@ -30,82 +31,91 @@ HiPerGator has three main storage locations, each with a different purpose:
 | Blue | `/blue/group/username` | Varies | All active research work and data |
 | Orange | `/orange/group/username` | Varies | Long-term archival storage |
 
-> **Always run your analyses from `/blue`**. It is a high-performance storage system designed to handle the input/output demands of HPC workloads. `/home` and `/orange` are not suitable for running analyses.
+Always run your analyses from `/blue` — it is a high-performance storage system designed to handle the input/output demands of HPC workloads. `/home` and `/orange` are not suitable for running analyses.
+
+!!! danger "Already have a HiPerGator account?"
+    If you already have an active HiPerGator account, do not use your personal `/blue` directory for this workshop. Instead, create and use a personal folder inside the shared workshop directory:
+
+    ```bash
+    mkdir /blue/bioinf_workshop/$USER
+    cd /blue/bioinf_workshop/$USER
+    ```
 
 For this workshop, your working directory will be:
 
 ```
-/blue/[training-group]/username
+/blue/bioinf_workshop/username
 ```
 
 To navigate there:
 
-```
-$ cd /blue/[training-group]/username
+```bash
+cd /blue/bioinf_workshop/username
 ```
 
 You can check your storage quotas with:
 
+```bash
+home_quota
 ```
-$ home_quota
-$ blue_quota
-$ orange_quota
+
+```bash
+blue_quota
+```
+
+```bash
+orange_quota
 ```
 
 ## Open OnDemand
 
-Open OnDemand (OOD) is a web interface for HiPerGator available at [https://ood.rc.ufl.edu](https://ood.rc.ufl.edu). It provides:
-
-- **Files**: A graphical file browser for navigating, uploading, downloading, and editing files on HiPerGator
-- **Jobs**: A dashboard for monitoring your running, pending, and recently completed jobs
-- **Clusters**: A terminal window in your browser if you prefer not to use SSH
-
-For this workshop, OOD is particularly useful for uploading input files and downloading results to your local computer without needing to use `scp` on the command line.
+Open OnDemand (OOD) is a web interface for HiPerGator available at [https://ood.rc.ufl.edu](https://ood.rc.ufl.edu). It provides a graphical file browser for navigating, uploading, downloading, and editing files, a dashboard for monitoring your jobs, and a browser-based terminal if you prefer not to use SSH. For this workshop, OOD is particularly useful for uploading input files and downloading results without needing to use `scp` on the command line.
 
 ## Loading Software with Modules
 
-HiPerGator uses a module system to manage software. Software is not available by default — you need to load it first. To search for available software:
+HiPerGator uses a module system to manage software. Software is not available by default — you need to load it first.
 
-```
-$ module spider nextflow
-```
+<span class="command-title">module spider — search for available software</span>
 
-To load a module:
-
-```
-$ module load nextflow
+```bash
+module spider nextflow
 ```
 
-To see what modules you currently have loaded:
+<span class="command-title">module load — load a module</span>
 
-```
-$ module list
+```bash
+module load nextflow
 ```
 
-To unload a module:
+<span class="command-title">module list — see what you have loaded</span>
 
+```bash
+module list
 ```
-$ module unload nextflow
+
+<span class="command-title">module unload — unload a module</span>
+
+```bash
+module unload nextflow
 ```
 
 Some software requires loading a prerequisite module first. `module spider` will tell you if this is the case and what to load.
 
 ## Writing and Submitting SLURM Jobs
 
-HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly on the login node, you write a job script that specifies the resources you need and the commands to run, and submit it to the scheduler with `sbatch`.
+HiPerGator uses the SLURM scheduler to manage jobs. Rather than running commands directly on the login node, you write a job script that specifies the resources you need and the commands to run, then submit it to the scheduler with `sbatch`.
 
-The key insight is that a SLURM script is just a regular bash script with a block of `#SBATCH` directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script:
+A SLURM script is just a regular bash script with a block of `#SBATCH` directives at the top that tell the scheduler what resources to allocate. To illustrate this, here is a simple bash script:
 
 ```bash
 #!/bin/bash
-
 echo "Hello from HiPerGator!"
 echo "My username is: $(whoami)"
 echo "Today's date is: $(date)"
 echo "I am running on node: $(hostname)"
 ```
 
-You could run this directly on the login node with `bash hello.sh`. Now here is the exact same script as an SLURM job:
+You could run this directly on the login node with `bash hello.sh`. Now here is the exact same script as a SLURM job — the only difference is the `#SBATCH` header:
 
 ```bash
 #!/bin/bash
@@ -116,8 +126,8 @@ You could run this directly on the login node with `bash hello.sh`. Now here is 
 #SBATCH --mem=1gb
 #SBATCH --time=00:05:00
 #SBATCH --partition=[training-partition]
-#SBATCH --account=[training-group]
-#SBATCH --qos=[training-group]
+#SBATCH --account=bioinf_workshop
+#SBATCH --qos=bioinf_workshop
 #SBATCH --output=hello_%j.out
 #SBATCH --error=hello_%j.err
 #SBATCH --mail-type=END,FAIL
@@ -129,24 +139,26 @@ echo "Today's date is: $(date)"
 echo "I am running on node: $(hostname)"
 ```
 
-The only difference is the `#SBATCH` header. Save this as `hello.sh` and submit it:
+Save this as `hello.sbatch` and submit it:
 
-```
-$ sbatch hello.sh
-Submitted batch job 12345678
-```
-
-When the job completes, check the output log:
-
-```
-$ cat hello_12345678.out
-Hello from HiPerGator!
-My username is: username
-Today's date is: Thu Apr  3 10:42:11 EDT 2026
-I am running on node: c0709a-s30
+```bash
+sbatch hello.sbatch
 ```
 
-### Key SLURM Resource Flags
+> `Submitted batch job 12345678`
+
+When the job completes, check the output log (replace `12345678` with your actual job ID):
+
+```bash
+cat hello_12345678.out
+```
+
+> Hello from HiPerGator!  
+> My username is: username  
+> Today's date is: Thu Apr  3 10:42:11 EDT 2026  
+> I am running on node: c0709a-s30
+
+The key `#SBATCH` flags are summarized here:
 
 | **Flag** | **Description** |
 |---|---|
@@ -154,44 +166,56 @@ I am running on node: c0709a-s30
 | `--mem` | Total memory, e.g. `16gb`. If your job exceeds this it will be killed. |
 | `--time` | Maximum runtime. Job will be cancelled if it exceeds this. Request ~20% more than you expect. |
 | `--partition` | The queue to submit to. Use `[training-partition]` for this workshop. |
-| `--account` and `--qos` | Must match your group. Use `[training-group]` for this workshop. |
+| `--account` and `--qos` | Must match your group. Use `bioinf_workshop` for this workshop. |
 
 ## Monitoring Jobs
 
-To check the status of your jobs:
+<span class="command-title">squeue — check job status</span>
 
-```
-$ squeue -u username
-```
+Replace `username` with your GatorLink username. The `ST` column shows job state: `PD` = pending, `R` = running, `CG` = completing:
 
-The `ST` column shows job state: `PD` = pending, `R` = running, `CG` = completing.
-
-To see resource usage for your group:
-
-```
-$ slurmInfo
+```bash
+squeue -u username
 ```
 
-To cancel a job:
+<span class="command-title">slurmInfo — see resource usage for your group</span>
 
-```
-$ scancel 12345678
+```bash
+slurmInfo
 ```
 
-To see a summary of recent completed jobs:
+<span class="command-title">scancel — cancel a job</span>
 
+```bash
+scancel 12345678
 ```
-$ sacct
+
+<span class="command-title">sacct — see a summary of recent completed jobs</span>
+
+```bash
+sacct
 ```
 
 ## Checking Job Logs
 
-When you submit a job, SLURM writes output and error messages to log files (named by job ID by default, e.g. `12345678.out` and `12345678.err`). These are the first place to look if something goes wrong.
+When you submit a job, SLURM writes output and error messages to log files named with the job ID, e.g. `hello_12345678.out` and `hello_12345678.err`. These are the first place to look if something goes wrong.
 
-```
-$ cat 12345678.out          # view full output log
-$ tail -f 12345678.out      # follow the log in real time as the job runs
-$ tail 12345678.err         # check the last few lines of the error log
+To view the full output log:
+
+```bash
+cat hello_12345678.out
 ```
 
-`tail -f` is particularly useful for monitoring a running job — it will keep printing new lines as they are written to the log file. Press `Ctrl+C` to stop following.
+To follow the log in real time as the job runs (press `Ctrl+C` to stop):
+
+```bash
+tail -f hello_12345678.out
+```
+
+To check the last few lines of the error log:
+
+```bash
+tail hello_12345678.err
+```
+
+`tail -f` is particularly useful for monitoring a running job — it will keep printing new lines as they are written to the log file.
