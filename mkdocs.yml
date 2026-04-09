@@ -16,7 +16,8 @@ theme:
     text: Roboto
 markdown_extensions:
   - admonition
-
+  - pymdownx.details
+  - pymdownx.superfences
 extra_css:
   - assets/css/custom.css
 
